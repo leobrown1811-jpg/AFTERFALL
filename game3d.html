@@ -51,11 +51,12 @@ function makeHouse(x,z,accent=0x353c3a){
  wall(x-3.05,2.55,front,3.9,1.1,.24,0x898678);
  wall(x+3.05,.55,front,3.9,1.1,.24,0x898678);
  wall(x+3.05,2.55,front,3.9,1.1,.24,0x898678);
- // Solid side returns meet the outer wall, window frame and doorway piers.
- wall(x-4.55,1.55,front,0.90,1.02,.30,0x898678);
- wall(x-1.60,1.55,front,1.00,1.02,.30,0x898678);
- wall(x+1.60,1.55,front,1.00,1.02,.30,0x898678);
- wall(x+4.55,1.55,front,0.90,1.02,.30,0x898678);
+ // Window-side wall piers exactly fill the spaces between each frame and the doorway/outer corner.
+ // Match the main wall depth and front face so there are no projecting patches or narrow gaps.
+ wall(x-4.495,1.55,front,1.01,1.1,.24,0x898678);
+ wall(x-1.615,1.55,front,.99,1.1,.24,0x898678);
+ wall(x+1.615,1.55,front,.99,1.1,.24,0x898678);
+ wall(x+4.495,1.55,front,1.01,1.1,.24,0x898678);
  const roof=box(x,3.25,z,10.7,.4,8.7,accent);wallMeshes.push(roof);
  box(x,.045,z,10.15,.12,8.15,0x9a8c70);
  // Window frame and inset glass, aligned inside the opening rather than floating over the wall.
