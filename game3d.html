@@ -46,9 +46,9 @@ function limb(parent,geometry,material,x,y,z){const m=new THREE.Mesh(geometry,ma
 const torso=limb(avatar,new THREE.CapsuleGeometry(.38,.65,5,8),shirt,0,1.25,0);
 const head=limb(avatar,new THREE.SphereGeometry(.25,16,12),skin,0,2.05,0);
 const backpackMesh=limb(avatar,new THREE.BoxGeometry(.48,.55,.22),pack,0,1.3,.39);
-const skinAccessory=new THREE.Group();skinAccessory.rotation.y=Math.PI;avatar.add(skinAccessory); // Put every skin accessory on the character front, toward the camera.
-const bananaFace=new THREE.Group();bananaFace.rotation.y=Math.PI;avatar.add(bananaFace); // Character front faces local -Z, toward the camera.
-const humanFace=new THREE.Group();humanFace.rotation.y=Math.PI;avatar.add(humanFace);
+const skinAccessory=new THREE.Group();avatar.add(skinAccessory); // Skin details face the camera at the default player heading.
+const bananaFace=new THREE.Group();avatar.add(bananaFace); // Character front faces the camera at the default player heading.
+const humanFace=new THREE.Group();avatar.add(humanFace);
 const eyeWhite=mat(0xffffff),eyeDark=mat(0x211a18),mouthDark=mat(0x542c27),noseMat=mat(0xb98268);
 for(const x of [-.095,.095]){
  limb(humanFace,new THREE.SphereGeometry(.052,12,10),eyeWhite,x,2.105,.222);
