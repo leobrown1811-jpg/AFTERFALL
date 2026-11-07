@@ -80,9 +80,10 @@ function makeHouse(x,z,accent=0x353c3a,facing=0){
  wall(x+1.615,1.55,front,.99,1.1,.24,0x898678);
  wall(x+4.495,1.55,front,1.01,1.1,.24,0x898678);
  const roof=new THREE.Group();scene.add(roof);
- const roofLeft=new THREE.Mesh(new THREE.BoxGeometry(5.9,.34,9.15),mat(0x9b4f2e));roofLeft.position.set(x-2.35,4.67,z);roofLeft.rotation.z=.56;roofLeft.castShadow=true;roof.add(roofLeft);
- const roofRight=new THREE.Mesh(new THREE.BoxGeometry(5.9,.34,9.15),mat(0xb76135));roofRight.position.set(x+2.35,4.67,z);roofRight.rotation.z=-.56;roofRight.castShadow=true;roof.add(roofRight);
- const ridge=new THREE.Mesh(new THREE.BoxGeometry(.22,.25,9.35),mat(0x603b2b));ridge.position.set(x,4.67,z);roof.add(ridge);wallMeshes.push(roof);
+ // Compact gable roof: matching slopes meet cleanly at the raised ridge.
+ const roofLeft=new THREE.Mesh(new THREE.BoxGeometry(5.5,.22,8.5),mat(0x9b4f2e));roofLeft.position.set(x-2.45,4.05,z);roofLeft.rotation.z=.34;roofLeft.castShadow=true;roofLeft.receiveShadow=true;roof.add(roofLeft);
+ const roofRight=new THREE.Mesh(new THREE.BoxGeometry(5.5,.22,8.5),mat(0xb76135));roofRight.position.set(x+2.45,4.05,z);roofRight.rotation.z=-.34;roofRight.castShadow=true;roofRight.receiveShadow=true;roof.add(roofRight);
+ const ridge=new THREE.Mesh(new THREE.BoxGeometry(.2,.2,8.7),mat(0x603b2b));ridge.position.set(x,5.02,z);roof.add(ridge);wallMeshes.push(roof);
  box(x,.045,z,10.15,.12,8.15,0x9a8c70);
  // Glass sits within the opening; the full window casing is mounted proud of the exterior wall face.
  const glassZ=front+.015, outerFrameZ=front+.205, innerFrameZ=front-.145;
