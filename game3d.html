@@ -34,7 +34,7 @@ function box(x,y,z,sx,sy,sz,color){const m=new THREE.Mesh(new THREE.BoxGeometry(
 function tree(x,z,scale=1){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22*scale,.34*scale,2.8*scale,7),mat(0x554638));trunk.position.set(x,1.4*scale,z);trunk.castShadow=true;scene.add(trunk);for(let i=0;i<3;i++){const crown=new THREE.Mesh(new THREE.ConeGeometry((2.1-i*.28)*scale,3.3*scale,7),mat(i%2?0x344b3b:0x405b42));crown.position.set(x,(3.2+i*.85)*scale,z);crown.castShadow=true;scene.add(crown)}}
 function rock(x,z,s=1){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(s,0),mat(0x77796f));r.position.set(x,s*.55,z);r.rotation.set(.2,.8,.3);r.castShadow=true;r.receiveShadow=true;scene.add(r)}
 for(let i=0;i<13;i++){const h=13+(i%4)*5;const m=new THREE.Mesh(new THREE.ConeGeometry(10+(i%3)*4,h,5),mat(i%2?0x657a7a:0x596d70));m.position.set(-75+i*13,h/2-1,-82-(i%3)*8);m.rotation.y=i*.7;scene.add(m)}
-for(let i=0;i<150;i++){const x=Math.sin(i*91.7)*70,z=-85+(i*23.31)%160;const nearHouse=[[-17,-22],[25,-40],[-34,12],[18,-76],[-18,43]].some(([hx,hz])=>Math.abs(x-hx)<9&&Math.abs(z-hz)<10);if(nearHouse)continue;if(Math.abs(x)<5&&z>-112&&z<62)continue;if(i%3===0)rock(x,z,.7+(i%5)*.22);else tree(x,z,.65+(i%4)*.13)}
+for(let i=0;i<150;i++){const x=Math.sin(i*91.7)*70,z=-85+(i*23.31)%160;const nearHouse=[[-17,-22],[25,-40],[-34,12],[34,-76],[-38,48]].some(([hx,hz])=>Math.abs(x-hx)<9&&Math.abs(z-hz)<10);if(nearHouse)continue;if(Math.abs(x)<5&&z>-112&&z<62)continue;if(i%3===0)rock(x,z,.7+(i%5)*.22);else tree(x,z,.65+(i%4)*.13)}
 // Small village: each house has a real doorway and a walkable interior.
 const solidWalls=[],wallMeshes=[];
 function wall(x,y,z,w,h,d,color=0x777365){const m=box(x,y,z,w,h,d,color);solidWalls.push({x,z,w,d});wallMeshes.push(m)}
@@ -114,12 +114,28 @@ makeHouse(-17,-22,0x353c3a);
 makeHouse(25,-40,0x4a3933);
 makeHouse(-34,12,0x3d4937);
 // Two extra village homes extend the settlement beyond the original three.
-makeHouse(18,-76,0x454b58);
-makeHouse(-18,43,0x51463a);
+makeHouse(34,-76,0x454b58);
+makeHouse(-38,48,0x51463a);
 // The two new homes are freely enterable; the original three keep their key progression.
 for(const index of [3,4]){houseInteriors[index].keyCollected=true;houseInteriors[index].unlocked=true;houseInteriors[index].lockAssembly.visible=false;}
 
-const road=new THREE.Mesh(new THREE.PlaneGeometry(7,170),mat(0x777365));road.rotation.x=-Math.PI/2;road.position.set(0,.005,-25);scene.add(road);for(let z=-108;z<62;z+=8)box(0,.018,z,.13,.02,3.2,0xc6b78d);
+// Winding village roads built from aligned flat segments.
+function roadSegment(ax,az,bx,bz,width=7,markings=true){
+ const dx=bx-ax,dz=bz-az,len=Math.hypot(dx,dz),angle=Math.atan2(dx,dz);
+ const asphalt=new THREE.Mesh(new THREE.PlaneGeometry(width,len+1.2),mat(0x777365));
+ asphalt.rotation.set(-Math.PI/2,angle,0);asphalt.position.set((ax+bx)/2,.006,(az+bz)/2);scene.add(asphalt);
+ if(markings){const count=Math.max(1,Math.floor(len/7));for(let i=0;i<count;i++){const t=(i+.5)/count;const dash=new THREE.Mesh(new THREE.PlaneGeometry(.13,2.8),mat(0xc6b78d));dash.rotation.set(-Math.PI/2,angle,0);dash.position.set(ax+dx*t,.019,az+dz*t);scene.add(dash);}}
+}
+const mainRoad=[[-2,-118],[-2,-96],[5,-78],[14,-60],[17,-43],[10,-25],[-3,-7],[-12,12],[-9,32],[1,52],[4,72]];
+for(let i=0;i<mainRoad.length-1;i++)roadSegment(...mainRoad[i],...mainRoad[i+1],7,true);
+const sideRoads=[
+ [[12,-65],[23,-70],[34,-72]],
+ [[14,-47],[28,-44],[35,-42]],
+ [[2,-17],[-7,-21],[-14,-22]],
+ [[-10,8],[-23,10],[-31,11]],
+ [[-7,39],[-22,45],[-35,48]]
+];
+for(const branch of sideRoads)for(let i=0;i<branch.length-1;i++)roadSegment(...branch[i],...branch[i+1],5.2,false);
 const beacon=new THREE.PointLight(0xffd17b,22,24);beacon.position.set(18,4,-35);scene.add(beacon);box(18,.8,-35,4,1.6,4,0x77786b);const beaconMesh=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,2.2,12),new THREE.MeshStandardMaterial({color:0xffd17b,emissive:0x9b5b13,emissiveIntensity:2}));beaconMesh.position.set(18,2.6,-35);scene.add(beaconMesh);
 const supplies=[];for(const [x,z] of [[-8,4],[23,-9],[-27,-43],[-20.5,-20.5],[21.5,-38.5]]){const g=new THREE.Group();const crate=new THREE.Mesh(new THREE.BoxGeometry(1.15,.85,.9),mat(0xc18a42));crate.castShadow=true;g.add(crate);const stripe=new THREE.Mesh(new THREE.BoxGeometry(1.18,.13,.94),mat(0xe7d29a));stripe.position.y=.1;g.add(stripe);const glow=new THREE.PointLight(0xffd16b,5,7);glow.position.y=1.1;g.add(glow);g.position.set(x,.65,z);scene.add(g);supplies.push(g)}
  // Three distinct keys, tucked into separate exploration spots; each belongs to one house.
