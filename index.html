@@ -1,320 +1,109 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AFTERFALL | Survival</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AFTERFALL — Family Survival Test</title>
 <style>
-* { box-sizing:border-box; }
-body {
-margin:0;
-background:#101710;
-color:white;
-font-family:Arial,sans-serif;
-text-align:center;
-}
-header {
-padding:18px;
-background:#17251a;
-border-bottom:2px solid #607b50;
-}
-h1 {
-letter-spacing:8px;
-margin:5px;
-color:#b7d49b;
-}
-#stats {
-display:flex;
-justify-content:center;
-gap:20px;
-padding:12px;
-flex-wrap:wrap;
-}
-canvas {
-display:block;
-width:95%;
-max-width:800px;
-margin:auto;
-background:#536b43;
-border:3px solid #84966b;
-border-radius:8px;
-touch-action:none;
-}
-button {
-background:#354d35;
-color:white;
-border:1px solid #9ab18a;
-border-radius:8px;
-padding:13px 20px;
-margin:5px;
-font-weight:bold;
-}
-button:active { background:#78945c; }
-#message { color:#c9dda9; padding:10px; }
-.controls { padding:10px; }
+:root{color-scheme:dark;--panel:#17231f;--line:#3a5145;--text:#edf4e9;--muted:#b8c8b7;--gold:#f2c66d}
+*{box-sizing:border-box}body{margin:0;background:#101915;color:var(--text);font:16px system-ui,Arial,sans-serif;display:flex;justify-content:center;padding:18px}
+main{width:min(100%,940px)}header{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+h1{font-size:clamp(25px,5vw,38px);letter-spacing:3px;margin:0}h1 span{color:var(--gold)}.tag{color:var(--muted);font-size:13px}
+#stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.stat,.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px}
+.stat strong{display:block;font-size:19px;color:var(--gold)}.stat small{color:var(--muted)}
+#mission{margin:0 0 10px;color:#e6eadc;font-size:14px}
+.game-wrap{border:2px solid var(--line);border-radius:12px;overflow:hidden;background:#253c2d}
+canvas{display:block;width:100%;height:auto;touch-action:none}
+.bottom{display:grid;grid-template-columns:1fr auto;gap:12px;margin-top:10px;align-items:center}
+#message{min-height:48px;line-height:1.4;color:var(--muted);font-size:14px}
+button{border:1px solid #71856f;border-radius:9px;background:#30483a;color:white;padding:10px 14px;font-weight:700;cursor:pointer}
+button:hover{background:#405d49}.controls{display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.controls button{min-width:54px;min-height:46px;font-size:18px;touch-action: manipulation}
+.hint{font-size:12px;color:var(--muted);text-align:center;margin:10px 0}
+@media(max-width:560px){body{padding:10px}#stats{grid-template-columns:repeat(2,1fr)}.bottom{grid-template-columns:1fr}.bottom button{width:100%}}
 </style>
 </head>
-
 <body>
-
-<header>
-<h1>AFTERFALL</h1>
-<p>THE WORLD HAS FALLEN. SURVIVE.</p>
-</header>
-
-<div id="stats">
-<span>❤️ Health: <b id="health">100</b></span>
-<span>🍎 Food: <b id="food">100</b></span>
-<span>💧 Water: <b id="water">100</b></span>
-<span>🎒 Supplies: <b id="supplies">0</b></span>
-<span>🌅 Day: <b id="day">1</b></span>
+<main>
+<header><div><h1>AFTER<span>FALL</span></h1><div class="tag">SURVIVAL IS A SKILL · PLAYABLE TEST BUILD 01</div></div><button id="restart">Restart mission</button></header>
+<section id="stats">
+<div class="stat"><strong id="food">0 / 2</strong><small>Food collected</small></div>
+<div class="stat"><strong id="water">0 / 2</strong><small>Water collected</small></div>
+<div class="stat"><strong id="family">Together</strong><small>Family status</small></div>
+<div class="stat"><strong id="progress">0 / 4</strong><small>Supplies found</small></div>
+</section>
+<p id="mission">MISSION: Collect 2 food packs and 2 water bottles, then guide your family to the marked shelter.</p>
+<div class="game-wrap"><canvas id="game" width="900" height="560" aria-label="AFTERFALL top-down family survival game"></canvas></div>
+<div class="bottom"><div id="message" class="panel" aria-live="polite">Find the supplies around the area. Use WASD or the arrow keys to move. Your family follows you.</div><button id="start">Start / continue</button></div>
+<div class="controls" aria-label="Touch movement controls">
+<button data-dir="up" aria-label="Move up">▲</button>
+<button data-dir="left" aria-label="Move left">◀</button>
+<button data-dir="down" aria-label="Move down">▼</button>
+<button data-dir="right" aria-label="Move right">▶</button>
 </div>
-
-<canvas id="game" width="800" height="500"></canvas>
-
-<div id="message">Welcome to AFTERFALL. Find supplies and survive!</div>
-
-<div class="controls">
-<button onclick="move(0,-1)">⬆️</button><br>
-<button onclick="move(-1,0)">⬅️</button>
-<button onclick="move(0,1)">⬇️</button>
-<button onclick="move(1,0)">➡️</button>
-<br>
-<button onclick="restart()">↻ RESTART</button>
-</div>
-
+<p class="hint">Keyboard: W A S D or arrow keys · Touch: use the direction buttons · Walk over supplies to collect them.</p>
+</main>
 <script>
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
-
-let player = {x:400,y:250,size:18,speed:4};
-let health = 100;
-let food = 100;
-let water = 100;
-let supplies = 0;
-let day = 1;
-let gameOver = false;
-
-let keys = {};
-
-let infected = [
-{x:100,y:100},
-{x:700,y:350},
-{x:600,y:100}
-];
-
-let loot = [
-{x:200,y:200,type:"food"},
-{x:500,y:350,type:"water"},
-{x:700,y:200,type:"supply"},
-{x:300,y:400,type:"food"},
-{x:150,y:350,type:"supply"}
-];
-
-function drawWorld() {
-ctx.fillStyle="#536b43";
-ctx.fillRect(0,0,800,500);
-
-// Grass details
-for(let i=0;i<100;i++){
-let x=(i*83)%800;
-let y=(i*47)%500;
-ctx.fillStyle="#647c4c";
-ctx.fillRect(x,y,3,3);
+(function(){
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+const W=canvas.width,H=canvas.height;
+const ui={food:document.getElementById('food'),water:document.getElementById('water'),family:document.getElementById('family'),progress:document.getElementById('progress'),message:document.getElementById('message')};
+const keys={up:false,down:false,left:false,right:false};
+let player, family, items, collected, won, started, frame, shelter;
+const obstacles=[{x:125,y:100,w:150,h:85},{x:390,y:55,w:130,h:115},{x:670,y:115,w:125,h:90},{x:250,y:355,w:155,h:105},{x:575,y:360,w:150,h:95}];
+function reset(){
+player={x:75,y:270,r:13,speed:2.8};family=[{x:48,y:294,color:'#f2c66d'},{x:35,y:315,color:'#e8a1a1'},{x:55,y:337,color:'#9bc6ed'}];
+items=[{x:335,y:165,type:'food',taken:false},{x:610,y:250,type:'food',taken:false},{x:520,y:485,type:'water',taken:false},{x:120,y:475,type:'water',taken:false}];
+collected={food:0,water:0};won=false;started=true;frame=0;shelter={x:820,y:275,r:42};say('Mission started. Collect 2 food packs and 2 water bottles, then reach the shelter.');drawStats();draw();
 }
-
-// Abandoned buildings
-ctx.fillStyle="#55564b";
-ctx.fillRect(30,30,130,100);
-ctx.fillRect(620,370,150,100);
-
-ctx.fillStyle="#292e29";
-ctx.fillRect(75,30,35,15);
-ctx.fillRect(665,370,40,15);
-
-// Trees
-for(let i=0;i<12;i++){
-let x=(i*173)%800;
-let y=(i*91)%500;
-ctx.fillStyle="#263d28";
-ctx.beginPath();
-ctx.arc(x,y,19,0,Math.PI*2);
-ctx.fill();
+function say(t){ui.message.textContent=t}
+function drawStats(){ui.food.textContent=collected.food+' / 2';ui.water.textContent=collected.water+' / 2';ui.progress.textContent=(collected.food+collected.water)+' / 4';ui.family.textContent=won?'Safe!':'Together'}
+function circle(x,y,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}
+function rounded(x,y,w,h,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}
+function draw(){
+ctx.clearRect(0,0,W,H);ctx.fillStyle='#456b48';ctx.fillRect(0,0,W,H);
+// grass texture
+ctx.strokeStyle='rgba(220,235,180,.10)';ctx.lineWidth=2;
+for(let i=0;i<85;i++){let x=(i*137)%W,y=(i*83)%H;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+8,y-5);ctx.stroke()}
+// road and paths
+ctx.fillStyle='#77796c';ctx.fillRect(0,250,W,42);ctx.fillStyle='#aaa58c';ctx.fillRect(0,269,W,3);
+ctx.fillStyle='#8d9279';ctx.fillRect(785,0,35,H);
+ctx.fillStyle='#c7bd9d';ctx.fillRect(795,0,4,H);
+// buildings / obstacles
+obstacles.forEach((o,i)=>{rounded(o.x,o.y,o.w,o.h,9,'#7c6953');rounded(o.x+8,o.y+8,o.w-16,o.h-16,6,'#a28b69');ctx.fillStyle='#453e34';ctx.fillRect(o.x+o.w/2-13,o.y+o.h/2-8,26,32);ctx.fillStyle='#d5c59b';ctx.fillRect(o.x+18,o.y+18,22,16)});
+ // shelter
+ctx.fillStyle='rgba(255,220,120,.18)';circle(shelter.x,shelter.y,shelter.r+13,'rgba(255,220,120,.16)');
+rounded(shelter.x-37,shelter.y-30,74,60,8,'#d9d1b8');ctx.fillStyle='#8c5940';ctx.beginPath();ctx.moveTo(shelter.x-44,shelter.y-28);ctx.lineTo(shelter.x,shelter.y-60);ctx.lineTo(shelter.x+44,shelter.y-28);ctx.closePath();ctx.fill();ctx.fillStyle='#334b3a';ctx.fillRect(shelter.x-10,shelter.y+1,20,29);
+ctx.fillStyle='#fff4cf';ctx.font='bold 14px system-ui';ctx.textAlign='center';ctx.fillText('SAFE SHELTER',shelter.x,shelter.y+55);
+// supplies
+items.forEach(it=>{if(it.taken)return;circle(it.x,it.y,15,it.type==='food'?'#e8bd58':'#65bde0');ctx.fillStyle='#27352b';ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillText(it.type==='food'?'F':'W',it.x,it.y+6)});
+// family followers
+family.forEach((p,i)=>{circle(p.x,p.y,11,p.color);circle(p.x,p.y-3,5,'#f2d5bd');});
+// player
+circle(player.x,player.y,15,'#e8eee5');circle(player.x,player.y-4,7,'#384e70');ctx.fillStyle='#fff';ctx.font='bold 12px system-ui';ctx.textAlign='left';ctx.fillText('YOU',player.x+18,player.y-13);
+if(won){ctx.fillStyle='rgba(8,18,12,.72)';ctx.fillRect(0,0,W,H);ctx.textAlign='center';ctx.fillStyle='#f4d27c';ctx.font='bold 42px system-ui';ctx.fillText('FAMILY SAFE!',W/2,H/2-10);ctx.fillStyle='white';ctx.font='20px system-ui';ctx.fillText('Mission complete — great work.',W/2,H/2+28)}
 }
+function blocked(x,y){return obstacles.some(o=>x+11>o.x&&x-11<o.x+o.w&&y+11>o.y&&y-11<o.y+o.h)}
+function move(){
+if(!started||won)return;
+let dx=(keys.right?1:0)-(keys.left?1:0),dy=(keys.down?1:0)-(keys.up?1:0);
+if(dx||dy){let len=Math.hypot(dx,dy);dx=dx/len*player.speed;dy=dy/len*player.speed;
+let nx=Math.max(15,Math.min(W-15,player.x+dx)),ny=Math.max(15,Math.min(H-15,player.y+dy));
+if(!blocked(nx,player.y))player.x=nx;if(!blocked(player.x,ny))player.y=ny;
 }
-
-function drawPlayer() {
-ctx.fillStyle="#d6d6c2";
-ctx.beginPath();
-ctx.arc(player.x,player.y,player.size,0,Math.PI*2);
-ctx.fill();
-
-ctx.fillStyle="#202b25";
-ctx.fillRect(player.x-5,player.y-5,10,10);
+family.forEach((p,i)=>{let target=i===0?player:family[i-1];let tx=target.x-(i+1)*17,ty=target.y+(i+1)*15;let d=Math.hypot(tx-p.x,ty-p.y);if(d>22){p.x+=(tx-p.x)/d*1.8;p.y+=(ty-p.y)/d*1.8}});
+items.forEach(it=>{if(!it.taken&&Math.hypot(player.x-it.x,player.y-it.y)<25){it.taken=true;collected[it.type]++;say((it.type==='food'?'Food':'Water')+' collected. '+(collected.food+collected.water)+' of 4 supplies found.');drawStats()}});
+if(collected.food===2&&collected.water===2&&Math.hypot(player.x-shelter.x,player.y-shelter.y)<55){won=true;say('You reached the shelter with all supplies. Your family is safe!');drawStats()}
+frame++;draw();
 }
-
-function drawInfected() {
-infected.forEach(z=>{
-ctx.fillStyle="#344c37";
-ctx.beginPath();
-ctx.arc(z.x,z.y,17,0,Math.PI*2);
-ctx.fill();
-
-ctx.fillStyle="#ff4747";
-ctx.fillRect(z.x-8,z.y-5,5,4);
-ctx.fillRect(z.x+4,z.y-5,5,4);
-});
-}
-
-function drawLoot() {
-loot.forEach(item=>{
-if(item.type==="food")ctx.fillStyle="#e9a44b";
-if(item.type==="water")ctx.fillStyle="#50c6ed";
-if(item.type==="supply")ctx.fillStyle="#d7d7c6";
-
-ctx.fillRect(item.x-9,item.y-9,18,18);
-});
-}
-
-function updateEnemies() {
-infected.forEach(z=>{
-let dx=player.x-z.x;
-let dy=player.y-z.y;
-let distance=Math.hypot(dx,dy);
-
-if(distance<220 && distance>1){
-z.x+=(dx/distance)*0.8;
-z.y+=(dy/distance)*0.8;
-}
-
-if(distance<28){
-health-=0.15;
-}
-});
-}
-
-function collectLoot() {
-loot=loot.filter(item=>{
-let distance=Math.hypot(
-player.x-item.x,
-player.y-item.y
-);
-
-if(distance<28){
-supplies++;
-
-if(item.type==="food")food=Math.min(100,food+20);
-if(item.type==="water")water=Math.min(100,water+20);
-
-document.getElementById("message").textContent=
-"Collected "+item.type+"!";
-
-return false;
-}
-return true;
-});
-}
-
-function move(dx,dy) {
-if(gameOver)return;
-
-player.x=Math.max(20,Math.min(780,player.x+dx*player.speed*10));
-player.y=Math.max(20,Math.min(480,player.y+dy*player.speed*10));
-collectLoot();
-}
-
-document.addEventListener("keydown",e=>{
-keys[e.key.toLowerCase()]=true;
-});
-
-document.addEventListener("keyup",e=>{
-keys[e.key.toLowerCase()]=false;
-});
-
-function update() {
-if(gameOver)return;
-
-if(keys["w"]||keys["arrowup"])move(0,-0.1);
-if(keys["s"]||keys["arrowdown"])move(0,0.1);
-if(keys["a"]||keys["arrowleft"])move(-0.1,0);
-if(keys["d"]||keys["arrowright"])move(0.1,0);
-
-updateEnemies();
-
-food=Math.max(0,food-0.008);
-water=Math.max(0,water-0.012);
-
-if(food===0||water===0)health-=0.025;
-
-day=1+Math.floor(supplies/5);
-
-if(health<=0){
-health=0;
-gameOver=true;
-document.getElementById("message").textContent=
-"GAME OVER — THE WORLD WON THIS TIME.";
-}
-
-document.getElementById("health").textContent=Math.ceil(health);
-document.getElementById("food").textContent=Math.ceil(food);
-document.getElementById("water").textContent=Math.ceil(water);
-document.getElementById("supplies").textContent=supplies;
-document.getElementById("day").textContent=day;
-}
-
-function draw() {
-drawWorld();
-drawLoot();
-drawInfected();
-drawPlayer();
-
-if(gameOver){
-ctx.fillStyle="#000000bb";
-ctx.fillRect(0,0,800,500);
-ctx.fillStyle="white";
-ctx.font="bold 45px Arial";
-ctx.textAlign="center";
-ctx.fillText("GAME OVER",400,240);
-ctx.font="20px Arial";
-ctx.fillText("Press RESTART to try again",400,285);
-}
-}
-
-function loop() {
-update();
-draw();
-requestAnimationFrame(loop);
-}
-
-function restart() {
-player={x:400,y:250,size:18,speed:4};
-health=100;
-food=100;
-water=100;
-supplies=0;
-day=1;
-gameOver=false;
-
-infected=[
-{x:100,y:100},
-{x:700,y:350},
-{x:600,y:100}
-];
-
-loot=[
-{x:200,y:200,type:"food"},
-{x:500,y:350,type:"water"},
-{x:700,y:200,type:"supply"},
-{x:300,y:400,type:"food"},
-{x:150,y:350,type:"supply"}
-];
-
-document.getElementById("message").textContent=
-"A new day begins. Good luck surviving!";
-}
-
-loop();
+function loop(){move();requestAnimationFrame(loop)}
+function setKey(e,on){let k=e.key.toLowerCase(),dir=k==='arrowup'||k==='w'?'up':k==='arrowdown'||k==='s'?'down':k==='arrowleft'||k==='a'?'left':k==='arrowright'||k==='d'?'right':null;if(dir){keys[dir]=on;e.preventDefault()}}
+window.addEventListener('keydown',e=>setKey(e,true));window.addEventListener('keyup',e=>setKey(e,false));window.addEventListener('blur',()=>Object.keys(keys).forEach(k=>keys[k]=false));
+document.querySelectorAll('[data-dir]').forEach(b=>{let d=b.dataset.dir;b.addEventListener('pointerdown',e=>{e.preventDefault();keys[d]=true;b.setPointerCapture(e.pointerId)});['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,()=>keys[d]=false))});
+document.getElementById('restart').addEventListener('click',reset);document.getElementById('start').addEventListener('click',()=>{if(!started)reset();else say('Keep moving. Gather all four supplies and head to the shelter.')});
+reset();loop();
+})();
 </script>
-
 </body>
 </html>
