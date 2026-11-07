@@ -57,24 +57,43 @@ function makeHouse(x,z,accent=0x353c3a){
  wall(x+2.1,1.55,front,.2,.9,.24,0x898678);
  wall(x+4.0,1.55,front,.2,.9,.24,0x898678);
  const roof=box(x,3.25,z,10.7,.4,8.7,accent);wallMeshes.push(roof);
- box(x,.035,z,10.12,.16,8.12,0x9a8c70);
+ box(x,.035,z,10.65,.20,8.65,0x9a8c70);
  // Window frame and inset glass, aligned inside the opening rather than floating over the wall.
  const wz=front-.02;
  for(const wx of [x-3.05,x+3.05]){
-   box(wx,1.55,wz,1.82,.09,.12,0x554b3d);
-   box(wx,1.55,wz-.035,1.62,.72,.035,0x78999b);
-   box(wx,1.55,wz-.06,.07,.82,.08,0xd0c6a8);
-   box(wx,1.55,wz-.06,1.72,.07,.08,0xd0c6a8);
-   box(wx,1.55,wz-.075,.055,.72,.08,0xd0c6a8);
+   // Full casing, sill and divided panes close the visual gaps around the opening.
+   box(wx,1.55,wz,1.88,.10,.16,0x554b3d);
+   box(wx,1.55,wz-.055,1.58,.70,.045,0x78999b);
+   box(wx-.86,1.55,wz-.10,.12,.98,.16,0xd0c6a8);
+   box(wx+.86,1.55,wz-.10,.12,.98,.16,0xd0c6a8);
+   box(wx,2.04,wz-.10,1.84,.12,.16,0xd0c6a8);
+   box(wx,.99,wz-.10,1.84,.14,.20,0xd0c6a8);
+   box(wx,1.55,wz-.12,.07,.78,.16,0xd0c6a8);
+   box(wx,1.55,wz-.12,1.72,.07,.16,0xd0c6a8);
  }
  // Open doorway trim; no solid door blocks the entrance.
  box(x-1.12,1.55,front-.08,.12,3.1,.16,0x594638);
  box(x+1.12,1.55,front-.08,.12,3.1,.16,0x594638);
  box(x,3.02,front-.08,2.35,.14,.16,0x594638);
- // A low, clearly shaped storage bench replaces the awkward upright brown block.
- box(x+2.75,.48,z-1.75,1.55,.18,.62,0x76563b);
- box(x+2.75,.86,z-1.75,1.35,.62,.42,0x8b6847);
- for(const dx of [-.58,.58])box(x+2.75+dx,.23,z-1.75,.09,.42,.1,0x49392d);
+ // Everyday living-room furniture: rug, sofa, coffee table and a small cabinet.
+ box(x+.55,.145,z-.25,4.2,.06,3.0,0x8b795f);
+ // Sofa against the rear wall, with seat, back and two arms.
+ box(x+.35,.48,z-2.65,3.15,.42,.92,0x52645b);
+ box(x+.35,.98,z-3.02,3.15,.78,.30,0x65796e);
+ box(x-1.22,.72,z-2.65,.34,.78,.92,0x52645b);
+ box(x+1.92,.72,z-2.65,.34,.78,.92,0x52645b);
+ // Two contrasting cushions.
+ box(x-.48,.78,z-2.78,.72,.18,.58,0xb08a5e);
+ box(x+.62,.78,z-2.78,.72,.18,.58,0xb08a5e);
+ // Low coffee table in the centre of the room.
+ box(x+.35,.48,z+.05,1.65,.12,.92,0x76563b);
+ for(const dx of [-.68,.68])for(const dz of [-.34,.34])box(x+.35+dx,.25,z+.05+dz,.09,.42,.09,0x49392d);
+ // Small side cabinet with visible drawer fronts and knobs.
+ box(x+3.65,.55,z+1.05,1.05,.95,.62,0x76563b);
+ box(x+3.65,.68,z+.72,.82,.25,.035,0xa7835b);
+ box(x+3.65,.68,z+.68,.08,.08,.05,0xd7c39a);
+ box(x+3.65,.98,z+.72,.82,.25,.035,0xa7835b);
+ box(x+3.65,.98,z+.68,.08,.08,.05,0xd7c39a);
  // Warm interior light makes the walls and furnishings readable.
  const lamp=new THREE.PointLight(0xffd9a1,7,15);lamp.position.set(x,2.45,z);scene.add(lamp);
  const data={x,z,w,dep,roof};houseInteriors.push(data);
