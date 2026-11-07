@@ -23,18 +23,18 @@ document.querySelector("#launch3d").addEventListener("click",()=>{const group=do
 
 const canvas=document.querySelector('#view');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x9aabb0);scene.fog=new THREE.Fog(0x9aabb0,42,145);
-const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,220);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x9aabb0);scene.fog=new THREE.Fog(0x9aabb0,55,210);
+const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,360);
 const player={pos:new THREE.Vector3(0,0,12),yaw:0,vertical:0,onGround:true,speed:6.2};let found=0;
 scene.add(new THREE.HemisphereLight(0xdce8ee,0x59604a,2));
 const sun=new THREE.DirectionalLight(0xffe2b4,3);sun.position.set(-28,45,24);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-65;sun.shadow.camera.right=65;sun.shadow.camera.top=65;sun.shadow.camera.bottom=-65;scene.add(sun);
 const mat=(color,roughness=1)=>new THREE.MeshStandardMaterial({color,roughness});
-const ground=new THREE.Mesh(new THREE.PlaneGeometry(220,220),mat(0x59634b));ground.rotation.x=-Math.PI/2;ground.position.y=-.08;ground.receiveShadow=true;scene.add(ground);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(320,320),mat(0x59634b));ground.rotation.x=-Math.PI/2;ground.position.y=-.08;ground.receiveShadow=true;scene.add(ground);
 function box(x,y,z,sx,sy,sz,color){const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mat(color));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m}
 function tree(x,z,scale=1){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22*scale,.34*scale,2.8*scale,7),mat(0x554638));trunk.position.set(x,1.4*scale,z);trunk.castShadow=true;scene.add(trunk);for(let i=0;i<3;i++){const crown=new THREE.Mesh(new THREE.ConeGeometry((2.1-i*.28)*scale,3.3*scale,7),mat(i%2?0x344b3b:0x405b42));crown.position.set(x,(3.2+i*.85)*scale,z);crown.castShadow=true;scene.add(crown)}}
 function rock(x,z,s=1){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(s,0),mat(0x77796f));r.position.set(x,s*.55,z);r.rotation.set(.2,.8,.3);r.castShadow=true;r.receiveShadow=true;scene.add(r)}
 for(let i=0;i<13;i++){const h=13+(i%4)*5;const m=new THREE.Mesh(new THREE.ConeGeometry(10+(i%3)*4,h,5),mat(i%2?0x657a7a:0x596d70));m.position.set(-75+i*13,h/2-1,-82-(i%3)*8);m.rotation.y=i*.7;scene.add(m)}
-for(let i=0;i<85;i++){const x=Math.sin(i*91.7)*47,z=-48+(i*17.31)%95;const nearHouse=[[-17,-22],[25,-40],[-34,12]].some(([hx,hz])=>Math.abs(x-hx)<9&&Math.abs(z-hz)<10);if(nearHouse)continue;if(Math.abs(x)<9&&z>-5&&z<28)continue;if(i%3===0)rock(x,z,.7+(i%5)*.22);else tree(x,z,.65+(i%4)*.13)}
+for(let i=0;i<150;i++){const x=Math.sin(i*91.7)*70,z=-85+(i*23.31)%160;const nearHouse=[[-17,-22],[25,-40],[-34,12],[18,-76],[-18,43]].some(([hx,hz])=>Math.abs(x-hx)<9&&Math.abs(z-hz)<10);if(nearHouse)continue;if(Math.abs(x)<5&&z>-112&&z<62)continue;if(i%3===0)rock(x,z,.7+(i%5)*.22);else tree(x,z,.65+(i%4)*.13)}
 // Small village: each house has a real doorway and a walkable interior.
 const solidWalls=[],wallMeshes=[];
 function wall(x,y,z,w,h,d,color=0x777365){const m=box(x,y,z,w,h,d,color);solidWalls.push({x,z,w,d});wallMeshes.push(m)}
@@ -113,8 +113,13 @@ function makeHouse(x,z,accent=0x353c3a){
 makeHouse(-17,-22,0x353c3a);
 makeHouse(25,-40,0x4a3933);
 makeHouse(-34,12,0x3d4937);
+// Two extra village homes extend the settlement beyond the original three.
+makeHouse(18,-76,0x454b58);
+makeHouse(-18,43,0x51463a);
+// The two new homes are freely enterable; the original three keep their key progression.
+for(const index of [3,4]){houseInteriors[index].keyCollected=true;houseInteriors[index].unlocked=true;houseInteriors[index].lockAssembly.visible=false;}
 
-const road=new THREE.Mesh(new THREE.PlaneGeometry(7,100),mat(0x777365));road.rotation.x=-Math.PI/2;road.position.set(0,.005,-27);scene.add(road);for(let z=-70;z<25;z+=8)box(0,.018,z,.13,.02,3.2,0xc6b78d);
+const road=new THREE.Mesh(new THREE.PlaneGeometry(7,170),mat(0x777365));road.rotation.x=-Math.PI/2;road.position.set(0,.005,-25);scene.add(road);for(let z=-108;z<62;z+=8)box(0,.018,z,.13,.02,3.2,0xc6b78d);
 const beacon=new THREE.PointLight(0xffd17b,22,24);beacon.position.set(18,4,-35);scene.add(beacon);box(18,.8,-35,4,1.6,4,0x77786b);const beaconMesh=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,2.2,12),new THREE.MeshStandardMaterial({color:0xffd17b,emissive:0x9b5b13,emissiveIntensity:2}));beaconMesh.position.set(18,2.6,-35);scene.add(beaconMesh);
 const supplies=[];for(const [x,z] of [[-8,4],[23,-9],[-27,-43],[-20.5,-20.5],[21.5,-38.5]]){const g=new THREE.Group();const crate=new THREE.Mesh(new THREE.BoxGeometry(1.15,.85,.9),mat(0xc18a42));crate.castShadow=true;g.add(crate);const stripe=new THREE.Mesh(new THREE.BoxGeometry(1.18,.13,.94),mat(0xe7d29a));stripe.position.y=.1;g.add(stripe);const glow=new THREE.PointLight(0xffd16b,5,7);glow.position.y=1.1;g.add(glow);g.position.set(x,.65,z);scene.add(g);supplies.push(g)}
  // Three distinct keys, tucked into separate exploration spots; each belongs to one house.
@@ -325,7 +330,7 @@ function collect(){
  document.querySelector('#message').textContent='Explore around the houses to find their three different keys.'}
 document.querySelector('#interact').addEventListener('pointerdown',e=>{e.preventDefault();collect()});addEventListener('keydown',e=>{if(e.key.toLowerCase()==='e'&&!e.repeat)collect()});
 let previous=performance.now();function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-previous)/1000,.04);previous=now;
-const forward=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0)-joy.y,side=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+joy.x;const len=Math.hypot(forward,side);const moving=len>.08;const sprint=keys.shift||sprintTouch;const speed=player.speed*(sprint?1.65:1);if(moving){const f=forward/Math.max(1,len),s=side/Math.max(1,len),a=player.yaw;const moveX=-Math.sin(a)*f+Math.cos(a)*s,moveZ=-Math.cos(a)*f-Math.sin(a)*s;const nx=player.pos.x+moveX*speed*dt,nz=player.pos.z+moveZ*speed*dt;const radius=.42;const blocked=(x,z)=>solidWalls.some(w=>x+radius>w.x-w.w/2&&x-radius<w.x+w.w/2&&z+radius>w.z-w.d/2&&z-radius<w.z+w.d/2)||houseInteriors.some(h=>!h.doorOpen&&Math.abs(x-h.x)<1.12&&Math.abs(z-h.front)<.58);if(!blocked(nx,player.pos.z))player.pos.x=nx;if(!blocked(player.pos.x,nz))player.pos.z=nz;avatar.rotation.y=Math.atan2(moveX,moveZ)}player.pos.x=THREE.MathUtils.clamp(player.pos.x,-52,52);player.pos.z=THREE.MathUtils.clamp(player.pos.z,-75,48);
+const forward=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0)-joy.y,side=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+joy.x;const len=Math.hypot(forward,side);const moving=len>.08;const sprint=keys.shift||sprintTouch;const speed=player.speed*(sprint?1.65:1);if(moving){const f=forward/Math.max(1,len),s=side/Math.max(1,len),a=player.yaw;const moveX=-Math.sin(a)*f+Math.cos(a)*s,moveZ=-Math.cos(a)*f-Math.sin(a)*s;const nx=player.pos.x+moveX*speed*dt,nz=player.pos.z+moveZ*speed*dt;const radius=.42;const blocked=(x,z)=>solidWalls.some(w=>x+radius>w.x-w.w/2&&x-radius<w.x+w.w/2&&z+radius>w.z-w.d/2&&z-radius<w.z+w.d/2)||houseInteriors.some(h=>!h.doorOpen&&Math.abs(x-h.x)<1.12&&Math.abs(z-h.front)<.58);if(!blocked(nx,player.pos.z))player.pos.x=nx;if(!blocked(player.pos.x,nz))player.pos.z=nz;avatar.rotation.y=Math.atan2(moveX,moveZ)}player.pos.x=THREE.MathUtils.clamp(player.pos.x,-88,88);player.pos.z=THREE.MathUtils.clamp(player.pos.z,-120,90);
 if((jumpQueued||keys[' '])&&player.onGround){player.vertical=7.2;player.onGround=false}jumpQueued=false;player.vertical-=19*dt;player.pos.y+=player.vertical*dt;if(player.pos.y<=0){player.pos.y=0;player.vertical=0;player.onGround=true}
 avatar.position.copy(player.pos);avatar.position.y+=player.pos.y;if(moving){const swing=Math.sin(now*(sprint?0.014:0.01))*0.48;leftLeg.rotation.x=swing;rightLeg.rotation.x=-swing;leftArm.rotation.x=-swing*.7;rightArm.rotation.x=swing*.7}else{leftLeg.rotation.x=rightLeg.rotation.x=leftArm.rotation.x=rightArm.rotation.x=0}
 const pitch=camera.userData.pitch||.18;const target=new THREE.Vector3(player.pos.x,player.pos.y+1.35,player.pos.z);const behind=new THREE.Vector3(Math.sin(player.yaw)*6,2.5+pitch*2,Math.cos(player.yaw)*6);const desired=target.clone().add(behind);const camRay=new THREE.Raycaster(target,behind.clone().normalize(),0,behind.length());const wallHits=camRay.intersectObjects(wallMeshes,false);if(wallHits.length)desired.copy(target).addScaledVector(behind.clone().normalize(),Math.max(1.15,wallHits[0].distance-.35));
