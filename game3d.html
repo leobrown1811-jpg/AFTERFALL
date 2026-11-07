@@ -90,9 +90,9 @@ function makeHouse(x,z,accent=0x353c3a){
  box(x+.35,.62,z-2.45,.22,.58,.78,0x52645b);
  box(x-1.65,.72,z-2.58,.58,.12,.48,0xb08a5e);
  box(x-.55,.72,z-2.58,.58,.12,.48,0xb08a5e);
- // Full-size coffee table restored to its earlier dimensions and moved to the old box's spot.
- box(x+2.75,.48,z-1.75,1.65,.12,.92,0x76563b);
- for(const dx of [-.68,.68])for(const dz of [-.34,.34])box(x+2.75+dx,.25,z-1.75+dz,.09,.42,.09,0x49392d);
+ // Full-size coffee table returned to the main seating area, in front of the sofa.
+ box(x+.65,.48,z-.55,1.65,.12,.92,0x76563b);
+ for(const dx of [-.68,.68])for(const dz of [-.34,.34])box(x+.65+dx,.25,z-.55+dz,.09,.42,.09,0x49392d);
  // Simple, aligned two-drawer cabinet against the right wall.
  box(x+4.05,.48,z+.15,.58,.78,1.45,0x76563b);
  box(x+3.745,.43,z+.15,.045,.27,1.20,0xa7835b);
@@ -109,7 +109,7 @@ makeHouse(-34,12,0x3d4937);
 
 const road=new THREE.Mesh(new THREE.PlaneGeometry(7,100),mat(0x777365));road.rotation.x=-Math.PI/2;road.position.set(0,.005,-27);scene.add(road);for(let z=-70;z<25;z+=8)box(0,.018,z,.13,.02,3.2,0xc6b78d);
 const beacon=new THREE.PointLight(0xffd17b,22,24);beacon.position.set(18,4,-35);scene.add(beacon);box(18,.8,-35,4,1.6,4,0x77786b);const beaconMesh=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,2.2,12),new THREE.MeshStandardMaterial({color:0xffd17b,emissive:0x9b5b13,emissiveIntensity:2}));beaconMesh.position.set(18,2.6,-35);scene.add(beaconMesh);
-const supplies=[];for(const [x,z] of [[-8,4],[23,-9],[-27,-43],[-17,-22],[25,-40]]){const g=new THREE.Group();const crate=new THREE.Mesh(new THREE.BoxGeometry(1.15,.85,.9),mat(0xc18a42));crate.castShadow=true;g.add(crate);const stripe=new THREE.Mesh(new THREE.BoxGeometry(1.18,.13,.94),mat(0xe7d29a));stripe.position.y=.1;g.add(stripe);const glow=new THREE.PointLight(0xffd16b,5,7);glow.position.y=1.1;g.add(glow);g.position.set(x,.65,z);scene.add(g);supplies.push(g)}
+const supplies=[];for(const [x,z] of [[-8,4],[23,-9],[-27,-43],[-20.5,-20.5],[21.5,-38.5]]){const g=new THREE.Group();const crate=new THREE.Mesh(new THREE.BoxGeometry(1.15,.85,.9),mat(0xc18a42));crate.castShadow=true;g.add(crate);const stripe=new THREE.Mesh(new THREE.BoxGeometry(1.18,.13,.94),mat(0xe7d29a));stripe.position.y=.1;g.add(stripe);const glow=new THREE.PointLight(0xffd16b,5,7);glow.position.y=1.1;g.add(glow);g.position.set(x,.65,z);scene.add(g);supplies.push(g)}
 // Procedural third-person player model
 const avatar=new THREE.Group();avatar.scale.setScalar(.72);scene.add(avatar);
 const skin=mat(0xc99b78),shirt=mat(0x344b43),pants=mat(0x303943),boots=mat(0x211f1b),pack=mat(0x6b5638);
