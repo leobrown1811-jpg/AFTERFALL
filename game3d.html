@@ -229,8 +229,11 @@ function spawnFreePlayCar(){
  const grille=new THREE.Mesh(new THREE.BoxGeometry(.035,.34,.72),trim);grille.position.set(2.145,.98,0);car.add(grille);
  for(const z of [-.72,.72]){const fog=new THREE.Mesh(new THREE.BoxGeometry(.05,.12,.25),lamp);fog.position.set(2.16,.93,z);car.add(fog);const rearLight=new THREE.Mesh(new THREE.BoxGeometry(.08,.28,.38),tail);rearLight.position.set(-2.16,1.02,z);car.add(rearLight)}
  car.userData.wheels=[];for(const x of [-1.35,1.35])for(const z of [-1.08,1.08]){
-  const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.48,.48,.28,16),rubber);wheel.rotation.x=Math.PI/2;wheel.position.set(x,.55,z);wheel.castShadow=true;car.add(wheel);car.userData.wheels.push(wheel);
-  const hub=new THREE.Mesh(new THREE.CylinderGeometry(.19,.19,.3,12),metal);hub.rotation.x=Math.PI/2;hub.position.set(x,.55,z);car.add(hub);
+  // Spin each wheel around its axle using a pivot aligned to the car's side-to-side axis.
+  const wheelPivot=new THREE.Group();wheelPivot.position.set(x,.55,z);car.add(wheelPivot);car.userData.wheels.push(wheelPivot);
+  const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.48,.48,.28,20),rubber);wheel.rotation.x=Math.PI/2;wheel.castShadow=true;wheelPivot.add(wheel);
+  const hub=new THREE.Mesh(new THREE.CylinderGeometry(.19,.19,.3,16),metal);hub.rotation.x=Math.PI/2;wheelPivot.add(hub);
+  const hubCap=new THREE.Mesh(new THREE.CylinderGeometry(.105,.105,.315,12),chrome);hubCap.rotation.x=Math.PI/2;wheelPivot.add(hubCap);
  }
  for(const z of [-.68,.68]){const headlight=new THREE.Mesh(new THREE.BoxGeometry(.12,.24,.42),lamp);headlight.position.set(2.08,1.02,z);car.add(headlight)}
  car.position.set(player.pos.x+3,0,player.pos.z+1.5);car.rotation.y=player.yaw+Math.PI/2;
