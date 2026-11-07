@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AFTERFALL | Survival</title>
+<style>
+* { box-sizing:border-box; }
+body {
+margin:0;
+background:#101710;
+color:white;
+font-family:Arial,sans-serif;
+text-align:center;
+}
+header {
+padding:18px;
+background:#17251a;
+border-bottom:2px solid #607b50;
+}
+h1 {
+letter-spacing:8px;
+margin:5px;
+color:#b7d49b;
+}
+#stats {
+display:flex;
+justify-content:center;
+gap:20px;
+padding:12px;
+flex-wrap:wrap;
+}
+canvas {
+display:block;
+width:95%;
+max-width:800px;
+margin:auto;
+background:#536b43;
+border:3px solid #84966b;
+border-radius:8px;
+touch-action:none;
+}
+button {
+background:#354d35;
+color:white;
+border:1px solid #9ab18a;
+border-radius:8px;
+padding:13px 20px;
+margin:5px;
+font-weight:bold;
+}
+button:active { background:#78945c; }
+#message { color:#c9dda9; padding:10px; }
+.controls { padding:10px; }
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>AFTERFALL</h1>
+<p>THE WORLD HAS FALLEN. SURVIVE.</p>
+</header>
+
+<div id="stats">
+<span>❤️ Health: <b id="health">100</b></span>
+<span>🍎 Food: <b id="food">100</b></span>
+<span>💧 Water: <b id="water">100</b></span>
+<span>🎒 Supplies: <b id="supplies">0</b></span>
+<span>🌅 Day: <b id="day">1</b></span>
+</div>
+
+<canvas id="game" width="800" height="500"></canvas>
+
+<div id="message">Welcome to AFTERFALL. Find supplies and survive!</div>
+
+<div class="controls">
+<button onclick="move(0,-1)">⬆️</button><br>
+<button onclick="move(-1,0)">⬅️</button>
+<button onclick="move(0,1)">⬇️</button>
+<button onclick="move(1,0)">➡️</button>
+<br>
+<button onclick="restart()">↻ RESTART</button>
+</div>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let player = {x:400,y:250,size:18,speed:4};
+let health = 100;
+let food = 100;
+let water = 100;
+let supplies = 0;
+let day = 1;
+let gameOver = false;
+
+let keys = {};
+
+let infected = [
+{x:100,y:100},
+{x:700,y:350},
+{x:600,y:100}
+];
+
+let loot = [
+{x:200,y:200,type:"food"},
+{x:500,y:350,type:"water"},
+{x:700,y:200,type:"supply"},
+{x:300,y:400,type:"food"},
+{x:150,y:350,type:"supply"}
+];
+
+function drawWorld() {
+ctx.fillStyle="#536b43";
+ctx.fillRect(0,0,800,500);
+
+// Grass details
+for(let i=0;i<100;i++){
+let x=(i*83)%800;
+let y=(i*47)%500;
+ctx.fillStyle="#647c4c";
+ctx.fillRect(x,y,3,3);
+}
+
+// Abandoned buildings
+ctx.fillStyle="#55564b";
+ctx.fillRect(30,30,130,100);
+ctx.fillRect(620,370,150,100);
+
+ctx.fillStyle="#292e29";
+ctx.fillRect(75,30,35,15);
+ctx.fillRect(665,370,40,15);
+
+// Trees
+for(let i=0;i<12;i++){
+let x=(i*173)%800;
+let y=(i*91)%500;
+ctx.fillStyle="#263d28";
+ctx.beginPath();
+ctx.arc(x,y,19,0,Math.PI*2);
+ctx.fill();
+}
+}
+
+function drawPlayer() {
+ctx.fillStyle="#d6d6c2";
+ctx.beginPath();
+ctx.arc(player.x,player.y,player.size,0,Math.PI*2);
+ctx.fill();
+
+ctx.fillStyle="#202b25";
+ctx.fillRect(player.x-5,player.y-5,10,10);
+}
+
+function drawInfected() {
+infected.forEach(z=>{
+ctx.fillStyle="#344c37";
+ctx.beginPath();
+ctx.arc(z.x,z.y,17,0,Math.PI*2);
+ctx.fill();
+
+ctx.fillStyle="#ff4747";
+ctx.fillRect(z.x-8,z.y-5,5,4);
+ctx.fillRect(z.x+4,z.y-5,5,4);
+});
+}
+
+function drawLoot() {
+loot.forEach(item=>{
+if(item.type==="food")ctx.fillStyle="#e9a44b";
+if(item.type==="water")ctx.fillStyle="#50c6ed";
+if(item.type==="supply")ctx.fillStyle="#d7d7c6";
+
+ctx.fillRect(item.x-9,item.y-9,18,18);
+});
+}
+
+function updateEnemies() {
+infected.forEach(z=>{
+let dx=player.x-z.x;
+let dy=player.y-z.y;
+let distance=Math.hypot(dx,dy);
+
+if(distance<220 && distance>1){
+z.x+=(dx/distance)*0.8;
+z.y+=(dy/distance)*0.8;
+}
+
+if(distance<28){
+health-=0.15;
+}
+});
+}
+
+function collectLoot() {
+loot=loot.filter(item=>{
+let distance=Math.hypot(
+player.x-item.x,
+player.y-item.y
+);
+
+if(distance<28){
+supplies++;
+
+if(item.type==="food")food=Math.min(100,food+20);
+if(item.type==="water")water=Math.min(100,water+20);
+
+document.getElementById("message").textContent=
+"Collected "+item.type+"!";
+
+return false;
+}
+return true;
+});
+}
+
+function move(dx,dy) {
+if(gameOver)return;
+
+player.x=Math.max(20,Math.min(780,player.x+dx*player.speed*10));
+player.y=Math.max(20,Math.min(480,player.y+dy*player.speed*10));
+collectLoot();
+}
+
+document.addEventListener("keydown",e=>{
+keys[e.key.toLowerCase()]=true;
+});
+
+document.addEventListener("keyup",e=>{
+keys[e.key.toLowerCase()]=false;
+});
+
+function update() {
+if(gameOver)return;
+
+if(keys["w"]||keys["arrowup"])move(0,-0.1);
+if(keys["s"]||keys["arrowdown"])move(0,0.1);
+if(keys["a"]||keys["arrowleft"])move(-0.1,0);
+if(keys["d"]||keys["arrowright"])move(0.1,0);
+
+updateEnemies();
+
+food=Math.max(0,food-0.008);
+water=Math.max(0,water-0.012);
+
+if(food===0||water===0)health-=0.025;
+
+day=1+Math.floor(supplies/5);
+
+if(health<=0){
+health=0;
+gameOver=true;
+document.getElementById("message").textContent=
+"GAME OVER — THE WORLD WON THIS TIME.";
+}
+
+document.getElementById("health").textContent=Math.ceil(health);
+document.getElementById("food").textContent=Math.ceil(food);
+document.getElementById("water").textContent=Math.ceil(water);
+document.getElementById("supplies").textContent=supplies;
+document.getElementById("day").textContent=day;
+}
+
+function draw() {
+drawWorld();
+drawLoot();
+drawInfected();
+drawPlayer();
+
+if(gameOver){
+ctx.fillStyle="#000000bb";
+ctx.fillRect(0,0,800,500);
+ctx.fillStyle="white";
+ctx.font="bold 45px Arial";
+ctx.textAlign="center";
+ctx.fillText("GAME OVER",400,240);
+ctx.font="20px Arial";
+ctx.fillText("Press RESTART to try again",400,285);
+}
+}
+
+function loop() {
+update();
+draw();
+requestAnimationFrame(loop);
+}
+
+function restart() {
+player={x:400,y:250,size:18,speed:4};
+health=100;
+food=100;
+water=100;
+supplies=0;
+day=1;
+gameOver=false;
+
+infected=[
+{x:100,y:100},
+{x:700,y:350},
+{x:600,y:100}
+];
+
+loot=[
+{x:200,y:200,type:"food"},
+{x:500,y:350,type:"water"},
+{x:700,y:200,type:"supply"},
+{x:300,y:400,type:"food"},
+{x:150,y:350,type:"supply"}
+];
+
+document.getElementById("message").textContent=
+"A new day begins. Good luck surviving!";
+}
+
+loop();
+</script>
+
+</body>
+</html>
