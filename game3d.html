@@ -35,7 +35,7 @@ const ground=new THREE.Mesh(new THREE.PlaneGeometry(1000,1000),mat(0x59634b));gr
 function box(x,y,z,sx,sy,sz,color){const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mat(color));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m}
 function tree(x,z,scale=1){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22*scale,.34*scale,2.8*scale,7),mat(0x554638));trunk.position.set(x,1.4*scale,z);trunk.castShadow=true;scene.add(trunk);for(let i=0;i<3;i++){const crown=new THREE.Mesh(new THREE.ConeGeometry((2.1-i*.28)*scale,3.3*scale,7),mat(i%2?0x344b3b:0x405b42));crown.position.set(x,(3.2+i*.85)*scale,z);crown.castShadow=true;scene.add(crown)}}
 function rock(x,z,s=1){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(s,0),mat(0x77796f));r.position.set(x,s*.55,z);r.rotation.set(.2,.8,.3);r.castShadow=true;r.receiveShadow=true;scene.add(r)}
-for(let i=0;i<13;i++){const h=13+(i%4)*5;const m=new THREE.Mesh(new THREE.ConeGeometry(10+(i%3)*4,h,5),mat(i%2?0x657a7a:0x596d70));m.position.set(-75+i*13,h/2-1,-82-(i%3)*8);m.rotation.y=i*.7;scene.add(m)}
+// Background mountain group removed to leave an open horizon.
 for(let i=0;i<700;i++){const x=Math.sin(i*91.7)*285,z=-300+(i*23.31)%600;const nearHouse=[[-17,-22],[25,-40],[-34,12],[34,-76],[-38,48]].some(([hx,hz])=>Math.abs(x-hx)<9&&Math.abs(z-hz)<10);if(nearHouse)continue;if(Math.abs(x)<5&&z>-112&&z<62)continue;if(i%3===0)rock(x,z,.7+(i%5)*.22);else tree(x,z,.65+(i%4)*.13)}
 // Small village: each house has a real doorway and a walkable interior.
 const solidWalls=[],wallMeshes=[];
