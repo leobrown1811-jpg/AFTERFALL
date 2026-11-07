@@ -1,74 +1,56 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>AFTERFALL — 3D Field Test</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>AFTERFALL — 3D Field Test</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101713;color:#eef2e9;font:15px system-ui,Arial}
-#view{position:fixed;inset:0;display:block;width:100%;height:100%;touch-action:none}
-#brand{position:fixed;top:12px;left:14px;z-index:2;width:190px;max-height:65px;object-fit:contain;object-position:left top;filter:drop-shadow(0 2px 5px #000)}
-#hud{position:fixed;top:12px;right:12px;z-index:2;background:#101713c9;border:1px solid #73806d;border-radius:10px;padding:10px 13px;min-width:180px;backdrop-filter:blur(5px)}
-#hud strong{color:#f0cc7a}#mission{font-size:12px;color:#d2dccd;margin-top:5px;max-width:250px}
-#message{position:fixed;left:50%;bottom:122px;transform:translateX(-50%);z-index:2;background:#101713d9;border:1px solid #77836e;border-radius:9px;padding:9px 13px;text-align:center;max-width:90%;font-size:13px}
-#controls{position:fixed;bottom:16px;left:16px;z-index:3;display:grid;grid-template-columns:repeat(3,54px);grid-template-rows:repeat(2,52px);gap:5px}
-button{border:1px solid #a3ae91;background:#18251fd9;color:white;border-radius:12px;font-size:21px;font-weight:700;touch-action:none}
-button:active{background:#526448}
-#up{grid-column:2}#left{grid-column:1;grid-row:2}#down{grid-column:2;grid-row:2}#right{grid-column:3;grid-row:2}
-#help{position:fixed;bottom:18px;right:14px;z-index:2;text-align:right;color:#e2e8dc;background:#101713b8;border-radius:9px;padding:8px 10px;font-size:11px;max-width:45%}
-#back{position:fixed;top:88px;left:14px;z-index:3;font-size:12px;padding:8px 11px}
-@media(min-width:800px){#controls{opacity:.75}}
-</style>
-</head>
-<body>
-<canvas id="view"></canvas>
-<img id="brand" src="logo.png" alt="AFTERFALL">
-<button id="back" onclick="location.href='index.html'">← Original game</button>
-<div id="hud"><strong>AFTERFALL · 3D FIELD TEST</strong><div id="mission">MISSION: Explore the valley and collect the 3 supply cases.</div><div id="count">SUPPLIES: 0 / 3</div></div>
-<div id="message">Explore the valley. Collect the glowing supply cases.</div>
-<div id="controls"><button id="up" aria-label="Forward">▲</button><button id="left" aria-label="Left">◀</button><button id="down" aria-label="Back">▼</button><button id="right" aria-label="Right">▶</button></div>
-<div id="help">Touch: drag the scene to look · use arrows to walk<br>Computer: WASD / arrows + mouse to look</div>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101713;color:#eef2e9;font:15px system-ui,Arial}#view{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}#brand{position:fixed;top:12px;left:14px;z-index:2;width:170px;max-height:58px;object-fit:contain;object-position:left top;filter:drop-shadow(0 2px 5px #000)}#hud{position:fixed;top:12px;right:12px;z-index:2;background:#101713d9;border:1px solid #73806d;border-radius:10px;padding:10px 13px;min-width:180px;backdrop-filter:blur(5px)}#hud strong{color:#f0cc7a}#mission{font-size:12px;color:#d2dccd;margin-top:5px;max-width:250px}#count{font-size:12px;margin-top:5px}#message{position:fixed;left:50%;bottom:112px;transform:translateX(-50%);z-index:2;background:#101713df;border:1px solid #77836e;border-radius:9px;padding:9px 13px;text-align:center;max-width:90%;font-size:13px;pointer-events:none}button{border:1px solid #a3ae91;background:#18251fe8;color:white;border-radius:50%;font-size:17px;font-weight:700;touch-action:none;user-select:none;-webkit-user-select:none}button:active,.held{background:#526448}#back{position:fixed;top:80px;left:14px;z-index:4;font-size:12px;padding:8px 11px;border-radius:10px}#stickArea{position:fixed;left:18px;bottom:20px;width:142px;height:142px;border:2px solid #d5dfc477;background:#18251f66;border-radius:50%;z-index:3;touch-action:none}#stick{position:absolute;left:42px;top:42px;width:54px;height:54px;border:2px solid #e8efdc;background:#64745cdd;border-radius:50%;pointer-events:none}#actions{position:fixed;right:18px;bottom:20px;z-index:3;display:grid;grid-template-columns:repeat(2,64px);gap:10px}#actions button{width:64px;height:64px;font-size:12px;border-radius:50%;background:#18251fe8}#actions button b{display:block;font-size:20px}#help{position:fixed;right:14px;top:105px;z-index:2;text-align:right;color:#e2e8dc;background:#101713b8;border-radius:9px;padding:8px 10px;font-size:11px;max-width:42%}@media(min-width:800px){#stickArea,#actions{opacity:.72}#message{bottom:24px}}
+</style></head><body>
+<canvas id="view"></canvas><img id="brand" src="logo.png" alt="AFTERFALL"><button id="back" onclick="location.href='index.html'">← Original game</button>
+<div id="hud"><strong>AFTERFALL · 3D FIELD TEST</strong><div id="mission">MISSION: Explore the valley and collect the 3 supply cases.</div><div id="count">SUPPLIES: 0 / 3</div></div><div id="message">Use the joystick or WASD to move. Drag to look around.</div>
+<div id="stickArea" aria-label="Movement joystick"><div id="stick"></div></div>
+<div id="actions"><button id="jump"><b>⬆</b>JUMP</button><button id="sprint"><b>»</b>SPRINT</button><button id="interact"><b>✋</b>COLLECT</button><button id="attack"><b>⚔</b>ACTION</button></div>
+<div id="help">COMPUTER: WASD / arrows · mouse drag to look<br>Space: jump · Shift: sprint · E: collect</div>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 <script type="module">
 import * as THREE from 'three';
 const canvas=document.querySelector('#view');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9aabb0);scene.fog=new THREE.Fog(0x9aabb0,42,145);
-const camera=new THREE.PerspectiveCamera(72,innerWidth/innerHeight,.1,220);camera.position.set(0,1.75,15);
-const player={yaw:0,pitch:0,speed:7};let found=0;
-scene.add(new THREE.HemisphereLight(0xdce8ee,0x59604a,2.0));
-const sun=new THREE.DirectionalLight(0xffe2b4,3.0);sun.position.set(-28,45,24);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-65;sun.shadow.camera.right=65;sun.shadow.camera.top=65;sun.shadow.camera.bottom=-65;scene.add(sun);
+const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,220);
+const player={pos:new THREE.Vector3(0,0,12),yaw:0,vertical:0,onGround:true,speed:6.2};let found=0;
+scene.add(new THREE.HemisphereLight(0xdce8ee,0x59604a,2));
+const sun=new THREE.DirectionalLight(0xffe2b4,3);sun.position.set(-28,45,24);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-65;sun.shadow.camera.right=65;sun.shadow.camera.top=65;sun.shadow.camera.bottom=-65;scene.add(sun);
 const mat=(color,roughness=1)=>new THREE.MeshStandardMaterial({color,roughness});
 const ground=new THREE.Mesh(new THREE.PlaneGeometry(220,220),mat(0x59634b));ground.rotation.x=-Math.PI/2;ground.position.y=-.08;ground.receiveShadow=true;scene.add(ground);
 function box(x,y,z,sx,sy,sz,color){const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mat(color));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m}
 function tree(x,z,scale=1){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22*scale,.34*scale,2.8*scale,7),mat(0x554638));trunk.position.set(x,1.4*scale,z);trunk.castShadow=true;scene.add(trunk);for(let i=0;i<3;i++){const crown=new THREE.Mesh(new THREE.ConeGeometry((2.1-i*.28)*scale,3.3*scale,7),mat(i%2?0x344b3b:0x405b42));crown.position.set(x,(3.2+i*.85)*scale,z);crown.castShadow=true;scene.add(crown)}}
 function rock(x,z,s=1){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(s,0),mat(0x77796f));r.position.set(x,s*.55,z);r.rotation.set(.2,.8,.3);r.castShadow=true;r.receiveShadow=true;scene.add(r)}
-// Distant mountain ridges
 for(let i=0;i<13;i++){const h=13+(i%4)*5;const m=new THREE.Mesh(new THREE.ConeGeometry(10+(i%3)*4,h,5),mat(i%2?0x657a7a:0x596d70));m.position.set(-75+i*13,h/2-1,-82-(i%3)*8);m.rotation.y=i*.7;scene.add(m)}
-// Rocky valley and scattered forest
-for(let i=0;i<85;i++){const x=Math.sin(i*91.7)*47,z=-48+(i*17.31)%95;if(Math.abs(x)<9&&z> -5&&z<28)continue;if(i%3===0)rock(x,z,.7+(i%5)*.22);else tree(x,z,.65+(i%4)*.13)}
-// Small abandoned field station
+for(let i=0;i<85;i++){const x=Math.sin(i*91.7)*47,z=-48+(i*17.31)%95;if(Math.abs(x)<9&&z>-5&&z<28)continue;if(i%3===0)rock(x,z,.7+(i%5)*.22);else tree(x,z,.65+(i%4)*.13)}
 box(-17,1.7,-22,10,3.4,8,0x777365);const roof=box(-17,3.7,-22,11,.45,9,0x353c3a);roof.rotation.z=.04;box(-17,1,-17.9,1.5,2.1,.15,0x342d27);box(-20,2,-17.85,1.5,.9,.18,0x8b9b9b);box(-14,2,-17.85,1.5,.9,.18,0x8b9b9b);
-// Track
-const road=new THREE.Mesh(new THREE.PlaneGeometry(7,100),mat(0x777365));road.rotation.x=-Math.PI/2;road.position.set(0,.005,-27);scene.add(road);
-for(let z=-70;z<25;z+=8)box(0,.018,z,.13,.02,3.2,0xc6b78d);
-// Shelter beacon
+const road=new THREE.Mesh(new THREE.PlaneGeometry(7,100),mat(0x777365));road.rotation.x=-Math.PI/2;road.position.set(0,.005,-27);scene.add(road);for(let z=-70;z<25;z+=8)box(0,.018,z,.13,.02,3.2,0xc6b78d);
 const beacon=new THREE.PointLight(0xffd17b,22,24);beacon.position.set(18,4,-35);scene.add(beacon);box(18,.8,-35,4,1.6,4,0x77786b);const beaconMesh=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,2.2,12),new THREE.MeshStandardMaterial({color:0xffd17b,emissive:0x9b5b13,emissiveIntensity:2}));beaconMesh.position.set(18,2.6,-35);scene.add(beaconMesh);
-// Supply cases
 const supplies=[];for(const [x,z] of [[-8,4],[23,-9],[-27,-43]]){const g=new THREE.Group();const crate=new THREE.Mesh(new THREE.BoxGeometry(1.15,.85,.9),mat(0xc18a42));crate.castShadow=true;g.add(crate);const stripe=new THREE.Mesh(new THREE.BoxGeometry(1.18,.13,.94),mat(0xe7d29a));stripe.position.y=.1;g.add(stripe);const glow=new THREE.PointLight(0xffd16b,5,7);glow.position.y=1.1;g.add(glow);g.position.set(x,.65,z);scene.add(g);supplies.push(g)}
-const keys={};addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);addEventListener('blur',()=>Object.keys(keys).forEach(k=>keys[k]=false));
-for(const [id,key] of [['up','w'],['down','s'],['left','a'],['right','d']]){const b=document.getElementById(id);const on=e=>{e.preventDefault();keys[key]=true};const off=()=>keys[key]=false;b.addEventListener('pointerdown',on);['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,off))}
-let dragging=false,lastX=0,lastY=0;canvas.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;player.yaw-=dx*.004;player.pitch=Math.max(-1.1,Math.min(1.1,player.pitch-dy*.0035))});canvas.addEventListener('pointerup',()=>dragging=false);canvas.addEventListener('pointercancel',()=>dragging=false);
+// Procedural third-person player model
+const avatar=new THREE.Group();scene.add(avatar);
+const skin=mat(0xc99b78),shirt=mat(0x344b43),pants=mat(0x303943),boots=mat(0x211f1b),pack=mat(0x6b5638);
+function limb(parent,geometry,material,x,y,z){const m=new THREE.Mesh(geometry,material);m.position.set(x,y,z);m.castShadow=true;parent.add(m);return m}
+limb(avatar,new THREE.CapsuleGeometry(.38,.65,5,8),shirt,0,1.25,0);
+limb(avatar,new THREE.SphereGeometry(.25,16,12),skin,0,2.05,0);
+limb(avatar,new THREE.BoxGeometry(.48,.55,.22),pack,0,1.3,.39);
+const leftLeg=limb(avatar,new THREE.CapsuleGeometry(.13,.62,4,8),pants,-.19,.48,0),rightLeg=limb(avatar,new THREE.CapsuleGeometry(.13,.62,4,8),pants,.19,.48,0);
+const leftArm=limb(avatar,new THREE.CapsuleGeometry(.11,.55,4,8),shirt,-.48,1.32,0),rightArm=limb(avatar,new THREE.CapsuleGeometry(.11,.55,4,8),shirt,.48,1.32,0);
+limb(avatar,new THREE.BoxGeometry(.25,.16,.4),boots,-.19,.12,-.04);limb(avatar,new THREE.BoxGeometry(.25,.16,.4),boots,.19,.12,-.04);
+const keys={};addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(e.key.toLowerCase()))e.preventDefault()});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);addEventListener('blur',()=>Object.keys(keys).forEach(k=>keys[k]=false));
+let jumpQueued=false;document.querySelector('#jump').addEventListener('pointerdown',e=>{e.preventDefault();jumpQueued=true});let sprintTouch=false;const sprintBtn=document.querySelector('#sprint');sprintBtn.addEventListener('pointerdown',e=>{e.preventDefault();sprintTouch=true;sprintBtn.classList.add('held')});function stopSprint(){sprintTouch=false;sprintBtn.classList.remove('held')}['pointerup','pointercancel','lostpointercapture'].forEach(ev=>sprintBtn.addEventListener(ev,stopSprint));
+let joy={x:0,y:0},joyId=null;const area=document.querySelector('#stickArea'),knob=document.querySelector('#stick');function setJoy(e){const r=area.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=e.clientX-cx,dy=e.clientY-cy,max=48,len=Math.hypot(dx,dy)||1,k=Math.min(1,max/len);joy.x=dx*k/max;joy.y=dy*k/max;knob.style.transform='translate('+dx*k+'px,'+dy*k+'px)'}area.addEventListener('pointerdown',e=>{e.preventDefault();joyId=e.pointerId;area.setPointerCapture(joyId);setJoy(e)});area.addEventListener('pointermove',e=>{if(e.pointerId===joyId)setJoy(e)});function releaseJoy(){joyId=null;joy={x:0,y:0};knob.style.transform='translate(0,0)'}area.addEventListener('pointerup',releaseJoy);area.addEventListener('pointercancel',releaseJoy);
+let lookPointer=null,lastX=0,lastY=0;canvas.addEventListener('pointerdown',e=>{lookPointer=e.pointerId;lastX=e.clientX;lastY=e.clientY;canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointermove',e=>{if(lookPointer!==e.pointerId)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;player.yaw-=dx*.005;camera.userData.pitch=THREE.MathUtils.clamp((camera.userData.pitch||.18)+dy*.003,-.15,.8)});function endLook(){lookPointer=null}canvas.addEventListener('pointerup',endLook);canvas.addEventListener('pointercancel',endLook);
+function collect(){let nearest=null,dist=2.7;for(const s of supplies){if(!s.visible)continue;const d=player.pos.distanceTo(s.position);if(d<dist){dist=d;nearest=s}}if(nearest){nearest.visible=false;found++;document.querySelector('#count').textContent='SUPPLIES: '+found+' / 3';document.querySelector('#message').textContent=found===3?'All supplies secured. Head to the lit beacon!':'Supply case secured! Keep exploring.'}else document.querySelector('#message').textContent='Move closer to a glowing supply case to collect it.'}
+document.querySelector('#interact').addEventListener('pointerdown',e=>{e.preventDefault();collect()});addEventListener('keydown',e=>{if(e.key.toLowerCase()==='e'&&!e.repeat)collect()});
 let previous=performance.now();function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-previous)/1000,.04);previous=now;
-const forward=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0),side=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0);const length=Math.hypot(forward,side)||1;
-const angle=player.yaw;camera.position.x+=((Math.sin(angle)*forward+Math.cos(angle)*side)/length)*player.speed*dt;camera.position.z+=((-Math.cos(angle)*forward+Math.sin(angle)*side)/length)*player.speed*dt;
-camera.position.x=THREE.MathUtils.clamp(camera.position.x,-52,52);camera.position.z=THREE.MathUtils.clamp(camera.position.z,-75,48);
-camera.rotation.order='YXZ';camera.rotation.y=player.yaw;camera.rotation.x=player.pitch;
-supplies.forEach((s,i)=>{s.rotation.y+=dt*.45;s.position.y=.65+Math.sin(now*.002+i)*.09;if(s.visible&&camera.position.distanceTo(s.position)<2.2){s.visible=false;found++;document.querySelector('#count').textContent='SUPPLIES: '+found+' / 3';document.querySelector('#message').textContent=found===3?'All supplies secured. Head to the lit beacon!':'Supply case secured. Keep exploring.'}});
-if(found===3&&camera.position.distanceTo(new THREE.Vector3(18,1,-35))<4)document.querySelector('#message').textContent='FIELD TEST COMPLETE — you reached the beacon with all supplies.';
+const forward=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0)-joy.y,side=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+joy.x;const len=Math.hypot(forward,side);const moving=len>.08;const sprint=keys.shift||sprintTouch;const speed=player.speed*(sprint?1.65:1);if(moving){const f=forward/Math.max(1,len),s=side/Math.max(1,len),a=player.yaw;player.pos.x+=(Math.sin(a)*f+Math.cos(a)*s)*speed*dt;player.pos.z+=(-Math.cos(a)*f+Math.sin(a)*s)*speed*dt;avatar.rotation.y=player.yaw+Math.atan2(s,f)}player.pos.x=THREE.MathUtils.clamp(player.pos.x,-52,52);player.pos.z=THREE.MathUtils.clamp(player.pos.z,-75,48);
+if((jumpQueued||keys[' '])&&player.onGround){player.vertical=7.2;player.onGround=false}jumpQueued=false;player.vertical-=19*dt;player.pos.y+=player.vertical*dt;if(player.pos.y<=0){player.pos.y=0;player.vertical=0;player.onGround=true}
+avatar.position.copy(player.pos);avatar.position.y+=player.pos.y;if(moving){const swing=Math.sin(now*(sprint?0.014:0.01))*0.48;leftLeg.rotation.x=swing;rightLeg.rotation.x=-swing;leftArm.rotation.x=-swing*.7;rightArm.rotation.x=swing*.7}else{leftLeg.rotation.x=rightLeg.rotation.x=leftArm.rotation.x=rightArm.rotation.x=0}
+const pitch=camera.userData.pitch||.18;const target=new THREE.Vector3(player.pos.x,player.pos.y+1.35,player.pos.z);const behind=new THREE.Vector3(Math.sin(player.yaw)*6,2.5+pitch*2,Math.cos(player.yaw)*6);const desired=target.clone().add(behind);camera.position.lerp(desired,1-Math.pow(.001,dt));camera.lookAt(target.clone().add(new THREE.Vector3(0,pitch*2,0)));
+supplies.forEach((s,i)=>{s.rotation.y+=dt*.45;s.position.y=.65+Math.sin(now*.002+i)*.09});if(found===3&&player.pos.distanceTo(new THREE.Vector3(18,0,-35))<4)document.querySelector('#message').textContent='FIELD TEST COMPLETE — you reached the beacon with all supplies.';
 renderer.render(scene,camera)}
-requestAnimationFrame(animate);
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2))});
-</script>
-</body></html>
+requestAnimationFrame(animate);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2))});
+</script></body></html>
