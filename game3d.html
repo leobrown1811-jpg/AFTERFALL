@@ -148,35 +148,31 @@ for(const index of [3,4,5,6]){houseInteriors[index].keyCollected=true;houseInter
 // Continuous road ribbons: one joined mesh per route prevents wedge-shaped gaps at bends.
 const roadMaterial=mat(0x777365),roadMarkMaterial=mat(0xc6b78d);
 function roadPath(points,width=7,markings=false){
- const half=width/2,vertices=[],indices=[];
- const dirs=[];
- for(let i=0;i<points.length-1;i++){
-  const dx=points[i+1][0]-points[i][0],dz=points[i+1][1]-points[i][1],length=Math.hypot(dx,dz)||1;
-  dirs.push([dx/length,dz/length]);
- }
- for(let i=0;i<points.length;i++){
-  const p=points[i],before=dirs[Math.max(0,i-1)],after=dirs[Math.min(dirs.length-1,i)];
-  const n1=[before[1],-before[0]],n2=[after[1],-after[0]];
-  let mx=n1[0]+n2[0],mz=n1[1]+n2[1],ml=Math.hypot(mx,mz);
-  if(ml<.001){mx=n2[0];mz=n2[1];ml=1}
-  mx/=ml;mz/=ml;
-  const dot=Math.max(.72,Math.abs(mx*n2[0]+mz*n2[1]));
-  const offset=Math.min(half/dot,half*1.45);
-  vertices.push(p[0]+mx*offset,.012,p[1]+mz*offset,p[0]-mx*offset,.012,p[1]-mz*offset);
-  if(i<points.length-1){const a=i*2,b=a+1,c=a+2,d=a+3;indices.push(a,b,c,b,d,c)}
+ const controls=points.map(p=>new THREE.Vector3(p[0],.018,p[1]));
+ const curve=new THREE.CatmullRomCurve3(controls,false,"centripetal");
+ const samples=curve.getPoints(Math.max(24,(points.length-1)*18));
+ const vertices=[],indices=[],half=width/2;
+ for(let i=0;i<samples.length;i++){
+  const t=i/(samples.length-1),tangent=curve.getTangent(t).normalize();
+  const nx=tangent.z,nz=-tangent.x,p=samples[i];
+  vertices.push(p.x+nx*half,.018,p.z+nz*half,p.x-nx*half,.018,p.z-nz*half);
+  if(i<samples.length-1){const a=i*2,b=a+1,c=a+2,d=a+3;indices.push(a,b,c,b,d,c);}
  }
  const geometry=new THREE.BufferGeometry();
- geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
+ geometry.setAttribute("position",new THREE.Float32BufferAttribute(vertices,3));
  geometry.setIndex(indices);geometry.computeVertexNormals();
- const asphalt=new THREE.Mesh(geometry,roadMaterial);asphalt.material.side=THREE.DoubleSide;asphalt.receiveShadow=true;scene.add(asphalt);
+ const asphalt=new THREE.Mesh(geometry,roadMaterial);
+ asphalt.material.side=THREE.DoubleSide;asphalt.receiveShadow=true;scene.add(asphalt);
  if(markings){
-  let distance=0,nextDash=5;
-  for(let i=0;i<points.length-1;i++){
-   const a=points[i],b=points[i+1],dx=b[0]-a[0],dz=b[1]-a[1],len=Math.hypot(dx,dz),angle=Math.atan2(dx,dz);
+  let distance=0,nextDash=7;
+  for(let i=0;i<samples.length-1;i++){
+   const a=samples[i],b=samples[i+1],dx=b.x-a.x,dz=b.z-a.z,len=Math.hypot(dx,dz);
+   if(len<.001)continue;
    while(nextDash<distance+len){
     const t=(nextDash-distance)/len;
-    const dash=new THREE.Mesh(new THREE.BoxGeometry(.13,.025,2.4),roadMarkMaterial);
-    dash.position.set(a[0]+dx*t,.04,a[1]+dz*t);dash.rotation.y=angle;scene.add(dash);nextDash+=7;
+    const dash=new THREE.Mesh(new THREE.BoxGeometry(.13,.025,2.1),roadMarkMaterial);
+    dash.position.set(a.x+dx*t,.045,a.z+dz*t);dash.rotation.y=Math.atan2(dx,dz);scene.add(dash);
+    nextDash+=9;
    }
    distance+=len;
   }
@@ -196,11 +192,7 @@ roadPath([[2,39],[12,49],[26,55],[42,62],[59,68],[78,78],[98,86]],8,true);
 roadPath([[-4,17],[-18,33],[-34,47],[-52,61],[-72,72],[-94,82]],8,true);
 roadPath([[98,86],[102,68],[107,50],[112,29],[115,10]],7,false);
 roadPath([[-94,82],[-103,61],[-109,41],[-114,18],[-115,-4]],7,false);
-// Small, flush junction pads merge each side road cleanly into the main route.
-for(const [x,z] of [[16,-45],[6,-20],[-9,7],[-5,39]]){
- const join=new THREE.Mesh(new THREE.CircleGeometry(3.15,24),roadMaterial);
- join.rotation.x=-Math.PI/2;join.position.set(x,.014,z);scene.add(join);
-}
+// Smooth road ribbons meet directly at their junctions; no oversized overlap pads.
 const beacon=new THREE.PointLight(0xffd17b,22,24);beacon.position.set(18,4,-35);scene.add(beacon);// The finish beacon has no surrounding box or platform; keep the flagpole on open ground.const beaconPole=new THREE.Mesh(new THREE.CylinderGeometry(.12,.17,5.8,12),mat(0x5a4732));beaconPole.position.set(18,3.7,-35);scene.add(beaconPole);const beaconFlag=new THREE.Mesh(new THREE.PlaneGeometry(4.8,2.4),new THREE.MeshStandardMaterial({color:0x263d32,side:THREE.DoubleSide,roughness:.8}));beaconFlag.position.set(20.3,5.2,-35);beaconFlag.rotation.y=.15;scene.add(beaconFlag);const flagCanvas=document.createElement("canvas");flagCanvas.width=768;flagCanvas.height=384;const flagCtx=flagCanvas.getContext("2d");flagCtx.fillStyle="#263d32";flagCtx.fillRect(0,0,768,384);flagCtx.strokeStyle="#e7c77c";flagCtx.lineWidth=14;flagCtx.strokeRect(12,12,744,360);flagCtx.fillStyle="#f2d58f";flagCtx.font="bold 88px system-ui";flagCtx.textAlign="center";flagCtx.textBaseline="middle";flagCtx.fillText("AFTERFALL",384,190);beaconFlag.material.map=new THREE.CanvasTexture(flagCanvas);beaconFlag.material.needsUpdate=true;
 const supplies=[];for(const [x,z] of [[-8,4],[23,-9],[-27,-43],[-20.5,-20.5],[21.5,-38.5]]){const g=new THREE.Group();const crate=new THREE.Mesh(new THREE.BoxGeometry(1.15,.85,.9),mat(0xc18a42));crate.castShadow=true;g.add(crate);const stripe=new THREE.Mesh(new THREE.BoxGeometry(1.18,.13,.94),mat(0xe7d29a));stripe.position.y=.1;g.add(stripe);const glow=new THREE.PointLight(0xffd16b,5,7);glow.position.y=1.1;g.add(glow);g.position.set(x,.65,z);scene.add(g);supplies.push(g)}
  // Three distinct keys, tucked into separate exploration spots; each belongs to one house.
