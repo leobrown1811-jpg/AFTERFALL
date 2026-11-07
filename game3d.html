@@ -85,7 +85,9 @@ function makeHouse(x,z,accent=0x353c3a){
  const doorPanel=box(0,0,0,2.08,2.9,.13,0x68452f);doorPanel.position.set(1.04,1.45,0);doorPivot.add(doorPanel);
  const doorInset=box(0,0,0,1.62,2.35,.055,0x80583a);doorInset.position.set(1.04,1.45,.095);doorPivot.add(doorInset);
  const doorHandle=box(0,0,0,.09,.18,.09,0xd8b45d);doorHandle.position.set(1.78,1.42,.17);doorPivot.add(doorHandle);
- const lockPlate=box(0,0,0,.18,.28,.055,0x3c3a35);lockPlate.position.set(1.78,1.12,.16);doorPivot.add(lockPlate);
+ const lockAssembly=new THREE.Group();lockAssembly.position.set(1.78,1.12,.16);doorPivot.add(lockAssembly);
+ const lockPlate=box(0,0,0,.18,.28,.055,0x3c3a35);lockAssembly.add(lockPlate);
+ const lockShackle=new THREE.Mesh(new THREE.TorusGeometry(.065,.018,6,12,Math.PI),mat(0xc7c7c0));lockShackle.position.y=.13;lockAssembly.add(lockShackle);
  // Compact living-room arrangement with clear gaps between every item.
  box(x,.115,z-.45,3.8,.035,2.8,0x8b795f); // flat rug
  // Two-seat sofa along the rear half of the room.
@@ -106,7 +108,7 @@ function makeHouse(x,z,accent=0x353c3a){
  box(x+3.705,.78,z+.15,.07,.07,.07,0xd7c39a);
  // Warm interior light makes the walls and furnishings readable.
  const lamp=new THREE.PointLight(0xffd9a1,7,15);lamp.position.set(x,2.45,z);scene.add(lamp);
- const data={x,z,w,dep,roof,front,doorPivot,doorOpen:false};houseInteriors.push(data);
+ const data={x,z,w,dep,roof,front,doorPivot,doorOpen:false,lockAssembly,lockDropping:false,lockDropTime:0,unlocked:false};houseInteriors.push(data);
 }
 makeHouse(-17,-22,0x353c3a);
 makeHouse(25,-40,0x4a3933);
@@ -323,7 +325,7 @@ function collect(){
  let nearest=null,dist=2.7;for(const item of supplies){if(!item.visible)continue;const d=player.pos.distanceTo(item.position);if(d<dist){dist=d;nearest=item}}
  if(nearest){nearest.visible=false;found++;document.querySelector('#count').textContent='SUPPLIES: '+found+' / 5';document.querySelector('#message').textContent=found===5?'All 5 supplies secured. Reach the lit beacon to finish the mission!':'Supply secured! Search inside the houses for the remaining cases.';return}
  let nearestHouse=null,doorDist=3.2;for(const house of houseInteriors){const d=Math.hypot(player.pos.x-house.x,player.pos.z-house.front);if(d<doorDist&&Math.abs(player.pos.x-house.x)<2.2){doorDist=d;nearestHouse=house}}
- if(nearestHouse){if(!hasHouseKey){document.querySelector('#message').textContent='Locked! Find the brass key near the village path to open this door.';return}nearestHouse.doorOpen=!nearestHouse.doorOpen;document.querySelector('#message').textContent=nearestHouse.doorOpen?'Door opening. Go inside!':'Door closed.';return}
+ if(nearestHouse){if(!nearestHouse.unlocked){if(!hasHouseKey){document.querySelector('#message').textContent='Locked! Find the brass key near the village path to open this door.';return}nearestHouse.unlocked=true;nearestHouse.lockDropping=true;nearestHouse.lockDropTime=0;document.querySelector('#message').textContent='Click! The key turns, the lock falls away, and the door unlocks.';return}nearestHouse.doorOpen=!nearestHouse.doorOpen;document.querySelector('#message').textContent=nearestHouse.doorOpen?'Door opening. Go inside!':'Door closed.';return}
  document.querySelector('#message').textContent='Find the brass key, approach a door, then press COLLECT to open it.'}
 document.querySelector('#interact').addEventListener('pointerdown',e=>{e.preventDefault();collect()});addEventListener('keydown',e=>{if(e.key.toLowerCase()==='e'&&!e.repeat)collect()});
 let previous=performance.now();function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-previous)/1000,.04);previous=now;
@@ -332,7 +334,12 @@ if((jumpQueued||keys[' '])&&player.onGround){player.vertical=7.2;player.onGround
 avatar.position.copy(player.pos);avatar.position.y+=player.pos.y;if(moving){const swing=Math.sin(now*(sprint?0.014:0.01))*0.48;leftLeg.rotation.x=swing;rightLeg.rotation.x=-swing;leftArm.rotation.x=-swing*.7;rightArm.rotation.x=swing*.7}else{leftLeg.rotation.x=rightLeg.rotation.x=leftArm.rotation.x=rightArm.rotation.x=0}
 const pitch=camera.userData.pitch||.18;const target=new THREE.Vector3(player.pos.x,player.pos.y+1.35,player.pos.z);const behind=new THREE.Vector3(Math.sin(player.yaw)*6,2.5+pitch*2,Math.cos(player.yaw)*6);const desired=target.clone().add(behind);const camRay=new THREE.Raycaster(target,behind.clone().normalize(),0,behind.length());const wallHits=camRay.intersectObjects(wallMeshes,false);if(wallHits.length)desired.copy(target).addScaledVector(behind.clone().normalize(),Math.max(1.15,wallHits[0].distance-.35));
 // Hide only the active house roof while the player is inside its footprint. This exposes the interior without moving the approved camera.
-for(const house of houseInteriors){house.roof.visible=true;const targetAngle=house.doorOpen?Math.PI/2:0;house.doorPivot.rotation.y=THREE.MathUtils.damp(house.doorPivot.rotation.y,targetAngle,7,dt);}
+for(const house of houseInteriors){
+ house.roof.visible=true;
+ if(house.lockDropping){house.lockDropTime+=dt;house.lockAssembly.position.y-=dt*1.35;house.lockAssembly.rotation.z-=dt*5.5;house.lockAssembly.rotation.x+=dt*2.2;if(house.lockDropTime>.48){house.lockDropping=false;house.doorOpen=true;}}
+ const targetAngle=house.doorOpen?Math.PI/2:0;
+ house.doorPivot.rotation.y=THREE.MathUtils.damp(house.doorPivot.rotation.y,targetAngle,7,dt);
+}
 camera.position.lerp(desired,1-Math.pow(.001,dt));camera.lookAt(target.clone().add(new THREE.Vector3(0,pitch*2,0)));
 supplies.forEach((s,i)=>{s.rotation.y+=dt*.45;s.position.y=.65+Math.sin(now*.002+i)*.09});if(found===5&&player.pos.distanceTo(new THREE.Vector3(18,0,-35))<4)document.querySelector('#message').textContent='FIELD TEST COMPLETE — you reached the beacon with all supplies.';
 renderer.render(scene,camera)}
