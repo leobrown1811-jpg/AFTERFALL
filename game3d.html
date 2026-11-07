@@ -47,9 +47,16 @@ for(let i=0;i<180;i++){const x=Math.sin(i*91.7)*285,z=-300+(i*23.31)%600;const n
 // Distant forest edges and meadow colour variation create a layered countryside view.
 for(let i=0;i<72;i++){const x=-310+i*8.7,z=-205+Math.sin(i*.43)*28;tree(x,z,1.2+(i%4)*.18);}
 for(let i=0;i<46;i++){const x=-220+i*9.5,z=205+Math.sin(i*.57)*24;tree(x,z,1.05+(i%3)*.2);}
-const meadowColors=[0x91a94e,0xb3a94f,0xd1bd67,0x718e42];
-for(let i=0;i<48;i++){const x=Math.sin(i*12.31)*145,z=Math.cos(i*7.17)*145;if(Math.abs(x)<18&&Math.abs(z)<18)continue;const patch=new THREE.Mesh(new THREE.CircleGeometry(2.4+(i%4)*.8,9),mat(meadowColors[i%meadowColors.length]));patch.rotation.x=-Math.PI/2;patch.position.set(x,.006,z);scene.add(patch);}
-for(let i=0;i<115;i++){const x=Math.sin(i*8.17)*135,z=Math.cos(i*5.91)*135;if(Math.abs(x)<15&&Math.abs(z)<15)continue;const stem=new THREE.Mesh(new THREE.CylinderGeometry(.018,.025,.28,4),mat(0x52713b));stem.position.set(x,.14,z);scene.add(stem);const bloom=new THREE.Mesh(new THREE.SphereGeometry(.095,5,4),mat([0xf0d66e,0xf4e7bd,0xe9a64e,0xd9d0a0][i%4]));bloom.position.set(x,.31,z);scene.add(bloom);}
+const meadowColors=[0x91a94e,0xb3a94f,0xd1bd67,0x718e42],patchGeo=new THREE.CircleGeometry(1,9);
+const patches=new THREE.InstancedMesh(patchGeo,mat(0x91a94e),48),patchDummy=new THREE.Object3D();
+for(let i=0;i<48;i++){const x=Math.sin(i*12.31)*145,z=Math.cos(i*7.17)*145;if(Math.abs(x)<18&&Math.abs(z)<18){patchDummy.scale.setScalar(0);patchDummy.updateMatrix();patches.setMatrixAt(i,patchDummy.matrix);continue;}patchDummy.position.set(x,.006,z);patchDummy.rotation.set(-Math.PI/2,0,0);patchDummy.scale.setScalar(2.4+(i%4)*.8);patchDummy.updateMatrix();patches.setMatrixAt(i,patchDummy.matrix);}
+scene.add(patches);
+const flowerStemGeo=new THREE.CylinderGeometry(.018,.025,.28,4),flowerBloomGeo=new THREE.SphereGeometry(.095,5,4);
+const flowerStems=new THREE.InstancedMesh(flowerStemGeo,mat(0x52713b),115),flowerBlooms=new THREE.InstancedMesh(flowerBloomGeo,mat(0xf0d66e),115),flowerDummy=new THREE.Object3D();
+const bloomMaterials=[mat(0xf0d66e),mat(0xf4e7bd),mat(0xe9a64e),mat(0xd9d0a0)];
+const bloomMeshes=bloomMaterials.map(material=>new THREE.InstancedMesh(flowerBloomGeo,material,115));bloomMeshes.forEach(mesh=>scene.add(mesh));
+for(let i=0;i<115;i++){const x=Math.sin(i*8.17)*135,z=Math.cos(i*5.91)*135;flowerDummy.position.set(x,.14,z);flowerDummy.scale.setScalar(Math.abs(x)<15&&Math.abs(z)<15?0:1);flowerDummy.updateMatrix();flowerStems.setMatrixAt(i,flowerDummy.matrix);flowerDummy.position.y=.31;flowerDummy.scale.setScalar(Math.abs(x)<15&&Math.abs(z)<15?0:1);flowerDummy.updateMatrix();bloomMeshes[i%4].setMatrixAt(i,flowerDummy.matrix);}
+scene.add(flowerStems);
 // Small village: each house has a real doorway and a walkable interior.
 const solidWalls=[],wallMeshes=[];
 function wall(x,y,z,w,h,d,color=0x777365){const m=box(x,y,z,w,h,d,color);solidWalls.push({x,z,w,d});wallMeshes.push(m)}
