@@ -24,19 +24,19 @@ document.querySelector("#launch3d").addEventListener("click",()=>enterWorld(fals
 document.querySelector("#freePlay3d").addEventListener("click",()=>enterWorld(true));
 
 const canvas=document.querySelector('#view');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
+const renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:"high-performance"});renderer.setPixelRatio(Math.min(devicePixelRatio,1.35));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9aabb0);scene.fog=new THREE.Fog(0x9aabb0,180,850);
 const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,1500);
 const player={pos:new THREE.Vector3(0,0,12),yaw:0,vertical:0,onGround:true,speed:6.2};let found=0;let freePlay=false;const inventory=[];
 scene.add(new THREE.HemisphereLight(0xdce8ee,0x59604a,2));
-const sun=new THREE.DirectionalLight(0xffe2b4,3);sun.position.set(-28,45,24);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-65;sun.shadow.camera.right=65;sun.shadow.camera.top=65;sun.shadow.camera.bottom=-65;scene.add(sun);
+const sun=new THREE.DirectionalLight(0xffe2b4,3);sun.position.set(-28,45,24);sun.castShadow=false;scene.add(sun);
 const mat=(color,roughness=1)=>new THREE.MeshStandardMaterial({color,roughness});
 const ground=new THREE.Mesh(new THREE.PlaneGeometry(1000,1000),mat(0x59634b));ground.rotation.x=-Math.PI/2;ground.position.y=-.08;ground.receiveShadow=true;scene.add(ground);
 function box(x,y,z,sx,sy,sz,color){const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mat(color));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m}
 function tree(x,z,scale=1){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22*scale,.34*scale,2.8*scale,7),mat(0x554638));trunk.position.set(x,1.4*scale,z);trunk.castShadow=true;scene.add(trunk);for(let i=0;i<3;i++){const crown=new THREE.Mesh(new THREE.ConeGeometry((2.1-i*.28)*scale,3.3*scale,7),mat(i%2?0x344b3b:0x405b42));crown.position.set(x,(3.2+i*.85)*scale,z);crown.castShadow=true;scene.add(crown)}}
 function rock(x,z,s=1){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(s,0),mat(0x77796f));r.position.set(x,s*.55,z);r.rotation.set(.2,.8,.3);r.castShadow=true;r.receiveShadow=true;scene.add(r)}
 // Background mountain group removed to leave an open horizon.
-for(let i=0;i<700;i++){const x=Math.sin(i*91.7)*285,z=-300+(i*23.31)%600;const nearHouse=[[-17,-22],[25,-40],[-34,12],[34,-76],[-38,48]].some(([hx,hz])=>Math.abs(x-hx)<9&&Math.abs(z-hz)<10);if(nearHouse)continue;if(Math.abs(x)<5&&z>-112&&z<62)continue;if(i%3===0)rock(x,z,.7+(i%5)*.22);else tree(x,z,.65+(i%4)*.13)}
+for(let i=0;i<480;i++){const x=Math.sin(i*91.7)*285,z=-300+(i*23.31)%600;const nearHouse=[[-17,-22],[25,-40],[-34,12],[34,-76],[-38,48]].some(([hx,hz])=>Math.abs(x-hx)<9&&Math.abs(z-hz)<10);if(nearHouse)continue;if(Math.abs(x)<5&&z>-112&&z<62)continue;if(i%3===0)rock(x,z,.7+(i%5)*.22);else tree(x,z,.65+(i%4)*.13)}
 // Small village: each house has a real doorway and a walkable interior.
 const solidWalls=[],wallMeshes=[];
 function wall(x,y,z,w,h,d,color=0x777365){const m=box(x,y,z,w,h,d,color);solidWalls.push({x,z,w,d});wallMeshes.push(m)}
@@ -449,5 +449,5 @@ for(const house of houseInteriors){
 camera.position.lerp(desired,1-Math.pow(.001,dt));camera.lookAt(target.clone().add(new THREE.Vector3(0,pitch*2,0)));
 supplies.forEach((s,i)=>{s.rotation.y+=dt*.45;s.position.y=.65+Math.sin(now*.002+i)*.09});if(!freePlay&&found===5&&player.pos.distanceTo(new THREE.Vector3(18,0,-35))<5){document.querySelector('#message').textContent='FIELD TEST COMPLETE — returning to lobby…';document.querySelector('#lobbyScreen').style.display='flex';document.querySelector('#skinScreen').style.display='none';document.querySelector('#lobbyNote').textContent='Challenge completed! Your supplies: '+found+'/5. Choose another challenge or enter Free Play.';player.pos.set(0,0,12);found=0;document.querySelector('#count').textContent='SUPPLIES: 0 / 5';supplies.forEach(item=>item.visible=true);}
 renderer.render(scene,camera)}
-requestAnimationFrame(animate);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2))});
+requestAnimationFrame(animate);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.35))});
 </script></body></html>
