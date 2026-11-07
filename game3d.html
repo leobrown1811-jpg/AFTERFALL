@@ -45,7 +45,7 @@ const skin=mat(0xc99b78),shirt=mat(0x344b43),pants=mat(0x303943),boots=mat(0x211
 function limb(parent,geometry,material,x,y,z){const m=new THREE.Mesh(geometry,material);m.position.set(x,y,z);m.castShadow=true;parent.add(m);return m}
 const torso=limb(avatar,new THREE.CapsuleGeometry(.38,.65,5,8),shirt,0,1.25,0);
 const head=limb(avatar,new THREE.SphereGeometry(.25,16,12),skin,0,2.05,0);
-const backpackMesh=limb(avatar,new THREE.BoxGeometry(.48,.55,.22),pack,0,1.3,.39);
+const backpackMesh=limb(avatar,new THREE.BoxGeometry(.48,.55,.22),pack,0,1.3,-.39);
 const skinAccessory=new THREE.Group();avatar.add(skinAccessory); // Skin details face the camera at the default player heading.
 const bananaFace=new THREE.Group();avatar.add(bananaFace); // Character front faces the camera at the default player heading.
 const humanFace=new THREE.Group();avatar.add(humanFace);
@@ -59,9 +59,9 @@ limb(humanFace,new THREE.SphereGeometry(.045,12,10),noseMat,0,2.025,.25);
 const smile=new THREE.CatmullRomCurve3([new THREE.Vector3(-.065,1.96,.235),new THREE.Vector3(0,1.935,.255),new THREE.Vector3(.065,1.96,.235)]);
 limb(humanFace,new THREE.TubeGeometry(smile,10,.012,6,false),mouthDark,0,0,0);
 const bodyDetails=new THREE.Group();avatar.add(bodyDetails);
-const chestPanel=limb(bodyDetails,new THREE.BoxGeometry(.43,.34,.075),mat(0x8a8a8a),0,1.38,.365);
-limb(bodyDetails,new THREE.BoxGeometry(.68,.105,.09),mat(0x292929),0,.94,.34);
-const beltBuckle=limb(bodyDetails,new THREE.BoxGeometry(.12,.09,.035),mat(0xd7b45c),0,.94,.397);
+const chestPanel=limb(bodyDetails,new THREE.SphereGeometry(1,20,14),mat(0x8a8a8a),0,1.38,.315);chestPanel.scale.set(.30,.235,.065);
+const belt=limb(bodyDetails,new THREE.TorusGeometry(.34,.04,8,48),mat(0x292929),0,.94,0);belt.rotation.x=Math.PI/2;
+const beltBuckle=limb(bodyDetails,new THREE.BoxGeometry(.12,.09,.025),mat(0xd7b45c),0,.94,.378);
 for(const x of [-.39,.39]){
  const pad=limb(bodyDetails,new THREE.SphereGeometry(.19,12,10),mat(0x666666),x,1.52,0);pad.scale.set(1,.72,1);
  limb(bodyDetails,new THREE.SphereGeometry(.115,12,10),mat(0x333333),x*1.38,1.02,0);
