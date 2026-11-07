@@ -19,7 +19,7 @@ function renderLobbyRoster(){lobbyRoster.innerHTML="";lobbyMembers.forEach((memb
 renderLobbyRoster();
 document.querySelector("#groupType3d").addEventListener("change",e=>{document.querySelector("#lobbyNote").textContent=e.target.value+" selected. Customise your group before entering the 3D world. Online invites are not available in this test build."});
 document.querySelector("#addMember3d").addEventListener("click",()=>{if(lobbyMembers.length>=8){document.querySelector("#lobbyNote").textContent="The lobby supports up to 8 roster entries in this test build.";return}lobbyMembers.push({name:"New member",age:18});renderLobbyRoster()});
-function enterWorld(isFree){freePlay=isFree;const group=document.querySelector("#groupType3d").value;const mission=document.querySelector("#mission3d").selectedOptions[0].textContent;document.querySelector("#lobbyScreen").style.display="none";document.querySelector("#skinScreen").style.display="flex";document.querySelector("#mission").textContent=isFree?"FREE PLAY · Explore, collect and discover":"MISSION: "+mission+" · GROUP: "+group;document.querySelector("#message").textContent="Choose your survivor, then press PLAY AS SELECTED.";}
+function enterWorld(isFree){freePlay=isFree;const group=document.querySelector("#groupType3d").value;const mission=document.querySelector("#mission3d").selectedOptions[0].textContent;document.querySelector("#lobbyScreen").style.display="none";document.querySelector("#skinScreen").style.display="flex";document.querySelector("#mission").textContent=isFree?"FREE PLAY · Explore, collect and discover":"MISSION: "+mission+" · GROUP: "+group;document.querySelector("#message").textContent="Choose your survivor, then press PLAY AS SELECTED.";if(isFree)spawnFreePlayCar();else if(freePlayCar){scene.remove(freePlayCar);freePlayCar=null;}}
 document.querySelector("#launch3d").addEventListener("click",()=>enterWorld(false));
 document.querySelector("#freePlay3d").addEventListener("click",()=>enterWorld(true));
 
@@ -131,6 +131,19 @@ makeHouse(-38,48,0x51463a,Math.PI/2);
 // New homes are distributed along the extended country roads and face their access lanes.
 makeHouse(145,145,0x4b5148,-1.947);
 makeHouse(-176,168,0x51483d,2.111);
+// More scattered homes make the countryside feel like a lived-in settlement.
+makeHouse(82,116,0x555047,-0.72);
+makeHouse(118,72,0x46544a,-1.12);
+makeHouse(190,142,0x59483b,-0.95);
+makeHouse(218,72,0x4a514e,-1.35);
+makeHouse(260,18,0x51483f,-1.5);
+makeHouse(-78,92,0x4c5548,0.8);
+makeHouse(-118,126,0x5b5043,1.05);
+makeHouse(-155,78,0x46504b,1.3);
+makeHouse(-205,132,0x574b40,1.0);
+makeHouse(-248,48,0x4c5548,1.45);
+makeHouse(72,-112,0x51483f,-0.2);
+makeHouse(-82,-118,0x4d574e,0.25);
 // The two new homes are freely enterable; the original three keep their key progression.
 for(const index of [3,4,5,6]){houseInteriors[index].keyCollected=true;houseInteriors[index].unlocked=true;houseInteriors[index].lockAssembly.visible=false;}
 
@@ -191,7 +204,7 @@ for(const [x,z] of [[12.5,-63],[16,-45],[6,-20],[-9,7],[-5,39]]){
  const join=new THREE.Mesh(new THREE.CircleGeometry(3.15,24),roadMaterial);
  join.rotation.x=-Math.PI/2;join.position.set(x,.014,z);scene.add(join);
 }
-const beacon=new THREE.PointLight(0xffd17b,22,24);beacon.position.set(18,4,-35);scene.add(beacon);box(18,.8,-35,4,1.6,4,0x77786b);const beaconPole=new THREE.Mesh(new THREE.CylinderGeometry(.12,.17,5.8,12),mat(0x5a4732));beaconPole.position.set(18,3.7,-35);scene.add(beaconPole);const beaconFlag=new THREE.Mesh(new THREE.PlaneGeometry(4.8,2.4),new THREE.MeshStandardMaterial({color:0x263d32,side:THREE.DoubleSide,roughness:.8}));beaconFlag.position.set(20.3,5.2,-35);beaconFlag.rotation.y=.15;scene.add(beaconFlag);const flagCanvas=document.createElement("canvas");flagCanvas.width=768;flagCanvas.height=384;const flagCtx=flagCanvas.getContext("2d");flagCtx.fillStyle="#263d32";flagCtx.fillRect(0,0,768,384);flagCtx.strokeStyle="#e7c77c";flagCtx.lineWidth=14;flagCtx.strokeRect(12,12,744,360);flagCtx.fillStyle="#f2d58f";flagCtx.font="bold 88px system-ui";flagCtx.textAlign="center";flagCtx.textBaseline="middle";flagCtx.fillText("AFTERFALL",384,190);beaconFlag.material.map=new THREE.CanvasTexture(flagCanvas);beaconFlag.material.needsUpdate=true;
+const beacon=new THREE.PointLight(0xffd17b,22,24);beacon.position.set(18,4,-35);scene.add(beacon);// The finish beacon has no surrounding box or platform; keep the flagpole on open ground.const beaconPole=new THREE.Mesh(new THREE.CylinderGeometry(.12,.17,5.8,12),mat(0x5a4732));beaconPole.position.set(18,3.7,-35);scene.add(beaconPole);const beaconFlag=new THREE.Mesh(new THREE.PlaneGeometry(4.8,2.4),new THREE.MeshStandardMaterial({color:0x263d32,side:THREE.DoubleSide,roughness:.8}));beaconFlag.position.set(20.3,5.2,-35);beaconFlag.rotation.y=.15;scene.add(beaconFlag);const flagCanvas=document.createElement("canvas");flagCanvas.width=768;flagCanvas.height=384;const flagCtx=flagCanvas.getContext("2d");flagCtx.fillStyle="#263d32";flagCtx.fillRect(0,0,768,384);flagCtx.strokeStyle="#e7c77c";flagCtx.lineWidth=14;flagCtx.strokeRect(12,12,744,360);flagCtx.fillStyle="#f2d58f";flagCtx.font="bold 88px system-ui";flagCtx.textAlign="center";flagCtx.textBaseline="middle";flagCtx.fillText("AFTERFALL",384,190);beaconFlag.material.map=new THREE.CanvasTexture(flagCanvas);beaconFlag.material.needsUpdate=true;
 const supplies=[];for(const [x,z] of [[-8,4],[23,-9],[-27,-43],[-20.5,-20.5],[21.5,-38.5]]){const g=new THREE.Group();const crate=new THREE.Mesh(new THREE.BoxGeometry(1.15,.85,.9),mat(0xc18a42));crate.castShadow=true;g.add(crate);const stripe=new THREE.Mesh(new THREE.BoxGeometry(1.18,.13,.94),mat(0xe7d29a));stripe.position.y=.1;g.add(stripe);const glow=new THREE.PointLight(0xffd16b,5,7);glow.position.y=1.1;g.add(glow);g.position.set(x,.65,z);scene.add(g);supplies.push(g)}
  // Three distinct keys, tucked into separate exploration spots; each belongs to one house.
  const houseKeys=[];
@@ -199,6 +212,25 @@ const supplies=[];for(const [x,z] of [[-8,4],[23,-9],[-27,-43],[-20.5,-20.5],[21
  for(let i=0;i<keySpecs.length;i++){const spec=keySpecs[i],g=new THREE.Group();const ring=new THREE.Mesh(new THREE.TorusGeometry(i===1?.18:.22,.045,8,18),mat(spec.color));ring.position.y=.16;g.add(ring);const stem=new THREE.Mesh(new THREE.BoxGeometry(.085,.42,.085),mat(spec.color));stem.position.y=-.12;g.add(stem);const tooth=new THREE.Mesh(new THREE.BoxGeometry(.2,.085,.085),mat(spec.color));tooth.position.set(.075,-.29,0);g.add(tooth);if(i===1){const extra=new THREE.Mesh(new THREE.BoxGeometry(.17,.07,.085),mat(spec.color));extra.position.set(-.07,-.22,0);g.add(extra)}if(i===2){const extra=new THREE.Mesh(new THREE.BoxGeometry(.08,.16,.085),mat(spec.color));extra.position.set(.12,-.23,0);g.add(extra)}const glow=new THREE.PointLight(spec.glow,1.15,2.3);glow.position.y=.25;g.add(glow);g.position.set(...spec.position);scene.add(g);houseKeys.push({mesh:g,houseIndex:i,collected:false});}
 // Procedural third-person player model
 const avatar=new THREE.Group();avatar.scale.setScalar(.72);scene.add(avatar);
+let freePlayCar=null;
+function spawnFreePlayCar(){
+ if(freePlayCar){scene.remove(freePlayCar);freePlayCar.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material&&!Array.isArray(o.material))o.material.dispose()});}
+ const car=new THREE.Group();
+ const paint=mat(0x315b54,.42),glass=mat(0x9bb8ba,.25),rubber=mat(0x202321),metal=mat(0xb9b6a8,.5),lamp=mat(0xf4d88c,.25);
+ const body=new THREE.Mesh(new THREE.BoxGeometry(4.1,.85,2.05),paint);body.position.y=.9;body.castShadow=true;car.add(body);
+ const hood=new THREE.Mesh(new THREE.BoxGeometry(1.1,.32,1.95),paint);hood.position.set(1.42,1.42,0);car.add(hood);
+ const cabin=new THREE.Mesh(new THREE.BoxGeometry(2.05,.9,1.72),glass);cabin.position.set(-.25,1.72,0);cabin.castShadow=true;car.add(cabin);
+ const roof=new THREE.Mesh(new THREE.BoxGeometry(1.8,.13,1.78),paint);roof.position.set(-.25,2.2,0);car.add(roof);
+ for(const x of [-1.35,1.35])for(const z of [-1.08,1.08]){
+  const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.48,.48,.28,16),rubber);wheel.rotation.x=Math.PI/2;wheel.position.set(x,.55,z);wheel.castShadow=true;car.add(wheel);
+  const hub=new THREE.Mesh(new THREE.CylinderGeometry(.19,.19,.3,12),metal);hub.rotation.x=Math.PI/2;hub.position.set(x,.55,z);car.add(hub);
+ }
+ for(const z of [-.68,.68]){const headlight=new THREE.Mesh(new THREE.BoxGeometry(.12,.24,.42),lamp);headlight.position.set(2.08,1.02,z);car.add(headlight)}
+ car.position.set(player.pos.x+3,0,player.pos.z+1.5);car.rotation.y=player.yaw;
+ car.userData.isFreePlayCar=true;scene.add(car);freePlayCar=car;
+ document.querySelector("#message").textContent="Your Free Play car is parked beside you. Explore the countryside!";
+}
+
 const skin=mat(0xc99b78),shirt=mat(0x344b43),pants=mat(0x303943),boots=mat(0x211f1b),pack=mat(0x6b5638);
 function limb(parent,geometry,material,x,y,z){const m=new THREE.Mesh(geometry,material);m.position.set(x,y,z);m.castShadow=true;parent.add(m);return m}
 const torso=limb(avatar,new THREE.CapsuleGeometry(.38,.65,5,8),shirt,0,1.25,0);
