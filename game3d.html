@@ -48,6 +48,25 @@ const head=limb(avatar,new THREE.SphereGeometry(.25,16,12),skin,0,2.05,0);
 const backpackMesh=limb(avatar,new THREE.BoxGeometry(.48,.55,.22),pack,0,1.3,.39);
 const skinAccessory=new THREE.Group();skinAccessory.rotation.y=Math.PI;avatar.add(skinAccessory); // Put every skin accessory on the character front, toward the camera.
 const bananaFace=new THREE.Group();bananaFace.rotation.y=Math.PI;avatar.add(bananaFace); // Character front faces local -Z, toward the camera.
+const humanFace=new THREE.Group();humanFace.rotation.y=Math.PI;avatar.add(humanFace);
+const eyeWhite=mat(0xffffff),eyeDark=mat(0x211a18),mouthDark=mat(0x542c27),noseMat=mat(0xb98268);
+for(const x of [-.095,.095]){
+ limb(humanFace,new THREE.SphereGeometry(.052,12,10),eyeWhite,x,2.105,.222);
+ limb(humanFace,new THREE.SphereGeometry(.027,12,10),eyeDark,x,2.105,.263);
+ const brow=limb(humanFace,new THREE.BoxGeometry(.105,.025,.025),mat(0x49332b),x,2.19,.225);brow.rotation.z=x<0?-.12:.12;
+}
+limb(humanFace,new THREE.SphereGeometry(.045,12,10),noseMat,0,2.025,.25);
+const smile=new THREE.CatmullRomCurve3([new THREE.Vector3(-.065,1.96,.235),new THREE.Vector3(0,1.935,.255),new THREE.Vector3(.065,1.96,.235)]);
+limb(humanFace,new THREE.TubeGeometry(smile,10,.012,6,false),mouthDark,0,0,0);
+const bodyDetails=new THREE.Group();avatar.add(bodyDetails);
+const chestPanel=limb(bodyDetails,new THREE.BoxGeometry(.43,.34,.075),mat(0x8a8a8a),0,1.38,-.365);
+limb(bodyDetails,new THREE.BoxGeometry(.68,.105,.09),mat(0x292929),0,.94,-.34);
+const beltBuckle=limb(bodyDetails,new THREE.BoxGeometry(.12,.09,.035),mat(0xd7b45c),0,.94,-.397);
+for(const x of [-.39,.39]){
+ const pad=limb(bodyDetails,new THREE.SphereGeometry(.19,12,10),mat(0x666666),x,1.52,0);pad.scale.set(1,.72,1);
+ limb(bodyDetails,new THREE.SphereGeometry(.115,12,10),mat(0x333333),x*1.38,1.02,0);
+}
+
 const bananaSuit=limb(bananaFace,new THREE.SphereGeometry(1,24,20),mat(0xffd92e),0,1.22,0);
 bananaSuit.scale.set(.49,.91,.43);
 const bananaBelly=limb(bananaFace,new THREE.SphereGeometry(1,20,16),mat(0xffed72),0,1.23,.245);bananaBelly.scale.set(.32,.69,.19);
@@ -83,7 +102,7 @@ let selectedSkin=0;
 function applySkin(index){
  selectedSkin=(index+skinList.length)%skinList.length;const s=skinList[selectedSkin];
  shirt.color.setHex(s.shirt);pants.color.setHex(s.pants);skin.color.setHex(s.skin);boots.color.setHex(s.boots);pack.color.setHex(s.pack);
- const isBanana=s.name==="Banana Scout";torso.visible=!isBanana;head.visible=!isBanana;backpackMesh.visible=!isBanana;bananaFace.visible=isBanana;
+ const isBanana=s.name==="Banana Scout";torso.visible=!isBanana;head.visible=!isBanana;backpackMesh.visible=!isBanana;bananaFace.visible=isBanana;humanFace.visible=!isBanana;bodyDetails.visible=!isBanana;chestPanel.material.color.setHex(s.detail);beltBuckle.material.color.setHex(s.detail);
  skinAccessory.clear();
  const detail=mat(s.detail);
  if(s.kind==="leaf"&&!isBanana){const leaf=limb(skinAccessory,new THREE.ConeGeometry(.13,.48,5),detail,0,2.43,0);leaf.rotation.z=.25}
