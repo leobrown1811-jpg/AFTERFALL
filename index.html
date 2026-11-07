@@ -8,7 +8,7 @@
 :root{color-scheme:dark;--panel:#17231f;--line:#3a5145;--text:#edf4e9;--muted:#b8c8b7;--gold:#f2c66d}
 *{box-sizing:border-box}body{margin:0;background:#101915;color:var(--text);font:16px system-ui,Arial,sans-serif;display:flex;justify-content:center;padding:18px}
 main{width:min(100%,940px)}header{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
-h1{font-size:clamp(25px,5vw,38px);letter-spacing:3px;margin:0}h1 span{color:var(--gold)}.tag{color:var(--muted);font-size:13px}
+.brand-logo{display:block;width:min(260px,55vw);height:auto;max-height:92px;object-fit:contain;object-position:left center}.tag{color:var(--muted);font-size:13px}
 #stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
 .stat,.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px}
 .stat strong{display:block;font-size:19px;color:var(--gold)}.stat small{color:var(--muted)}
@@ -26,7 +26,7 @@ main:not(.playing) #stats,main:not(.playing) #mission,main:not(.playing) .game-w
 </head>
 <body>
 <main>
-<header><div><h1>AFTER<span>FALL</span></h1><div class="tag">SURVIVAL IS A SKILL · TEAM TEST BUILD 03</div></div><div><button id="editFamily">Teams</button> <button id="restart">Restart mission</button></div></header>
+<header><div><img class="brand-logo" src="logo.png" alt="AFTERFALL mountain logo"><div class="tag">SURVIVAL IS A SKILL · TEAM TEST BUILD 03</div></div><div><button id="editFamily">Teams</button> <button id="restart">Restart mission</button></div></header>
 <section id="lobby" class="lobby"><h2 id="groupHeading">Teams</h2><p>Choose whether this group is called Teams, Friends or Family. Add or remove members, edit their display names and ages, and choose who you play as. Other characters follow you in this test build. Online invites are a later step; this roster does not connect real friends yet.</p><label for="groupType">Group type</label> <select id="groupType"><option value="Teams">Teams</option><option value="Friends">Friends</option><option value="Family">Family</option></select><div id="roster" class="roster"></div><div class="mission-choice"><label for="missionSelect">Choose a mission</label><select id="missionSelect"><option value="evacuation">1 · Team evacuation</option><option value="heatwave">2 · Heatwave support</option><option value="relief">3 · Community supply run</option></select></div><div class="lobby-actions"><button id="addMember">+ Add team member</button><button id="launch" class="selected">Launch mission</button></div></section>
 <section id="stats">
 <div class="stat"><strong id="food">0 / 2</strong><small>Food collected</small></div>
