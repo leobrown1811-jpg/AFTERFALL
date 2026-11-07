@@ -46,7 +46,7 @@ function makeHouse(x,z,accent=0x353c3a){
  wall(x,h/2,z-dep/2,w,h,.24,0x777365);
  wall(x-3.05,h/2,front,w/2-1.1,h,.24,0x777365);
  wall(x+3.05,h/2,front,w/2-1.1,h,.24,0x777365);
- box(x,3.25,z,10.7,.4,8.7,accent);
+ const roof=box(x,3.25,z,10.7,.4,8.7,accent);wallMeshes.push(roof);
  box(x,.04,z,9.45,.12,7.45,0x9a8c70);
  box(x-2,1.15,front-.3,1.35,2.3,.12,0x342d27);
  box(x+2,1.9,front-.3,1.25,.95,.14,0x8b9b9b);
