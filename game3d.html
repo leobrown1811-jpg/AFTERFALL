@@ -38,19 +38,40 @@ for(let i=0;i<85;i++){const x=Math.sin(i*91.7)*47,z=-48+(i*17.31)%95;const nearH
 // Small village: each house has a real doorway and a walkable interior.
 const solidWalls=[],wallMeshes=[];
 function wall(x,y,z,w,h,d,color=0x777365){const m=box(x,y,z,w,h,d,color);solidWalls.push({x,z,w,d});wallMeshes.push(m)}
+const houseInteriors=[];
 function makeHouse(x,z,accent=0x353c3a){
  const w=10,dep=8,h=3.1,front=z+dep/2;
- // side and rear walls; front wall is split to leave a 2.2m doorway.
- wall(x-w/2+.12,h/2,z,w? .24:.24, h,dep,0x777365);
- wall(x+w/2-.12,h/2,z,.24,h,dep,0x777365);
- wall(x,h/2,z-dep/2,w,h,.24,0x777365);
- wall(x-3.05,h/2,front,w/2-1.1,h,.24,0x777365);
- wall(x+3.05,h/2,front,w/2-1.1,h,.24,0x777365);
+ // Solid side/rear walls. The front has a clear central doorway and a real window opening.
+ wall(x-w/2+.12,h/2,z,.24,h,dep,0x898678);
+ wall(x+w/2-.12,h/2,z,.24,h,dep,0x898678);
+ wall(x,h/2,z-dep/2,w,h,.24,0x898678);
+ // Left front section with a 1.7m-wide window opening.
+ wall(x-3.05,.55,front,3.9,1.1,.24,0x898678);
+ wall(x-3.05,2.55,front,3.9,1.1,.24,0x898678);
+ wall(x-4.0,1.55,front,.2,.9,.24,0x898678);
+ wall(x-2.1,1.55,front,.2,.9,.24,0x898678);
+ // Right front section; central 2.2m doorway remains open.
+ wall(x+3.05,h/2,front,3.9,h,.24,0x898678);
  const roof=box(x,3.25,z,10.7,.4,8.7,accent);wallMeshes.push(roof);
  box(x,.04,z,9.45,.12,7.45,0x9a8c70);
- box(x-2,1.15,front-.3,1.35,2.3,.12,0x342d27);
- box(x+2,1.9,front-.3,1.25,.95,.14,0x8b9b9b);
- box(x-3.8,.55,z-2.5,.45,1.1,.45,0x76563b);
+ // Window frame and inset glass, aligned inside the opening rather than floating over the wall.
+ const wx=x-3.05,wz=front-.02;
+ box(wx,1.55,wz,1.82,.09,.12,0x554b3d);
+ box(wx,1.55,wz-.035,1.62,.72,.035,0x78999b);
+ box(wx,1.55,wz-.06,.07,.82,.08,0xd0c6a8);
+ box(wx,1.55,wz-.06,1.72,.07,.08,0xd0c6a8);
+ box(wx,1.55,wz-.075,.055,.72,.08,0xd0c6a8);
+ // Open doorway trim; no solid door blocks the entrance.
+ box(x-1.12,1.55,front-.08,.12,3.1,.16,0x594638);
+ box(x+1.12,1.55,front-.08,.12,3.1,.16,0x594638);
+ box(x,3.02,front-.08,2.35,.14,.16,0x594638);
+ // A low, clearly shaped storage bench replaces the awkward upright brown block.
+ box(x+2.75,.48,z-1.75,1.55,.18,.62,0x76563b);
+ box(x+2.75,.86,z-1.75,1.35,.62,.42,0x8b6847);
+ for(const dx of [-.58,.58])box(x+2.75+dx,.23,z-1.75,.09,.42,.1,0x49392d);
+ // Warm interior light makes the walls and furnishings readable.
+ const lamp=new THREE.PointLight(0xffd9a1,7,15);lamp.position.set(x,2.45,z);scene.add(lamp);
+ const data={x,z,w,dep,roof};houseInteriors.push(data);
 }
 makeHouse(-17,-22,0x353c3a);
 makeHouse(25,-40,0x4a3933);
@@ -260,7 +281,10 @@ let previous=performance.now();function animate(now){requestAnimationFrame(anima
 const forward=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0)-joy.y,side=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+joy.x;const len=Math.hypot(forward,side);const moving=len>.08;const sprint=keys.shift||sprintTouch;const speed=player.speed*(sprint?1.65:1);if(moving){const f=forward/Math.max(1,len),s=side/Math.max(1,len),a=player.yaw;const moveX=-Math.sin(a)*f+Math.cos(a)*s,moveZ=-Math.cos(a)*f-Math.sin(a)*s;const nx=player.pos.x+moveX*speed*dt,nz=player.pos.z+moveZ*speed*dt;const radius=.42;const blocked=(x,z)=>solidWalls.some(w=>x+radius>w.x-w.w/2&&x-radius<w.x+w.w/2&&z+radius>w.z-w.d/2&&z-radius<w.z+w.d/2);if(!blocked(nx,player.pos.z))player.pos.x=nx;if(!blocked(player.pos.x,nz))player.pos.z=nz;avatar.rotation.y=Math.atan2(moveX,moveZ)}player.pos.x=THREE.MathUtils.clamp(player.pos.x,-52,52);player.pos.z=THREE.MathUtils.clamp(player.pos.z,-75,48);
 if((jumpQueued||keys[' '])&&player.onGround){player.vertical=7.2;player.onGround=false}jumpQueued=false;player.vertical-=19*dt;player.pos.y+=player.vertical*dt;if(player.pos.y<=0){player.pos.y=0;player.vertical=0;player.onGround=true}
 avatar.position.copy(player.pos);avatar.position.y+=player.pos.y;if(moving){const swing=Math.sin(now*(sprint?0.014:0.01))*0.48;leftLeg.rotation.x=swing;rightLeg.rotation.x=-swing;leftArm.rotation.x=-swing*.7;rightArm.rotation.x=swing*.7}else{leftLeg.rotation.x=rightLeg.rotation.x=leftArm.rotation.x=rightArm.rotation.x=0}
-const pitch=camera.userData.pitch||.18;const target=new THREE.Vector3(player.pos.x,player.pos.y+1.35,player.pos.z);const behind=new THREE.Vector3(Math.sin(player.yaw)*6,2.5+pitch*2,Math.cos(player.yaw)*6);const desired=target.clone().add(behind);const camRay=new THREE.Raycaster(target,behind.clone().normalize(),0,behind.length());const wallHits=camRay.intersectObjects(wallMeshes,false);if(wallHits.length)desired.copy(target).addScaledVector(behind.clone().normalize(),Math.max(1.15,wallHits[0].distance-.35));camera.position.lerp(desired,1-Math.pow(.001,dt));camera.lookAt(target.clone().add(new THREE.Vector3(0,pitch*2,0)));
+const pitch=camera.userData.pitch||.18;const target=new THREE.Vector3(player.pos.x,player.pos.y+1.35,player.pos.z);const behind=new THREE.Vector3(Math.sin(player.yaw)*6,2.5+pitch*2,Math.cos(player.yaw)*6);const desired=target.clone().add(behind);const camRay=new THREE.Raycaster(target,behind.clone().normalize(),0,behind.length());const wallHits=camRay.intersectObjects(wallMeshes,false);if(wallHits.length)desired.copy(target).addScaledVector(behind.clone().normalize(),Math.max(1.15,wallHits[0].distance-.35));
+// Hide only the active house roof while the player is inside its footprint. This exposes the interior without moving the approved camera.
+for(const house of houseInteriors){const inside=Math.abs(player.pos.x-house.x)<house.w/2-.35&&Math.abs(player.pos.z-house.z)<house.dep/2-.35;house.roof.visible=!inside;}
+camera.position.lerp(desired,1-Math.pow(.001,dt));camera.lookAt(target.clone().add(new THREE.Vector3(0,pitch*2,0)));
 supplies.forEach((s,i)=>{s.rotation.y+=dt*.45;s.position.y=.65+Math.sin(now*.002+i)*.09});if(found===5&&player.pos.distanceTo(new THREE.Vector3(18,0,-35))<4)document.querySelector('#message').textContent='FIELD TEST COMPLETE — you reached the beacon with all supplies.';
 renderer.render(scene,camera)}
 requestAnimationFrame(animate);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2))});
