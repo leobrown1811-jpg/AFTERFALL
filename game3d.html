@@ -45,18 +45,17 @@ function makeHouse(x,z,accent=0x353c3a){
  wall(x-w/2+.12,h/2,z,.24,h,dep,0x898678);
  wall(x+w/2-.12,h/2,z,.24,h,dep,0x898678);
  wall(x,h/2,z-dep/2,w,h,.24,0x898678);
- // Left front section with a 1.7m-wide window opening.
+ // Front wall built as adjoining solid sections around two precisely sized window openings.
+ // Lower and upper courses run continuously across both window bays.
  wall(x-3.05,.55,front,3.9,1.1,.24,0x898678);
  wall(x-3.05,2.55,front,3.9,1.1,.24,0x898678);
- // Full-height solid jambs define the window edges and prevent exposed side gaps.
- wall(x-4.0,1.55,front,.34,1.02,.32,0x898678);
- wall(x-2.1,1.55,front,.34,1.02,.32,0x898678);
- // Right front section; central 2.2m doorway remains open.
- // Right front section now has a second matching window opening; the central doorway stays clear.
  wall(x+3.05,.55,front,3.9,1.1,.24,0x898678);
  wall(x+3.05,2.55,front,3.9,1.1,.24,0x898678);
- wall(x+2.1,1.55,front,.34,1.02,.32,0x898678);
- wall(x+4.0,1.55,front,.34,1.02,.32,0x898678);
+ // Solid side returns meet the outer wall, window frame and doorway piers.
+ wall(x-4.55,1.55,front,0.90,1.02,.30,0x898678);
+ wall(x-1.60,1.55,front,1.00,1.02,.30,0x898678);
+ wall(x+1.60,1.55,front,1.00,1.02,.30,0x898678);
+ wall(x+4.55,1.55,front,0.90,1.02,.30,0x898678);
  const roof=box(x,3.25,z,10.7,.4,8.7,accent);wallMeshes.push(roof);
  box(x,.045,z,10.15,.12,8.15,0x9a8c70);
  // Window frame and inset glass, aligned inside the opening rather than floating over the wall.
