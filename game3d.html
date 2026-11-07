@@ -23,7 +23,7 @@ function enterWorld(){for(const house of houseInteriors){house.doorPivot.visible
 document.querySelector("#launch3d").addEventListener("click",()=>enterWorld());
 
 const canvas=document.querySelector('#view');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:"high-performance"});renderer.setPixelRatio(Math.min(devicePixelRatio,1.35));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
+const renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:"high-performance"});renderer.setPixelRatio(Math.min(devicePixelRatio,1.0));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0xd98768);scene.fog=new THREE.Fog(0xd98768,180,850);
 const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,1500);
 const player={pos:new THREE.Vector3(0,0,12),yaw:0,vertical:0,onGround:true,speed:6.2};let found=0;const inventory=[];
@@ -35,7 +35,7 @@ function box(x,y,z,sx,sy,sz,color){const m=new THREE.Mesh(new THREE.BoxGeometry(
 function tree(x,z,scale=1){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22*scale,.34*scale,2.8*scale,7),mat(0x554638));trunk.position.set(x,1.4*scale,z);trunk.castShadow=true;scene.add(trunk);for(let i=0;i<2;i++){const crown=new THREE.Mesh(new THREE.ConeGeometry((2.0-i*.3)*scale,3.0*scale,6),mat(i%2?0x344b3b:0x405b42));crown.position.set(x,(3.0+i*.9)*scale,z);scene.add(crown)}}
 function rock(x,z,s=1){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(s,0),mat(0x77796f));r.position.set(x,s*.55,z);r.rotation.set(.2,.8,.3);r.castShadow=true;r.receiveShadow=true;scene.add(r)}
 // Background mountain group removed to leave an open horizon.
-for(let i=0;i<260;i++){const x=Math.sin(i*91.7)*285,z=-300+(i*23.31)%600;const nearHouse=[[-17,-22],[25,-40],[-34,12],[34,-76],[-38,48]].some(([hx,hz])=>Math.abs(x-hx)<9&&Math.abs(z-hz)<10);if(nearHouse)continue;if(Math.abs(x)<5&&z>-112&&z<62)continue;if(i%3===0)rock(x,z,.7+(i%5)*.22);else tree(x,z,.65+(i%4)*.13)}
+for(let i=0;i<180;i++){const x=Math.sin(i*91.7)*285,z=-300+(i*23.31)%600;const nearHouse=[[-17,-22],[25,-40],[-34,12],[34,-76],[-38,48]].some(([hx,hz])=>Math.abs(x-hx)<9&&Math.abs(z-hz)<10);if(nearHouse)continue;if(Math.abs(x)<5&&z>-112&&z<62)continue;if(i%3===0)rock(x,z,.7+(i%5)*.22);else tree(x,z,.65+(i%4)*.13)}
 // Small village: each house has a real doorway and a walkable interior.
 const solidWalls=[],wallMeshes=[];
 function wall(x,y,z,w,h,d,color=0x777365){const m=box(x,y,z,w,h,d,color);solidWalls.push({x,z,w,d});wallMeshes.push(m)}
@@ -108,7 +108,7 @@ function makeHouse(x,z,accent=0x353c3a,facing=0){
  box(x+3.705,.43,z+.15,.07,.07,.07,0xd7c39a);
  box(x+3.705,.78,z+.15,.07,.07,.07,0xd7c39a);
  // Warm interior light makes the walls and furnishings readable.
- const lamp=new THREE.PointLight(0xffd9a1,2.2,8);lamp.position.set(x,2.45,z);scene.add(lamp);
+ const lamp=new THREE.PointLight(0xffd9a1,1.4,6);lamp.position.set(x,2.45,z);scene.add(lamp);
  // Rotate the whole house as one unit so its roof, walls, windows, door and furniture remain aligned.
  const houseRoot=new THREE.Group();houseRoot.position.set(x,0,z);scene.add(houseRoot);
  const created=scene.children.slice(childStart,scene.children.length-1);
@@ -193,7 +193,7 @@ roadPath([[98,86],[102,68],[107,50],[112,29],[115,10]],7,false);
 roadPath([[-94,82],[-103,61],[-109,41],[-114,18],[-115,-4]],7,false);
 // Smooth road ribbons meet directly at their junctions; no oversized overlap pads.
 const beacon=new THREE.PointLight(0xffd17b,22,24);beacon.position.set(18,4,-35);scene.add(beacon);// The finish beacon has no surrounding box or platform; keep the flagpole on open ground.const beaconPole=new THREE.Mesh(new THREE.CylinderGeometry(.12,.17,5.8,12),mat(0x5a4732));beaconPole.position.set(18,3.7,-35);scene.add(beaconPole);const beaconFlag=new THREE.Mesh(new THREE.PlaneGeometry(4.8,2.4),new THREE.MeshStandardMaterial({color:0x263d32,side:THREE.DoubleSide,roughness:.8}));beaconFlag.position.set(20.3,5.2,-35);beaconFlag.rotation.y=.15;scene.add(beaconFlag);const flagCanvas=document.createElement("canvas");flagCanvas.width=768;flagCanvas.height=384;const flagCtx=flagCanvas.getContext("2d");flagCtx.fillStyle="#263d32";flagCtx.fillRect(0,0,768,384);flagCtx.strokeStyle="#e7c77c";flagCtx.lineWidth=14;flagCtx.strokeRect(12,12,744,360);flagCtx.fillStyle="#f2d58f";flagCtx.font="bold 88px system-ui";flagCtx.textAlign="center";flagCtx.textBaseline="middle";flagCtx.fillText("AFTERFALL",384,190);beaconFlag.material.map=new THREE.CanvasTexture(flagCanvas);beaconFlag.material.needsUpdate=true;
-const supplies=[];for(const [x,z] of [[-8,4],[23,-9],[-27,-43],[-20.5,-20.5],[21.5,-38.5]]){const g=new THREE.Group();const crate=new THREE.Mesh(new THREE.BoxGeometry(1.15,.85,.9),mat(0xc18a42));crate.castShadow=true;g.add(crate);const stripe=new THREE.Mesh(new THREE.BoxGeometry(1.18,.13,.94),mat(0xe7d29a));stripe.position.y=.1;g.add(stripe);const glow=new THREE.PointLight(0xffd16b,5,7);glow.position.y=1.1;g.add(glow);g.position.set(x,.65,z);scene.add(g);supplies.push(g)}
+const supplies=[];for(const [x,z] of [[-8,4],[23,-9],[-27,-43],[-20.5,-20.5],[21.5,-38.5]]){const g=new THREE.Group();const crate=new THREE.Mesh(new THREE.BoxGeometry(1.15,.85,.9),mat(0xc18a42));crate.castShadow=true;g.add(crate);const stripe=new THREE.Mesh(new THREE.BoxGeometry(1.18,.13,.94),mat(0xe7d29a));stripe.position.y=.1;g.add(stripe);g.position.set(x,.65,z);scene.add(g);supplies.push(g)}
  // One key for each of the 18 houses. The first key is outdoors; each later key is hidden inside the previously unlocked house.
  const houseKeys=[];
  const keyColors=[0xe7b83f,0x72c7d5,0xb68be8,0xe78b48,0x8fc56b,0xd56a82,0x6da8df,0xd4b65e,0x9d83d4,0x65c1b2,0xd28b55,0x9dbb69,0xc77dba,0x7e9bd0,0xd0a36b,0x83b7a0,0xc47b70,0xb6b0d8];
@@ -206,7 +206,7 @@ const supplies=[];for(const [x,z] of [[-8,4],[23,-9],[-27,-43],[-20.5,-20.5],[21
   const tooth=new THREE.Mesh(new THREE.BoxGeometry(.2,.085,.085),mat(color));tooth.position.set(.075,-.29,0);g.add(tooth);
   if(i===1){const extra=new THREE.Mesh(new THREE.BoxGeometry(.17,.07,.085),mat(color));extra.position.set(-.07,-.22,0);g.add(extra)}
   if(i===2){const extra=new THREE.Mesh(new THREE.BoxGeometry(.08,.16,.085),mat(color));extra.position.set(.12,-.23,0);g.add(extra)}
-  const glow=new THREE.PointLight(color,1.15,2.3);glow.position.y=.25;g.add(glow);
+  
   if(i===0){g.position.set(8,.48,-8);scene.add(g);}
   else{
    const host=houseInteriors[i-1],spot=roomSpots[(i-1)%roomSpots.length];
