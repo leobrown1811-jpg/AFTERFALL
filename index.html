@@ -18,15 +18,16 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 .bottom{display:grid;grid-template-columns:1fr auto;gap:12px;margin-top:10px;align-items:center}
 #message{min-height:48px;line-height:1.4;color:var(--muted);font-size:14px}
 button{border:1px solid #71856f;border-radius:9px;background:#30483a;color:white;padding:10px 14px;font-weight:700;cursor:pointer}
-button:hover{background:#405d49}.controls{display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:12px}
+button:hover{background:#405d49}.lobby{background:#17231f;border:1px solid #526a55;border-radius:12px;padding:16px;margin:12px 0}.lobby h2{margin:0 0 6px}.lobby p{color:#b8c8b7;font-size:14px}.roster{display:grid;gap:8px;margin:12px 0}.person{display:grid;grid-template-columns:auto minmax(90px,1fr) 82px auto;gap:8px;align-items:center;background:#22332a;padding:8px;border-radius:8px}.person input{min-width:0;width:100%;padding:9px;border-radius:7px;border:1px solid #60745f;background:#101915;color:white}.person button{padding:8px}.person .selected{background:#80632e}.lobby-actions{display:flex;gap:8px;flex-wrap:wrap}.controls{display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:12px}
 .controls button{min-width:54px;min-height:46px;font-size:18px;touch-action: manipulation}
 .hint{font-size:12px;color:var(--muted);text-align:center;margin:10px 0}
-@media(max-width:560px){body{padding:10px}#stats{grid-template-columns:repeat(2,1fr)}.bottom{grid-template-columns:1fr}.bottom button{width:100%}}
+main:not(.playing) #stats,main:not(.playing) #mission,main:not(.playing) .game-wrap,main:not(.playing) .bottom,main:not(.playing) .controls,main:not(.playing) .hint{display:none}main.playing #lobby{display:none}@media(max-width:560px){body{padding:10px}.person{grid-template-columns:auto minmax(70px,1fr) 68px auto}.person button{font-size:12px;padding:7px}#stats{grid-template-columns:repeat(2,1fr)}.bottom{grid-template-columns:1fr}.bottom button{width:100%}}
 </style>
 </head>
 <body>
 <main>
-<header><div><h1>AFTER<span>FALL</span></h1><div class="tag">SURVIVAL IS A SKILL · PLAYABLE TEST BUILD 01</div></div><button id="restart">Restart mission</button></header>
+<header><div><h1>AFTER<span>FALL</span></h1><div class="tag">SURVIVAL IS A SKILL · FAMILY TEST BUILD 02</div></div><div><button id="editFamily">Family lobby</button> <button id="restart">Restart mission</button></div></header>
+<section id="lobby" class="lobby"><h2>Family lobby</h2><p>Build your family before the mission. Add or remove people, change their names and ages, and choose who you play as. The other family members will follow you in this test build.</p><div id="roster" class="roster"></div><div class="lobby-actions"><button id="addMember">+ Add family member</button><button id="launch" class="selected">Launch mission</button></div></section>
 <section id="stats">
 <div class="stat"><strong id="food">0 / 2</strong><small>Food collected</small></div>
 <div class="stat"><strong id="water">0 / 2</strong><small>Water collected</small></div>
@@ -51,9 +52,12 @@ const W=canvas.width,H=canvas.height;
 const ui={food:document.getElementById('food'),water:document.getElementById('water'),family:document.getElementById('family'),progress:document.getElementById('progress'),message:document.getElementById('message')};
 const keys={up:false,down:false,left:false,right:false};
 let player, family, items, collected, won, started, frame, shelter;
+let roster=[{id:1,name:"Mum",age:37,color:"#f2c66d"},{id:2,name:"Dad",age:38,color:"#e8a1a1"},{id:3,name:"Son",age:11,color:"#9bc6ed"}],nextPersonId=4,selectedPersonId=1;
 const obstacles=[{x:125,y:100,w:150,h:85},{x:390,y:55,w:130,h:115},{x:670,y:115,w:125,h:90},{x:250,y:355,w:155,h:105},{x:575,y:360,w:150,h:95}];
 function reset(){
-player={x:75,y:270,r:13,speed:2.8};family=[{x:48,y:294,color:'#f2c66d'},{x:35,y:315,color:'#e8a1a1'},{x:55,y:337,color:'#9bc6ed'}];
+const lead=roster.find(p=>p.id===selectedPersonId)||roster[0];
+player={x:75,y:270,r:13,speed:2.8,name:lead.name,age:lead.age};
+family=roster.filter(p=>p.id!==lead.id).map((p,i)=>({x:48-i*12,y:294+i*20,color:p.color,name:p.name,age:p.age}));
 items=[{x:335,y:165,type:'food',taken:false},{x:610,y:250,type:'food',taken:false},{x:520,y:485,type:'water',taken:false},{x:120,y:475,type:'water',taken:false}];
 collected={food:0,water:0};won=false;started=true;frame=0;shelter={x:820,y:275,r:42};say('Mission started. Collect 2 food packs and 2 water bottles, then reach the shelter.');drawStats();draw();
 }
@@ -114,7 +118,8 @@ family.forEach((p,i)=>{
 circle(player.x+2,player.y+6,16,'rgba(12,24,15,.3)');
 rounded(player.x-10,player.y-7,20,24,7,'#385b83');circle(player.x,player.y-11,8,'#efc9a9');
 ctx.fillStyle='#273a52';ctx.beginPath();ctx.arc(player.x,player.y-13,8,Math.PI,Math.PI*2);ctx.fill();
-ctx.fillStyle='#fff';ctx.font='bold 12px system-ui';ctx.textAlign='left';ctx.fillText('YOU',player.x+18,player.y-13);
+ctx.fillStyle='#fff';ctx.font='bold 12px system-ui';ctx.textAlign='left';ctx.fillText(player.name+' · YOU',player.x+18,player.y-13);
+family.forEach(p=>{ctx.fillStyle='rgba(255,255,255,.9)';ctx.font='10px system-ui';ctx.textAlign='center';ctx.fillText(p.name,p.x,p.y+25)});
 if(won){ctx.fillStyle='rgba(8,18,12,.76)';ctx.fillRect(0,0,W,H);ctx.textAlign='center';ctx.fillStyle='#f4d27c';ctx.font='bold 42px system-ui';ctx.fillText('FAMILY SAFE!',W/2,H/2-10);ctx.fillStyle='white';ctx.font='20px system-ui';ctx.fillText('Mission complete — great work.',W/2,H/2+28)}
 }
 function blocked(x,y){return obstacles.some(o=>x+11>o.x&&x-11<o.x+o.w&&y+11>o.y&&y-11<o.y+o.h)}
@@ -134,8 +139,12 @@ function loop(){move();requestAnimationFrame(loop)}
 function setKey(e,on){let k=e.key.toLowerCase(),dir=k==='arrowup'||k==='w'?'up':k==='arrowdown'||k==='s'?'down':k==='arrowleft'||k==='a'?'left':k==='arrowright'||k==='d'?'right':null;if(dir){keys[dir]=on;e.preventDefault()}}
 window.addEventListener('keydown',e=>setKey(e,true));window.addEventListener('keyup',e=>setKey(e,false));window.addEventListener('blur',()=>Object.keys(keys).forEach(k=>keys[k]=false));
 document.querySelectorAll('[data-dir]').forEach(b=>{let d=b.dataset.dir;b.addEventListener('pointerdown',e=>{e.preventDefault();keys[d]=true;b.setPointerCapture(e.pointerId)});['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,()=>keys[d]=false))});
-document.getElementById('restart').addEventListener('click',reset);document.getElementById('start').addEventListener('click',()=>{if(!started)reset();else say('Keep moving. Gather all four supplies and head to the shelter.')});
-reset();loop();
+document.getElementById('restart').addEventListener('click',reset);
+document.getElementById('editFamily').addEventListener('click',()=>{started=false;document.querySelector('main').classList.remove('playing');renderRoster()});
+document.getElementById('addMember').addEventListener('click',()=>{const colors=['#b8d39a','#d9b6e8','#e8c48b','#9bc6ed'];roster.push({id:nextPersonId++,name:'New member',age:18,color:colors[(roster.length)%colors.length]});selectedPersonId=roster[roster.length-1].id;renderRoster()});
+document.getElementById('launch').addEventListener('click',()=>{if(!roster.length)return;for(const p of roster){p.name=p.name.trim()||'Family member';p.age=Math.max(0,Math.min(110,Number(p.age)||0))}document.querySelector('main').classList.add('playing');reset()});document.getElementById('start').addEventListener('click',()=>{if(!started)reset();else say('Keep moving. Gather all four supplies and head to the shelter.')});
+function renderRoster(){const box=document.getElementById('roster');box.innerHTML='';roster.forEach((p)=>{const row=document.createElement('div');row.className='person';const choose=document.createElement('button');choose.textContent=p.id===selectedPersonId?'Playing':'Play as';if(p.id===selectedPersonId)choose.classList.add('selected');choose.addEventListener('click',()=>{selectedPersonId=p.id;renderRoster()});const name=document.createElement('input');name.type='text';name.maxLength=24;name.value=p.name;name.setAttribute('aria-label','Character name');name.addEventListener('input',()=>p.name=name.value);const age=document.createElement('input');age.type='number';age.min='0';age.max='110';age.value=p.age;age.setAttribute('aria-label','Character age');age.addEventListener('input',()=>p.age=age.value);const remove=document.createElement('button');remove.textContent='Remove';remove.disabled=roster.length===1;remove.addEventListener('click',()=>{roster=roster.filter(x=>x.id!==p.id);if(selectedPersonId===p.id)selectedPersonId=roster[0].id;renderRoster()});row.append(choose,name,age,remove);box.append(row)})}
+renderRoster();loop();
 })();
 </script>
 </body>
