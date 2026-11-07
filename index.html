@@ -18,7 +18,7 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 .bottom{display:grid;grid-template-columns:1fr auto;gap:12px;margin-top:10px;align-items:center}
 #message{min-height:48px;line-height:1.4;color:var(--muted);font-size:14px}
 button{border:1px solid #71856f;border-radius:9px;background:#30483a;color:white;padding:10px 14px;font-weight:700;cursor:pointer}
-button:hover{background:#405d49}.lobby{background:#17231f;border:1px solid #526a55;border-radius:12px;padding:16px;margin:12px 0}.lobby h2{margin:0 0 6px}.lobby p{color:#b8c8b7;font-size:14px}.roster{display:grid;gap:8px;margin:12px 0}.person{display:grid;grid-template-columns:auto minmax(90px,1fr) 82px auto;gap:8px;align-items:center;background:#22332a;padding:8px;border-radius:8px}.person input{min-width:0;width:100%;padding:9px;border-radius:7px;border:1px solid #60745f;background:#101915;color:white}.person button{padding:8px}.person .selected{background:#80632e}.lobby-actions{display:flex;gap:8px;flex-wrap:wrap}.controls{display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:12px}
+button:hover{background:#405d49}.lobby{background:#17231f;border:1px solid #526a55;border-radius:12px;padding:16px;margin:12px 0}.lobby h2{margin:0 0 6px}.lobby p{color:#b8c8b7;font-size:14px}.roster{display:grid;gap:8px;margin:12px 0}.person{display:grid;grid-template-columns:auto minmax(90px,1fr) 82px auto;gap:8px;align-items:center;background:#22332a;padding:8px;border-radius:8px}.person input{min-width:0;width:100%;padding:9px;border-radius:7px;border:1px solid #60745f;background:#101915;color:white}.person button{padding:8px}.person .selected{background:#80632e}.mission-choice{display:grid;gap:6px;max-width:520px;margin:12px 0}.mission-choice label{font-size:13px;color:var(--muted)}.mission-choice select{width:100%;padding:11px;border-radius:8px;background:#101915;color:white;border:1px solid #60745f}.lobby-actions{display:flex;gap:8px;flex-wrap:wrap}.controls{display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:12px}
 .controls button{min-width:54px;min-height:46px;font-size:18px;touch-action: manipulation}
 .hint{font-size:12px;color:var(--muted);text-align:center;margin:10px 0}
 main:not(.playing) #stats,main:not(.playing) #mission,main:not(.playing) .game-wrap,main:not(.playing) .bottom,main:not(.playing) .controls,main:not(.playing) .hint{display:none}main.playing #lobby{display:none}@media(max-width:560px){body{padding:10px}.person{grid-template-columns:auto minmax(70px,1fr) 68px auto}.person button{font-size:12px;padding:7px}#stats{grid-template-columns:repeat(2,1fr)}.bottom{grid-template-columns:1fr}.bottom button{width:100%}}
@@ -27,7 +27,7 @@ main:not(.playing) #stats,main:not(.playing) #mission,main:not(.playing) .game-w
 <body>
 <main>
 <header><div><h1>AFTER<span>FALL</span></h1><div class="tag">SURVIVAL IS A SKILL · FAMILY TEST BUILD 02</div></div><div><button id="editFamily">Family lobby</button> <button id="restart">Restart mission</button></div></header>
-<section id="lobby" class="lobby"><h2>Family lobby</h2><p>Build your family before the mission. Add or remove people, change their names and ages, and choose who you play as. The other family members will follow you in this test build.</p><div id="roster" class="roster"></div><div class="lobby-actions"><button id="addMember">+ Add family member</button><button id="launch" class="selected">Launch mission</button></div></section>
+<section id="lobby" class="lobby"><h2>Family lobby</h2><p>Build your family before the mission. Add or remove people, change their names and ages, and choose who you play as. The other family members will follow you in this test build.</p><div id="roster" class="roster"></div><div class="mission-choice"><label for="missionSelect">Choose a mission</label><select id="missionSelect"><option value="evacuation">1 · Family evacuation</option><option value="heatwave">2 · Heatwave support</option><option value="relief">3 · Community supply run</option></select></div><div class="lobby-actions"><button id="addMember">+ Add family member</button><button id="launch" class="selected">Launch mission</button></div></section>
 <section id="stats">
 <div class="stat"><strong id="food">0 / 2</strong><small>Food collected</small></div>
 <div class="stat"><strong id="water">0 / 2</strong><small>Water collected</small></div>
@@ -51,18 +51,24 @@ const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
 const W=canvas.width,H=canvas.height;
 const ui={food:document.getElementById('food'),water:document.getElementById('water'),family:document.getElementById('family'),progress:document.getElementById('progress'),message:document.getElementById('message')};
 const keys={up:false,down:false,left:false,right:false};
-let player, family, items, collected, won, started, frame, shelter;
+let player, family, items, collected, won, started, frame, shelter, activeMission;
+const missions={
+ evacuation:{title:"Family evacuation",brief:"Collect 2 food packs and 2 water bottles, then guide your family to the safe shelter.",food:2,water:2,target:"SAFE SHELTER",items:[{x:335,y:165,type:"food"},{x:610,y:250,type:"food"},{x:520,y:485,type:"water"},{x:120,y:475,type:"water"}]},
+ heatwave:{title:"Heatwave support",brief:"Collect 3 water bottles and 1 food pack, then reach the community cooling centre.",food:1,water:3,target:"COOLING CENTRE",items:[{x:335,y:165,type:"water"},{x:610,y:250,type:"water"},{x:520,y:485,type:"water"},{x:120,y:475,type:"food"}]},
+ relief:{title:"Community supply run",brief:"Collect 3 food packs and 1 water bottle, then deliver them to the aid station.",food:3,water:1,target:"AID STATION",items:[{x:335,y:165,type:"food"},{x:610,y:250,type:"food"},{x:520,y:485,type:"food"},{x:120,y:475,type:"water"}]}
+};
 let roster=[{id:1,name:"Mum",age:37,color:"#f2c66d"},{id:2,name:"Dad",age:38,color:"#e8a1a1"},{id:3,name:"Son",age:11,color:"#9bc6ed"}],nextPersonId=4,selectedPersonId=1;
 const obstacles=[{x:125,y:100,w:150,h:85},{x:390,y:55,w:130,h:115},{x:670,y:115,w:125,h:90},{x:250,y:355,w:155,h:105},{x:575,y:360,w:150,h:95}];
 function reset(){
+activeMission=missions[document.getElementById('missionSelect').value]||missions.evacuation;
 const lead=roster.find(p=>p.id===selectedPersonId)||roster[0];
 player={x:75,y:270,r:13,speed:2.8,name:lead.name,age:lead.age};
 family=roster.filter(p=>p.id!==lead.id).map((p,i)=>({x:48-i*12,y:294+i*20,color:p.color,name:p.name,age:p.age}));
-items=[{x:335,y:165,type:'food',taken:false},{x:610,y:250,type:'food',taken:false},{x:520,y:485,type:'water',taken:false},{x:120,y:475,type:'water',taken:false}];
-collected={food:0,water:0};won=false;started=true;frame=0;shelter={x:820,y:275,r:42};say('Mission started. Collect 2 food packs and 2 water bottles, then reach the shelter.');drawStats();draw();
+items=activeMission.items.map(it=>({...it,taken:false}));
+collected={food:0,water:0};won=false;started=true;frame=0;shelter={x:820,y:275,r:42};document.getElementById('mission').textContent='MISSION: '+activeMission.brief;say('Mission started: '+activeMission.brief);drawStats();draw();
 }
 function say(t){ui.message.textContent=t}
-function drawStats(){ui.food.textContent=collected.food+' / 2';ui.water.textContent=collected.water+' / 2';ui.progress.textContent=(collected.food+collected.water)+' / 4';ui.family.textContent=won?'Safe!':'Together'}
+function drawStats(){ui.food.textContent=collected.food+' / '+activeMission.food;ui.water.textContent=collected.water+' / '+activeMission.water;ui.progress.textContent=(collected.food+collected.water)+' / '+(activeMission.food+activeMission.water);ui.family.textContent=won?'Safe!':'Together'}
 function circle(x,y,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}
 function rounded(x,y,w,h,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}
 function draw(){
@@ -94,7 +100,7 @@ rounded(shelter.x-38,shelter.y-34,76,62,8,'#d9d0b7');
 ctx.fillStyle='#85513d';ctx.beginPath();ctx.moveTo(shelter.x-47,shelter.y-31);ctx.lineTo(shelter.x,shelter.y-65);ctx.lineTo(shelter.x+47,shelter.y-31);ctx.closePath();ctx.fill();
 ctx.fillStyle='#344c3c';ctx.fillRect(shelter.x-11,shelter.y-3,22,31);
 ctx.fillStyle='#f0d28c';ctx.fillRect(shelter.x-29,shelter.y-20,14,13);ctx.fillRect(shelter.x+15,shelter.y-20,14,13);
-ctx.fillStyle='#fff4cf';ctx.font='bold 14px system-ui';ctx.textAlign='center';ctx.fillText('SAFE SHELTER',shelter.x,shelter.y+48);
+ctx.fillStyle='#fff4cf';ctx.font='bold 14px system-ui';ctx.textAlign='center';ctx.fillText(activeMission.target,shelter.x,shelter.y+48);
 // Supply packs: food crates and blue water bottles
 items.forEach(it=>{
   if(it.taken)return;
@@ -132,7 +138,7 @@ if(!blocked(nx,player.y))player.x=nx;if(!blocked(player.x,ny))player.y=ny;
 }
 family.forEach((p,i)=>{let target=i===0?player:family[i-1];let tx=target.x-(i+1)*17,ty=target.y+(i+1)*15;let d=Math.hypot(tx-p.x,ty-p.y);if(d>22){p.x+=(tx-p.x)/d*1.8;p.y+=(ty-p.y)/d*1.8}});
 items.forEach(it=>{if(!it.taken&&Math.hypot(player.x-it.x,player.y-it.y)<25){it.taken=true;collected[it.type]++;say((it.type==='food'?'Food':'Water')+' collected. '+(collected.food+collected.water)+' of 4 supplies found.');drawStats()}});
-if(collected.food===2&&collected.water===2&&Math.hypot(player.x-shelter.x,player.y-shelter.y)<55){won=true;say('You reached the shelter with all supplies. Your family is safe!');drawStats()}
+if(collected.food===activeMission.food&&collected.water===activeMission.water&&Math.hypot(player.x-shelter.x,player.y-shelter.y)<55){won=true;say('Mission complete: '+activeMission.title+'. Your family reached the destination with every required supply.');drawStats()}
 frame++;draw();
 }
 function loop(){move();requestAnimationFrame(loop)}
