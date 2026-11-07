@@ -24,10 +24,10 @@ document.querySelector("#launch3d").addEventListener("click",()=>enterWorld());
 
 const canvas=document.querySelector('#view');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:"high-performance"});renderer.setPixelRatio(Math.min(devicePixelRatio,1.35));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x9aabb0);scene.fog=new THREE.Fog(0x9aabb0,180,850);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0xd98768);scene.fog=new THREE.Fog(0xd98768,180,850);
 const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,1500);
 const player={pos:new THREE.Vector3(0,0,12),yaw:0,vertical:0,onGround:true,speed:6.2};let found=0;const inventory=[];
-scene.add(new THREE.HemisphereLight(0xdce8ee,0x59604a,2));
+scene.add(new THREE.HemisphereLight(0xffd0a1,0x665044,1.8));
 const sun=new THREE.DirectionalLight(0xffe2b4,3);sun.position.set(-28,45,24);sun.castShadow=false;scene.add(sun);
 const mat=(color,roughness=1)=>new THREE.MeshStandardMaterial({color,roughness});
 const ground=new THREE.Mesh(new THREE.PlaneGeometry(1000,1000),mat(0x59634b));ground.rotation.x=-Math.PI/2;ground.position.y=-.08;ground.receiveShadow=true;scene.add(ground);
