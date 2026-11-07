@@ -39,8 +39,8 @@ for(let i=0;i<150;i++){const x=Math.sin(i*91.7)*70,z=-85+(i*23.31)%160;const nea
 const solidWalls=[],wallMeshes=[];
 function wall(x,y,z,w,h,d,color=0x777365){const m=box(x,y,z,w,h,d,color);solidWalls.push({x,z,w,d});wallMeshes.push(m)}
 const houseInteriors=[];
-function makeHouse(x,z,accent=0x353c3a){
- const w=10,dep=8,h=3.1,front=z+dep/2;
+function makeHouse(x,z,accent=0x353c3a,facing=0){
+ const w=10,dep=8,h=3.1,front=z+dep/2,wallStart=solidWalls.length,childStart=scene.children.length;
  // Solid side/rear walls. The front has a clear central doorway and a real window opening.
  wall(x-w/2+.12,h/2,z,.24,h,dep,0x898678);
  wall(x+w/2-.12,h/2,z,.24,h,dep,0x898678);
@@ -108,14 +108,21 @@ function makeHouse(x,z,accent=0x353c3a){
  box(x+3.705,.78,z+.15,.07,.07,.07,0xd7c39a);
  // Warm interior light makes the walls and furnishings readable.
  const lamp=new THREE.PointLight(0xffd9a1,7,15);lamp.position.set(x,2.45,z);scene.add(lamp);
- const data={x,z,w,dep,roof,front,doorPivot,doorOpen:false,lockAssembly,lockDropping:false,lockDropTime:0,unlocked:false,keyCollected:false};houseInteriors.push(data);
+ // Rotate the whole house as one unit so its roof, walls, windows, door and furniture remain aligned.
+ const houseRoot=new THREE.Group();houseRoot.position.set(x,0,z);scene.add(houseRoot);
+ const created=scene.children.slice(childStart,scene.children.length-1);
+ for(const child of created)houseRoot.attach(child);
+ houseRoot.rotation.y=facing;
+ if(Math.abs(facing)>0.001){for(let i=wallStart;i<solidWalls.length;i++){const b=solidWalls[i],dx=b.x-x,dz=b.z-z;b.x=x+Math.cos(facing)*dx+Math.sin(facing)*dz;b.z=z-Math.sin(facing)*dx+Math.cos(facing)*dz;if(Math.abs(Math.abs(facing)-Math.PI/2)<.01){const t=b.w;b.w=b.d;b.d=t;}}}
+ const doorX=x+Math.sin(facing)*(dep/2),doorZ=z+Math.cos(facing)*(dep/2);
+ const data={x,z,w,dep,roof,front,doorX,doorZ,facing,houseRoot,doorPivot,doorOpen:false,lockAssembly,lockDropping:false,lockDropTime:0,unlocked:false,keyCollected:false};houseInteriors.push(data);
 }
-makeHouse(-17,-22,0x353c3a);
+makeHouse(-17,-22,0x353c3a,Math.PI/2);
 makeHouse(25,-40,0x4a3933);
-makeHouse(-34,12,0x3d4937);
+makeHouse(-34,12,0x3d4937,Math.PI/2);
 // Two extra village homes extend the settlement beyond the original three.
 makeHouse(34,-76,0x454b58);
-makeHouse(-38,48,0x51463a);
+makeHouse(-38,48,0x51463a,Math.PI/2);
 // The two new homes are freely enterable; the original three keep their key progression.
 for(const index of [3,4]){houseInteriors[index].keyCollected=true;houseInteriors[index].unlocked=true;houseInteriors[index].lockAssembly.visible=false;}
 
@@ -376,12 +383,12 @@ function collect(){
  for(const key of houseKeys){if(key.collected)continue;const d=player.pos.distanceTo(key.mesh.position);if(d<2.25){key.collected=true;key.mesh.visible=false;houseInteriors[key.houseIndex].keyCollected=true;document.querySelector('#message').textContent=['Golden key found! It opens the first house.','Blue key found! It opens the second house.','Violet key found! It opens the third house.'][key.houseIndex];return}}
  let nearest=null,dist=2.7;for(const item of supplies){if(!item.visible)continue;const d=player.pos.distanceTo(item.position);if(d<dist){dist=d;nearest=item}}
  if(nearest){nearest.visible=false;found++;document.querySelector('#count').textContent='SUPPLIES: '+found+' / 5';document.querySelector('#message').textContent=found===5?'All 5 supplies secured. Reach the lit beacon to finish the mission!':'Supply secured! Search inside the houses for the remaining cases.';return}
- let nearestHouse=null,doorDist=3.2;for(const house of houseInteriors){const d=Math.hypot(player.pos.x-house.x,player.pos.z-house.front);if(d<doorDist&&Math.abs(player.pos.x-house.x)<2.2){doorDist=d;nearestHouse=house}}
+ let nearestHouse=null,doorDist=3.2;for(const house of houseInteriors){const dx=player.pos.x-house.doorX,dz=player.pos.z-house.doorZ,side=Math.abs(dx*Math.cos(house.facing)-dz*Math.sin(house.facing)),d=Math.hypot(dx,dz);if(d<doorDist&&side<2.2){doorDist=d;nearestHouse=house}}
  if(nearestHouse){const index=houseInteriors.indexOf(nearestHouse);if(!nearestHouse.unlocked){if(!nearestHouse.keyCollected){document.querySelector('#message').textContent=['This door needs the golden key. Search the village.','This door needs the blue key. Find it inside the first house.','This door needs the violet key. Find it inside the second house.'][index];return}nearestHouse.unlocked=true;nearestHouse.lockDropping=true;nearestHouse.lockDropTime=0;document.querySelector('#message').textContent='The matching key turns! The lock falls away and the door unlocks.';return}nearestHouse.doorOpen=!nearestHouse.doorOpen;document.querySelector('#message').textContent=nearestHouse.doorOpen?'Door opening. Go inside!':'Door closed.';return}
  document.querySelector('#message').textContent='Explore around the houses to find their three different keys.'}
 document.querySelector('#interact').addEventListener('pointerdown',e=>{e.preventDefault();collect()});addEventListener('keydown',e=>{if(e.key.toLowerCase()==='e'&&!e.repeat)collect()});
 let previous=performance.now();function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-previous)/1000,.04);previous=now;
-const forward=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0)-joy.y,side=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+joy.x;const len=Math.hypot(forward,side);const moving=len>.08;const sprint=keys.shift||sprintTouch;const speed=player.speed*(sprint?1.65:1);if(moving){const f=forward/Math.max(1,len),s=side/Math.max(1,len),a=player.yaw;const moveX=-Math.sin(a)*f+Math.cos(a)*s,moveZ=-Math.cos(a)*f-Math.sin(a)*s;const nx=player.pos.x+moveX*speed*dt,nz=player.pos.z+moveZ*speed*dt;const radius=.42;const blocked=(x,z)=>solidWalls.some(w=>x+radius>w.x-w.w/2&&x-radius<w.x+w.w/2&&z+radius>w.z-w.d/2&&z-radius<w.z+w.d/2)||houseInteriors.some(h=>!h.doorOpen&&Math.abs(x-h.x)<1.12&&Math.abs(z-h.front)<.58);if(!blocked(nx,player.pos.z))player.pos.x=nx;if(!blocked(player.pos.x,nz))player.pos.z=nz;avatar.rotation.y=Math.atan2(moveX,moveZ)}player.pos.x=THREE.MathUtils.clamp(player.pos.x,-88,88);player.pos.z=THREE.MathUtils.clamp(player.pos.z,-120,90);
+const forward=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0)-joy.y,side=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+joy.x;const len=Math.hypot(forward,side);const moving=len>.08;const sprint=keys.shift||sprintTouch;const speed=player.speed*(sprint?1.65:1);if(moving){const f=forward/Math.max(1,len),s=side/Math.max(1,len),a=player.yaw;const moveX=-Math.sin(a)*f+Math.cos(a)*s,moveZ=-Math.cos(a)*f-Math.sin(a)*s;const nx=player.pos.x+moveX*speed*dt,nz=player.pos.z+moveZ*speed*dt;const radius=.42;const blocked=(x,z)=>solidWalls.some(w=>x+radius>w.x-w.w/2&&x-radius<w.x+w.w/2&&z+radius>w.z-w.d/2&&z-radius<w.z+w.d/2)||houseInteriors.some(h=>!h.doorOpen&&Math.abs((x-h.doorX)*Math.cos(h.facing)-(z-h.doorZ)*Math.sin(h.facing))<1.12&&Math.abs((x-h.doorX)*Math.sin(h.facing)+(z-h.doorZ)*Math.cos(h.facing))<.58);if(!blocked(nx,player.pos.z))player.pos.x=nx;if(!blocked(player.pos.x,nz))player.pos.z=nz;avatar.rotation.y=Math.atan2(moveX,moveZ)}player.pos.x=THREE.MathUtils.clamp(player.pos.x,-88,88);player.pos.z=THREE.MathUtils.clamp(player.pos.z,-120,90);
 if((jumpQueued||keys[' '])&&player.onGround){player.vertical=7.2;player.onGround=false}jumpQueued=false;player.vertical-=19*dt;player.pos.y+=player.vertical*dt;if(player.pos.y<=0){player.pos.y=0;player.vertical=0;player.onGround=true}
 avatar.position.copy(player.pos);avatar.position.y+=player.pos.y;if(moving){const swing=Math.sin(now*(sprint?0.014:0.01))*0.48;leftLeg.rotation.x=swing;rightLeg.rotation.x=-swing;leftArm.rotation.x=-swing*.7;rightArm.rotation.x=swing*.7}else{leftLeg.rotation.x=rightLeg.rotation.x=leftArm.rotation.x=rightArm.rotation.x=0}
 const pitch=camera.userData.pitch||.18;const target=new THREE.Vector3(player.pos.x,player.pos.y+1.35,player.pos.z);const behind=new THREE.Vector3(Math.sin(player.yaw)*6,2.5+pitch*2,Math.cos(player.yaw)*6);const desired=target.clone().add(behind);const camRay=new THREE.Raycaster(target,behind.clone().normalize(),0,behind.length());const wallHits=camRay.intersectObjects(wallMeshes,false);if(wallHits.length)desired.copy(target).addScaledVector(behind.clone().normalize(),Math.max(1.15,wallHits[0].distance-.35));
