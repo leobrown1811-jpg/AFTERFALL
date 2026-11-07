@@ -126,7 +126,7 @@ rounded(player.x-10,player.y-7,20,24,7,'#385b83');circle(player.x,player.y-11,8,
 ctx.fillStyle='#273a52';ctx.beginPath();ctx.arc(player.x,player.y-13,8,Math.PI,Math.PI*2);ctx.fill();
 ctx.fillStyle='#fff';ctx.font='bold 12px system-ui';ctx.textAlign='left';ctx.fillText(player.name+' · YOU',player.x+18,player.y-13);
 family.forEach(p=>{ctx.fillStyle='rgba(255,255,255,.9)';ctx.font='10px system-ui';ctx.textAlign='center';ctx.fillText(p.name,p.x,p.y+25)});
-if(won){ctx.fillStyle='rgba(8,18,12,.76)';ctx.fillRect(0,0,W,H);ctx.textAlign='center';ctx.fillStyle='#f4d27c';ctx.font='bold 42px system-ui';ctx.fillText('TEAM SAFE!',W/2,H/2-10);ctx.fillStyle='white';ctx.font='20px system-ui';ctx.fillText('Mission complete — great work.',W/2,H/2+28)}
+if(won){ctx.fillStyle='rgba(8,18,12,.76)';ctx.fillRect(0,0,W,H);ctx.textAlign='center';ctx.fillStyle='#f4d27c';ctx.font='bold 42px system-ui';ctx.fillText('GROUP SAFE!',W/2,H/2-10);ctx.fillStyle='white';ctx.font='20px system-ui';ctx.fillText('Mission complete — great work.',W/2,H/2+28)}
 }
 function blocked(x,y){return obstacles.some(o=>x+11>o.x&&x-11<o.x+o.w&&y+11>o.y&&y-11<o.y+o.h)}
 function move(){
