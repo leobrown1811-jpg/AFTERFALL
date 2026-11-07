@@ -79,6 +79,11 @@ function makeHouse(x,z,accent=0x353c3a,facing=0){
  wall(x-1.615,1.55,front,.99,1.1,.24,0x898678);
  wall(x+1.615,1.55,front,.99,1.1,.24,0x898678);
  wall(x+4.495,1.55,front,1.01,1.1,.24,0x898678);
+ // Fill the open triangular gable spaces at both ends of the roof.
+ // These wall panels close the gap between the rectangular walls and the roof peak.
+ const gableShape=new THREE.Shape();gableShape.moveTo(-5.08,0);gableShape.lineTo(5.08,0);gableShape.lineTo(0,1.88);gableShape.close();
+ const gableGeo=new THREE.ShapeGeometry(gableShape),gableMat=mat(0x898678);
+ for(const endZ of [z-dep/2-.015,z+dep/2+.015]){const gable=new THREE.Mesh(gableGeo,gableMat);gable.position.set(x,3.1,endZ);gable.material.side=THREE.DoubleSide;gable.castShadow=true;gable.receiveShadow=true;scene.add(gable);}
  const roof=new THREE.Group();scene.add(roof);
  // Compact gable roof: matching slopes meet cleanly at the raised ridge.
  const roofLeft=new THREE.Mesh(new THREE.BoxGeometry(5.5,.22,8.5),mat(0x9b4f2e));roofLeft.position.set(x-2.45,4.05,z);roofLeft.rotation.z=.34;roofLeft.castShadow=true;roofLeft.receiveShadow=true;roof.add(roofLeft);
