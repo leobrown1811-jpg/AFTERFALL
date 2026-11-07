@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>AFTERFALL — 3D Field Test</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101713;color:#eef2e9;font:15px system-ui,Arial}#view{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}#brand{position:fixed;top:12px;left:14px;z-index:2;width:170px;max-height:58px;object-fit:contain;object-position:left top;filter:drop-shadow(0 2px 5px #000)}#hud{position:fixed;top:12px;right:12px;z-index:2;background:#101713d9;border:1px solid #73806d;border-radius:10px;padding:10px 13px;min-width:180px;backdrop-filter:blur(5px)}#hud strong{color:#f0cc7a}#mission{font-size:12px;color:#d2dccd;margin-top:5px;max-width:250px}#count{font-size:12px;margin-top:5px}#message{position:fixed;left:50%;bottom:112px;transform:translateX(-50%);z-index:2;background:#101713df;border:1px solid #77836e;border-radius:9px;padding:9px 13px;text-align:center;max-width:90%;font-size:13px;pointer-events:none}button{border:1px solid #a3ae91;background:#18251fe8;color:white;border-radius:50%;font-size:17px;font-weight:700;touch-action:none;user-select:none;-webkit-user-select:none}button:active,.held{background:#526448}#back{position:fixed;top:80px;left:14px;z-index:4;font-size:12px;padding:8px 11px;border-radius:10px}#stickArea{position:fixed;left:18px;bottom:20px;width:142px;height:142px;border:2px solid #d5dfc477;background:#18251f66;border-radius:50%;z-index:3;touch-action:none}#stick{position:absolute;left:42px;top:42px;width:54px;height:54px;border:2px solid #e8efdc;background:#64745cdd;border-radius:50%;pointer-events:none}#actions{position:fixed;right:18px;bottom:20px;z-index:3;display:grid;grid-template-columns:repeat(2,64px);gap:10px}#actions button{width:64px;height:64px;font-size:12px;border-radius:50%;background:#18251fe8}#actions button b{display:block;font-size:20px}#help{position:fixed;right:14px;top:105px;z-index:2;text-align:right;color:#e2e8dc;background:#101713b8;border-radius:9px;padding:8px 10px;font-size:11px;max-width:42%}@media(min-width:800px){#stickArea,#actions{opacity:.72}#message{bottom:24px}}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101713;color:#eef2e9;font:15px system-ui,Arial}#view{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}#brand{position:fixed;top:12px;left:14px;z-index:2;width:170px;max-height:58px;object-fit:contain;object-position:left top;filter:drop-shadow(0 2px 5px #000)}#hud{position:fixed;top:12px;right:12px;z-index:2;background:#101713d9;border:1px solid #73806d;border-radius:10px;padding:10px 13px;min-width:180px;backdrop-filter:blur(5px)}#hud strong{color:#f0cc7a}#mission{font-size:12px;color:#d2dccd;margin-top:5px;max-width:250px}#count{font-size:12px;margin-top:5px}#message{position:fixed;left:50%;bottom:112px;transform:translateX(-50%);z-index:2;background:#101713df;border:1px solid #77836e;border-radius:9px;padding:9px 13px;text-align:center;max-width:90%;font-size:13px;pointer-events:none}button{border:1px solid #a3ae91;background:#18251fe8;color:white;border-radius:50%;font-size:17px;font-weight:700;touch-action:none;user-select:none;-webkit-user-select:none}button:active,.held{background:#526448}#back{position:fixed;top:80px;left:14px;z-index:4;font-size:12px;padding:8px 11px;border-radius:10px}#stickArea{position:fixed;left:18px;bottom:20px;width:142px;height:142px;border:2px solid #d5dfc477;background:#18251f66;border-radius:50%;z-index:3;touch-action:none}#stick{position:absolute;left:42px;top:42px;width:54px;height:54px;border:2px solid #e8efdc;background:#64745cdd;border-radius:50%;pointer-events:none}#actions{position:fixed;right:18px;bottom:20px;z-index:3;display:grid;grid-template-columns:repeat(2,64px);gap:10px}#actions button{width:64px;height:64px;font-size:12px;border-radius:50%;background:#18251fe8}#actions button b{display:block;font-size:20px}#help{position:fixed;right:14px;top:105px;z-index:2;text-align:right;color:#e2e8dc;background:#101713b8;border-radius:9px;padding:8px 10px;font-size:11px;max-width:42%}#skinOpen{position:fixed;left:14px;top:80px;z-index:5;border-radius:10px;padding:9px 12px;font-size:12px}#skinScreen{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;padding:18px;background:#07100ddd;backdrop-filter:blur(8px)}#skinPanel{width:min(760px,100%);max-height:92%;overflow:auto;background:#17231ff5;border:1px solid #839078;border-radius:18px;padding:18px;box-shadow:0 18px 70px #000a}#skinPanel h1{margin:0;color:#f2cf83;font-size:clamp(22px,4vw,32px)}#skinPanel p{margin:5px 0 15px;color:#d4dfd0;font-size:13px}#skinGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}#skinGrid button{border-radius:12px;min-height:94px;padding:9px 5px;background:#26372e;border:1px solid #647762;font-size:12px}#skinGrid button span{display:block;font-size:27px;margin-bottom:4px}#skinGrid button.selected{border:2px solid #f2cf83;background:#46553b}#skinClose{display:block;border-radius:10px;padding:10px 18px;margin:14px auto 0;background:#687b4d}@media(max-width:430px){#skinGrid{grid-template-columns:repeat(3,minmax(0,1fr))}#skinPanel{padding:13px}}@media(min-width:800px){#stickArea,#actions{opacity:.72}#message{bottom:24px}}
 </style></head><body>
 <canvas id="view"></canvas><img id="brand" src="logo.png" alt="AFTERFALL"><button id="back" onclick="location.href='index.html'">← Original game</button>
-<div id="hud"><strong>AFTERFALL · 3D FIELD TEST</strong><div id="mission">MISSION: Explore the valley and collect the 3 supply cases.</div><div id="count">SUPPLIES: 0 / 3</div></div><div id="message">Use the joystick or WASD to move. Drag to look around.</div>
+<button id="skinOpen" type="button">🎭 CHANGE SKIN</button><div id="skinScreen"><div id="skinPanel"><h1>CHOOSE YOUR SURVIVOR</h1><p>Pick your look. Every character has the same abilities and controls.</p><div id="skinGrid"></div><button id="skinClose" type="button">PLAY AS SELECTED</button></div></div><div id="hud"><strong>AFTERFALL · 3D FIELD TEST</strong><div id="mission">MISSION: Explore the valley and collect the 3 supply cases.</div><div id="count">SUPPLIES: 0 / 3</div></div><div id="message">Use the joystick or WASD to move. Drag to look around.</div>
 <div id="stickArea" aria-label="Movement joystick"><div id="stick"></div></div>
 <div id="actions"><button id="jump"><b>⬆</b>JUMP</button><button id="sprint"><b>»</b>SPRINT</button><button id="interact"><b>✋</b>COLLECT</button><button id="attack"><b>⚔</b>ACTION</button></div>
 <div id="help">COMPUTER: WASD / arrows · mouse drag to look<br>Space: jump · Shift: sprint · E: collect</div>
@@ -33,9 +33,51 @@ const supplies=[];for(const [x,z] of [[-8,4],[23,-9],[-27,-43]]){const g=new THR
 const avatar=new THREE.Group();scene.add(avatar);
 const skin=mat(0xc99b78),shirt=mat(0x344b43),pants=mat(0x303943),boots=mat(0x211f1b),pack=mat(0x6b5638);
 function limb(parent,geometry,material,x,y,z){const m=new THREE.Mesh(geometry,material);m.position.set(x,y,z);m.castShadow=true;parent.add(m);return m}
-limb(avatar,new THREE.CapsuleGeometry(.38,.65,5,8),shirt,0,1.25,0);
-limb(avatar,new THREE.SphereGeometry(.25,16,12),skin,0,2.05,0);
+const torso=limb(avatar,new THREE.CapsuleGeometry(.38,.65,5,8),shirt,0,1.25,0);
+const head=limb(avatar,new THREE.SphereGeometry(.25,16,12),skin,0,2.05,0);
 limb(avatar,new THREE.BoxGeometry(.48,.55,.22),pack,0,1.3,.39);
+const skinAccessory=new THREE.Group();avatar.add(skinAccessory);
+const skinList=[
+{name:"Banana Scout",icon:"🍌",shirt:0xf3d52b,pants:0x4d8b45,skin:0xffe58a,boots:0x46351f,pack:0x34834a,detail:0x2f9b50,kind:"leaf"},
+{name:"Shadow Ninja",icon:"🥷",shirt:0x202631,pants:0x11151d,skin:0xb9a18e,boots:0x090d13,pack:0x7c2630,detail:0xb52e3b,kind:"hood"},
+{name:"Cosmic Ranger",icon:"🚀",shirt:0x5c8cae,pants:0x303e59,skin:0xd8b99d,boots:0x202b42,pack:0xd4e6ec,detail:0x69d9ed,kind:"antenna"},
+{name:"Jungle Tracker",icon:"🌿",shirt:0x426c3e,pants:0x394b32,skin:0xb98768,boots:0x443728,pack:0x79552e,detail:0x9aa84a,kind:"cap"},
+{name:"Frost Guardian",icon:"❄️",shirt:0x8bc8d8,pants:0x496b8c,skin:0xd9bda9,boots:0xe4edf0,pack:0x477c9b,detail:0xbcefff,kind:"crown"},
+{name:"Volcano Raider",icon:"🌋",shirt:0x9a3d2e,pants:0x3c2928,skin:0x9a6b53,boots:0x211b1b,pack:0x57251e,detail:0xff8a32,kind:"horns"},
+{name:"Golden Knight",icon:"👑",shirt:0xb28a32,pants:0x55452d,skin:0xd7b38d,boots:0x332b20,pack:0x8a6425,detail:0xf4d46b,kind:"crown"},
+{name:"Neon Racer",icon:"🏁",shirt:0x20a9a2,pants:0x26394a,skin:0xc99b78,boots:0x15242b,pack:0xe74b9b,detail:0x50fff0,kind:"visor"},
+{name:"Desert Nomad",icon:"🏜️",shirt:0xc58a48,pants:0x80613d,skin:0xd0a078,boots:0x59402b,pack:0x9b6236,detail:0xe7c27d,kind:"scarf"},
+{name:"Moon Bot",icon:"🤖",shirt:0x87969f,pants:0x4b5964,skin:0xc5d4d8,boots:0x333f49,pack:0x526b79,detail:0x67e7ff,kind:"antenna"},
+{name:"Magma Beast",icon:"🐲",shirt:0x39765d,pants:0x263f37,skin:0x71a58b,boots:0x1d302a,pack:0x573c31,detail:0xff713c,kind:"horns"},
+{name:"Sky Captain",icon:"🧢",shirt:0x526aa0,pants:0x343c56,skin:0xd1a27e,boots:0x292b36,pack:0x9a6738,detail:0xe2c16f,kind:"cap"},
+{name:"Toxic Ranger",icon:"☣️",shirt:0x8dbb35,pants:0x3d4c2b,skin:0xb2c58c,boots:0x242d20,pack:0x566b2a,detail:0xcaff42,kind:"visor"},
+{name:"Storm Chaser",icon:"🌩️",shirt:0x555b78,pants:0x292e43,skin:0xc39b87,boots:0x202331,pack:0x414c6c,detail:0x9c9dff,kind:"hood"},
+{name:"Candy Hero",icon:"🍭",shirt:0xd66caa,pants:0x6a4b91,skin:0xf0c2ae,boots:0x52365f,pack:0x62b9c4,detail:0xffd0ed,kind:"crown"},
+{name:"Wild Fox",icon:"🦊",shirt:0xc56b32,pants:0x573c2e,skin:0xe7b68d,boots:0x35251e,pack:0x8a4829,detail:0xf4a64e,kind:"ears"}
+];
+let selectedSkin=0;
+function applySkin(index){
+ selectedSkin=(index+skinList.length)%skinList.length;const s=skinList[selectedSkin];
+ shirt.color.setHex(s.shirt);pants.color.setHex(s.pants);skin.color.setHex(s.skin);boots.color.setHex(s.boots);pack.color.setHex(s.pack);
+ skinAccessory.clear();
+ const detail=mat(s.detail);
+ if(s.kind==="leaf"){const leaf=limb(skinAccessory,new THREE.ConeGeometry(.13,.48,5),detail,0,2.43,0);leaf.rotation.z=.25}
+ if(s.kind==="hood"){limb(skinAccessory,new THREE.SphereGeometry(.3,12,10),detail,0,2.12,-.06);limb(skinAccessory,new THREE.BoxGeometry(.34,.1,.12),mat(0x151923),0,2.02,.2)}
+ if(s.kind==="antenna"){limb(skinAccessory,new THREE.CylinderGeometry(.025,.035,.28,8),detail,0,2.34,0);limb(skinAccessory,new THREE.SphereGeometry(.09,10,8),detail,0,2.5,0)}
+ if(s.kind==="cap"){limb(skinAccessory,new THREE.CylinderGeometry(.24,.27,.12,12),detail,0,2.27,0);limb(skinAccessory,new THREE.BoxGeometry(.34,.045,.22),detail,0,2.22,.13)}
+ if(s.kind==="crown"){limb(skinAccessory,new THREE.CylinderGeometry(.2,.24,.16,8),detail,0,2.28,0);for(let j=0;j<5;j++)limb(skinAccessory,new THREE.ConeGeometry(.045,.16,5),detail,-.16+j*.08,2.41,0)}
+ if(s.kind==="horns"||s.kind==="ears"){for(const side of [-1,1]){const h=limb(skinAccessory,new THREE.ConeGeometry(.09,.3,6),detail,side*.2,2.3,0);h.rotation.z=-side*.55}}
+ if(s.kind==="visor"){limb(skinAccessory,new THREE.BoxGeometry(.42,.11,.12),detail,0,2.08,.2)}
+ if(s.kind==="scarf"){limb(skinAccessory,new THREE.BoxGeometry(.58,.13,.18),detail,0,1.83,.05);limb(skinAccessory,new THREE.BoxGeometry(.12,.42,.1),detail,.27,1.62,.02)}
+ document.querySelectorAll("#skinGrid button").forEach((b,i)=>b.classList.toggle("selected",i===selectedSkin));
+}
+const skinGrid=document.querySelector("#skinGrid");
+skinList.forEach((s,i)=>{const b=document.createElement("button");b.type="button";b.innerHTML="<span>"+s.icon+"</span>"+s.name;b.addEventListener("click",()=>applySkin(i));skinGrid.appendChild(b)});
+applySkin(0);
+function closeSkinScreen(){document.querySelector("#skinScreen").style.display="none"}
+document.querySelector("#skinClose").addEventListener("click",closeSkinScreen);
+document.querySelector("#skinOpen").addEventListener("click",()=>{document.querySelector("#skinScreen").style.display="flex"});
+
 const leftLeg=new THREE.Group(),rightLeg=new THREE.Group();leftLeg.position.set(-.19,.83,0);rightLeg.position.set(.19,.83,0);avatar.add(leftLeg,rightLeg);
 limb(leftLeg,new THREE.CapsuleGeometry(.13,.62,4,8),pants,0,-.35,0);limb(rightLeg,new THREE.CapsuleGeometry(.13,.62,4,8),pants,0,-.35,0);
 limb(leftLeg,new THREE.BoxGeometry(.25,.16,.4),boots,0,-.71,-.04);limb(rightLeg,new THREE.BoxGeometry(.25,.16,.4),boots,0,-.71,-.04);
