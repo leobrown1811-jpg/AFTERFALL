@@ -119,23 +119,58 @@ makeHouse(-38,48,0x51463a);
 // The two new homes are freely enterable; the original three keep their key progression.
 for(const index of [3,4]){houseInteriors[index].keyCollected=true;houseInteriors[index].unlocked=true;houseInteriors[index].lockAssembly.visible=false;}
 
-// Winding village roads built from aligned flat segments.
-function roadSegment(ax,az,bx,bz,width=7,markings=true){
- const dx=bx-ax,dz=bz-az,len=Math.hypot(dx,dz),angle=Math.atan2(dx,dz);
- const asphalt=new THREE.Mesh(new THREE.PlaneGeometry(width,len+1.2),mat(0x777365));
- asphalt.rotation.set(-Math.PI/2,angle,0);asphalt.position.set((ax+bx)/2,.006,(az+bz)/2);scene.add(asphalt);
- if(markings){const count=Math.max(1,Math.floor(len/7));for(let i=0;i<count;i++){const t=(i+.5)/count;const dash=new THREE.Mesh(new THREE.PlaneGeometry(.13,2.8),mat(0xc6b78d));dash.rotation.set(-Math.PI/2,angle,0);dash.position.set(ax+dx*t,.019,az+dz*t);scene.add(dash);}}
+// Continuous road ribbons: one joined mesh per route prevents wedge-shaped gaps at bends.
+const roadMaterial=mat(0x777365),roadMarkMaterial=mat(0xc6b78d);
+function roadPath(points,width=7,markings=false){
+ const half=width/2,vertices=[],indices=[];
+ const dirs=[];
+ for(let i=0;i<points.length-1;i++){
+  const dx=points[i+1][0]-points[i][0],dz=points[i+1][1]-points[i][1],length=Math.hypot(dx,dz)||1;
+  dirs.push([dx/length,dz/length]);
+ }
+ for(let i=0;i<points.length;i++){
+  const p=points[i],before=dirs[Math.max(0,i-1)],after=dirs[Math.min(dirs.length-1,i)];
+  const n1=[before[1],-before[0]],n2=[after[1],-after[0]];
+  let mx=n1[0]+n2[0],mz=n1[1]+n2[1],ml=Math.hypot(mx,mz);
+  if(ml<.001){mx=n2[0];mz=n2[1];ml=1}
+  mx/=ml;mz/=ml;
+  const dot=Math.max(.72,Math.abs(mx*n2[0]+mz*n2[1]));
+  const offset=Math.min(half/dot,half*1.45);
+  vertices.push(p[0]+mx*offset,.012,p[1]+mz*offset,p[0]-mx*offset,.012,p[1]-mz*offset);
+  if(i<points.length-1){const a=i*2,b=a+1,c=a+2,d=a+3;indices.push(a,b,c,b,d,c)}
+ }
+ const geometry=new THREE.BufferGeometry();
+ geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
+ geometry.setIndex(indices);geometry.computeVertexNormals();
+ const asphalt=new THREE.Mesh(geometry,roadMaterial);asphalt.material.side=THREE.DoubleSide;asphalt.receiveShadow=true;scene.add(asphalt);
+ if(markings){
+  let distance=0,nextDash=5;
+  for(let i=0;i<points.length-1;i++){
+   const a=points[i],b=points[i+1],dx=b[0]-a[0],dz=b[1]-a[1],len=Math.hypot(dx,dz),angle=Math.atan2(dx,dz);
+   while(nextDash<distance+len){
+    const t=(nextDash-distance)/len;
+    const dash=new THREE.Mesh(new THREE.BoxGeometry(.13,.025,2.4),roadMarkMaterial);
+    dash.position.set(a[0]+dx*t,.04,a[1]+dz*t);dash.rotation.y=angle;scene.add(dash);nextDash+=7;
+   }
+   distance+=len;
+  }
+ }
 }
 const mainRoad=[[-2,-118],[-2,-96],[5,-78],[14,-60],[17,-43],[10,-25],[-3,-7],[-12,12],[-9,32],[1,52],[4,72]];
-for(let i=0;i<mainRoad.length-1;i++)roadSegment(...mainRoad[i],...mainRoad[i+1],7,true);
+roadPath(mainRoad,7,true);
 const sideRoads=[
- [[12,-65],[23,-70],[34,-72]],
- [[14,-47],[28,-44],[35,-42]],
- [[2,-17],[-7,-21],[-14,-22]],
- [[-10,8],[-23,10],[-31,11]],
- [[-7,39],[-22,45],[-35,48]]
+ [[12.5,-63],[23,-68],[34,-72]],
+ [[16,-45],[28,-44],[35,-42]],
+ [[6,-20],[-7,-21],[-14,-22]],
+ [[-9,7],[-23,10],[-31,11]],
+ [[-5,39],[-22,45],[-35,48]]
 ];
-for(const branch of sideRoads)for(let i=0;i<branch.length-1;i++)roadSegment(...branch[i],...branch[i+1],5.2,false);
+for(const branch of sideRoads)roadPath(branch,5.4,false);
+// Small, flush junction pads merge each side road cleanly into the main route.
+for(const [x,z] of [[12.5,-63],[16,-45],[6,-20],[-9,7],[-5,39]]){
+ const join=new THREE.Mesh(new THREE.CircleGeometry(3.15,24),roadMaterial);
+ join.rotation.x=-Math.PI/2;join.position.set(x,.014,z);scene.add(join);
+}
 const beacon=new THREE.PointLight(0xffd17b,22,24);beacon.position.set(18,4,-35);scene.add(beacon);box(18,.8,-35,4,1.6,4,0x77786b);const beaconMesh=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,2.2,12),new THREE.MeshStandardMaterial({color:0xffd17b,emissive:0x9b5b13,emissiveIntensity:2}));beaconMesh.position.set(18,2.6,-35);scene.add(beaconMesh);
 const supplies=[];for(const [x,z] of [[-8,4],[23,-9],[-27,-43],[-20.5,-20.5],[21.5,-38.5]]){const g=new THREE.Group();const crate=new THREE.Mesh(new THREE.BoxGeometry(1.15,.85,.9),mat(0xc18a42));crate.castShadow=true;g.add(crate);const stripe=new THREE.Mesh(new THREE.BoxGeometry(1.18,.13,.94),mat(0xe7d29a));stripe.position.y=.1;g.add(stripe);const glow=new THREE.PointLight(0xffd16b,5,7);glow.position.y=1.1;g.add(glow);g.position.set(x,.65,z);scene.add(g);supplies.push(g)}
  // Three distinct keys, tucked into separate exploration spots; each belongs to one house.
