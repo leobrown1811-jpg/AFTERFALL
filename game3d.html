@@ -45,8 +45,22 @@ const skin=mat(0xc99b78),shirt=mat(0x344b43),pants=mat(0x303943),boots=mat(0x211
 function limb(parent,geometry,material,x,y,z){const m=new THREE.Mesh(geometry,material);m.position.set(x,y,z);m.castShadow=true;parent.add(m);return m}
 const torso=limb(avatar,new THREE.CapsuleGeometry(.38,.65,5,8),shirt,0,1.25,0);
 const head=limb(avatar,new THREE.SphereGeometry(.25,16,12),skin,0,2.05,0);
-limb(avatar,new THREE.BoxGeometry(.48,.55,.22),pack,0,1.3,.39);
+const backpackMesh=limb(avatar,new THREE.BoxGeometry(.48,.55,.22),pack,0,1.3,.39);
 const skinAccessory=new THREE.Group();avatar.add(skinAccessory);
+const bananaFace=new THREE.Group();avatar.add(bananaFace);
+const bananaSuit=limb(bananaFace,new THREE.SphereGeometry(1,24,20),mat(0xffd92e),0,1.22,0);
+bananaSuit.scale.set(.49,.91,.43);
+const bananaBelly=limb(bananaFace,new THREE.SphereGeometry(1,20,16),mat(0xffed72),0,1.23,.245);bananaBelly.scale.set(.32,.69,.19);
+const bananaEyeMat=mat(0x171717),bananaWhite=mat(0xffffff),bananaMouthMat=mat(0x57251b),bananaGreen=mat(0x328b43),bananaTip=mat(0x543521);
+for(const x of [-.145,.145]){limb(bananaFace,new THREE.SphereGeometry(.085,14,12),bananaWhite,x,1.82,.345);limb(bananaFace,new THREE.SphereGeometry(.043,12,10),bananaEyeMat,x,1.82,.414)}
+const bananaSmileCurve=new THREE.CatmullRomCurve3([new THREE.Vector3(-.105,1.64,.398),new THREE.Vector3(0,1.59,.43),new THREE.Vector3(.105,1.64,.398)]);
+limb(bananaFace,new THREE.TubeGeometry(bananaSmileCurve,12,.018,6,false),bananaMouthMat,0,0,0);
+limb(bananaFace,new THREE.ConeGeometry(.09,.2,8),bananaTip,0,2.13,0);
+const peelLeft=limb(bananaFace,new THREE.ConeGeometry(.22,.66,8),bananaGreen,-.28,.48,.02);peelLeft.rotation.z=-.45;
+const peelRight=limb(bananaFace,new THREE.ConeGeometry(.22,.66,8),bananaGreen,.28,.48,.02);peelRight.rotation.z=.45;
+const peelFront=limb(bananaFace,new THREE.ConeGeometry(.2,.62,8),mat(0x42a34b),0,.43,.27);peelFront.rotation.x=-.2;
+const bananaLeaf=limb(bananaFace,new THREE.ConeGeometry(.12,.38,7),bananaGreen,0,2.31,0);bananaLeaf.rotation.z=.35;
+bananaFace.visible=false;
 const skinList=[
 {name:"Banana Scout",icon:"🍌",shirt:0xf3d52b,pants:0x4d8b45,skin:0xffe58a,boots:0x46351f,pack:0x34834a,detail:0x2f9b50,kind:"leaf"},
 {name:"Shadow Ninja",icon:"🥷",shirt:0x202631,pants:0x11151d,skin:0xb9a18e,boots:0x090d13,pack:0x7c2630,detail:0xb52e3b,kind:"hood"},
@@ -69,9 +83,10 @@ let selectedSkin=0;
 function applySkin(index){
  selectedSkin=(index+skinList.length)%skinList.length;const s=skinList[selectedSkin];
  shirt.color.setHex(s.shirt);pants.color.setHex(s.pants);skin.color.setHex(s.skin);boots.color.setHex(s.boots);pack.color.setHex(s.pack);
+ const isBanana=s.name==="Banana Scout";torso.visible=!isBanana;head.visible=!isBanana;backpackMesh.visible=!isBanana;bananaFace.visible=isBanana;
  skinAccessory.clear();
  const detail=mat(s.detail);
- if(s.kind==="leaf"){const leaf=limb(skinAccessory,new THREE.ConeGeometry(.13,.48,5),detail,0,2.43,0);leaf.rotation.z=.25}
+ if(s.kind==="leaf"&&!isBanana){const leaf=limb(skinAccessory,new THREE.ConeGeometry(.13,.48,5),detail,0,2.43,0);leaf.rotation.z=.25}
  if(s.kind==="hood"){limb(skinAccessory,new THREE.SphereGeometry(.3,12,10),detail,0,2.12,-.06);limb(skinAccessory,new THREE.BoxGeometry(.34,.1,.12),mat(0x151923),0,2.02,.2)}
  if(s.kind==="antenna"){limb(skinAccessory,new THREE.CylinderGeometry(.025,.035,.28,8),detail,0,2.34,0);limb(skinAccessory,new THREE.SphereGeometry(.09,10,8),detail,0,2.5,0)}
  if(s.kind==="cap"){limb(skinAccessory,new THREE.CylinderGeometry(.24,.27,.12,12),detail,0,2.27,0);limb(skinAccessory,new THREE.BoxGeometry(.34,.045,.22),detail,0,2.22,.13)}
