@@ -122,26 +122,26 @@ function makeHouse(x,z,accent=0x353c3a,facing=0){
  const data={x,z,w,dep,roof,front,doorX,doorZ,facing,houseRoot,doorPivot,doorOpen:false,lockAssembly,lockDropping:false,lockDropTime:0,unlocked:false,keyCollected:false};houseInteriors.push(data);
 }
 makeHouse(-16,-105,0x353c3a,1.571);
-makeHouse(14,-75,0x4a3933,-1.571);
-makeHouse(30,-15,0x3d4937,-1.571);
+makeHouse(14,-105,0x4a3933,-1.571);
+makeHouse(-17,-75,0x3d4937,1.571);
 // Two extra village homes extend the settlement beyond the original three.
 makeHouse(-52,51,0x51463a,0.661);
 // New homes are distributed along the extended country roads and face their access lanes.
-makeHouse(72,54,0x4b5148,-0.484);
-makeHouse(-88,63,0x51483d,-1.166);
+makeHouse(45,70,0x4b5148,-2.78);
+makeHouse(-63,65,0x51483d,1.571);
 // More scattered homes make the countryside feel like a lived-in settlement.
-makeHouse(22,78,0x555047,-1.893);
-makeHouse(43,-45,0x46544a,-1.571);
-makeHouse(60,95,0x59483b,2.657);
-makeHouse(78,22,0x4a514e,1.414);
-makeHouse(130,24,0x51483f,-1.727);
-makeHouse(-52,20,0x4c5548,1.976);
-makeHouse(-55,83,0x5b5043,-2.639);
-makeHouse(-65,35,0x46504b,0.661);
-makeHouse(-72,48,0x574b40,0.503);
-makeHouse(-86,5,0x4c5548,-1.525);
-makeHouse(38,-82,0x51483f,-1.107);
-makeHouse(-34,-64,0x4d574e,1.942);
+makeHouse(75,92,0x555047,2.93);
+makeHouse(29,-75,0x46544a,-1.571);
+makeHouse(-100,91,0x59483b,2.55);
+makeHouse(123,48,0x4a514e,-1.45);
+makeHouse(-124,31,0x51483f,0.98);
+makeHouse(-18,-15,0x4c5548,1.571);
+makeHouse(20,60,0x5b5043,-1.571);
+makeHouse(-24,15,0x46504b,1.571);
+makeHouse(4,15,0x574b40,-1.571);
+makeHouse(-17,48,0x4c5548,1.571);
+makeHouse(34,-88,0x51483f,-1.8);
+makeHouse(-34,-64,0x4d574e,1.45);
 // The two new homes are freely enterable; the original three keep their key progression.
 for(const index of [3,4,5,6]){houseInteriors[index].keyCollected=true;houseInteriors[index].unlocked=true;houseInteriors[index].lockAssembly.visible=false;}
 
