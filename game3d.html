@@ -97,9 +97,9 @@ function makeHouse(x,z,accent=0x353c3a){
  box(x+.35,.62,z-2.45,.22,.58,.78,0x52645b);
  box(x-1.65,.72,z-2.58,.58,.12,.48,0xb08a5e);
  box(x-.55,.72,z-2.58,.58,.12,.48,0xb08a5e);
- // Full-size coffee table returned to the main seating area, in front of the sofa.
- box(x+.65,.48,z-.55,1.65,.12,.92,0x76563b);
- for(const dx of [-.68,.68])for(const dz of [-.34,.34])box(x+.65+dx,.25,z-.55+dz,.09,.42,.09,0x49392d);
+ // Broad coffee table sized to sit neatly within the rug, with an even border on all sides.
+ box(x,.48,z-.45,3.3,.12,2.3,0x76563b);
+ for(const dx of [-1.45,1.45])for(const dz of [-.95,.95])box(x+dx,.25,z-.45+dz,.10,.42,.10,0x49392d);
  // Simple, aligned two-drawer cabinet against the right wall.
  box(x+4.05,.48,z+.15,.58,.78,1.45,0x76563b);
  box(x+3.745,.43,z+.15,.045,.27,1.20,0xa7835b);
