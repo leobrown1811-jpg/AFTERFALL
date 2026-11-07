@@ -48,11 +48,11 @@ for(let i=0;i<180;i++){const x=Math.sin(i*91.7)*285,z=-300+(i*23.31)%600;const n
 for(let i=0;i<72;i++){const x=-310+i*8.7,z=-205+Math.sin(i*.43)*28;tree(x,z,1.2+(i%4)*.18);}
 for(let i=0;i<46;i++){const x=-220+i*9.5,z=205+Math.sin(i*.57)*24;tree(x,z,1.05+(i%3)*.2);}
 const meadowColors=[0x91a94e,0xb3a94f,0xd1bd67,0x718e42],patchGeo=new THREE.CircleGeometry(1,9);
-const patches=new THREE.InstancedMesh(patchGeo,mat(0x91a94e),48),patchDummy=new THREE.Object3D();
-for(let i=0;i<48;i++){const x=Math.sin(i*12.31)*145,z=Math.cos(i*7.17)*145;if(Math.abs(x)<18&&Math.abs(z)<18){patchDummy.scale.setScalar(0);patchDummy.updateMatrix();patches.setMatrixAt(i,patchDummy.matrix);continue;}patchDummy.position.set(x,.006,z);patchDummy.rotation.set(-Math.PI/2,0,0);patchDummy.scale.setScalar(2.4+(i%4)*.8);patchDummy.updateMatrix();patches.setMatrixAt(i,patchDummy.matrix);}
+const patches=new THREE.InstancedMesh(patchGeo,mat(0xffffff),48),patchDummy=new THREE.Object3D();
+for(let i=0;i<48;i++){const x=Math.sin(i*12.31)*145,z=Math.cos(i*7.17)*145;if(Math.abs(x)<18&&Math.abs(z)<18){patchDummy.scale.setScalar(0);patchDummy.updateMatrix();patches.setMatrixAt(i,patchDummy.matrix);continue;}patchDummy.position.set(x,.006,z);patchDummy.rotation.set(-Math.PI/2,0,0);patchDummy.scale.setScalar(2.4+(i%4)*.8);patchDummy.updateMatrix();patches.setMatrixAt(i,patchDummy.matrix);patches.setColorAt(i,new THREE.Color(meadowColors[i%meadowColors.length]));}
 scene.add(patches);
 const flowerStemGeo=new THREE.CylinderGeometry(.018,.025,.28,4),flowerBloomGeo=new THREE.SphereGeometry(.095,5,4);
-const flowerStems=new THREE.InstancedMesh(flowerStemGeo,mat(0x52713b),115),flowerBlooms=new THREE.InstancedMesh(flowerBloomGeo,mat(0xf0d66e),115),flowerDummy=new THREE.Object3D();
+const flowerStems=new THREE.InstancedMesh(flowerStemGeo,mat(0x52713b),115),flowerDummy=new THREE.Object3D();
 const bloomMaterials=[mat(0xf0d66e),mat(0xf4e7bd),mat(0xe9a64e),mat(0xd9d0a0)];
 const bloomMeshes=bloomMaterials.map(material=>new THREE.InstancedMesh(flowerBloomGeo,material,115));bloomMeshes.forEach(mesh=>scene.add(mesh));
 for(let i=0;i<115;i++){const x=Math.sin(i*8.17)*135,z=Math.cos(i*5.91)*135;flowerDummy.position.set(x,.14,z);flowerDummy.scale.setScalar(Math.abs(x)<15&&Math.abs(z)<15?0:1);flowerDummy.updateMatrix();flowerStems.setMatrixAt(i,flowerDummy.matrix);flowerDummy.position.y=.31;flowerDummy.scale.setScalar(Math.abs(x)<15&&Math.abs(z)<15?0:1);flowerDummy.updateMatrix();bloomMeshes[i%4].setMatrixAt(i,flowerDummy.matrix);}
