@@ -214,9 +214,18 @@ document.querySelector("#skinClose").addEventListener("click",closeSkinScreen);
 document.querySelector("#skinOpen").addEventListener("click",()=>{document.querySelector("#skinScreen").style.display="flex"});
 
 const leftLeg=new THREE.Group(),rightLeg=new THREE.Group();leftLeg.position.set(-.19,.83,0);rightLeg.position.set(.19,.83,0);avatar.add(leftLeg,rightLeg);
-limb(leftLeg,new THREE.CapsuleGeometry(.13,.62,4,8),pants,0,-.35,0);limb(rightLeg,new THREE.CapsuleGeometry(.13,.62,4,8),pants,0,-.35,0);
-limb(leftLeg,new THREE.BoxGeometry(.25,.16,.4),boots,0,-.71,-.04);limb(rightLeg,new THREE.BoxGeometry(.25,.16,.4),boots,0,-.71,-.04);
-const leftArm=limb(avatar,new THREE.CapsuleGeometry(.11,.55,4,8),shirt,-.48,1.32,0),rightArm=limb(avatar,new THREE.CapsuleGeometry(.11,.55,4,8),shirt,.48,1.32,0);
+limb(leftLeg,new THREE.CapsuleGeometry(.145,.64,5,10),pants,0,-.35,0);limb(rightLeg,new THREE.CapsuleGeometry(.145,.64,5,10),pants,0,-.35,0);
+// Continuous ankle cuffs and boots prevent visible gaps at the feet.
+limb(leftLeg,new THREE.CylinderGeometry(.145,.15,.19,12),pants,0,-.59,0);limb(rightLeg,new THREE.CylinderGeometry(.145,.15,.19,12),pants,0,-.59,0);
+limb(leftLeg,new THREE.BoxGeometry(.29,.2,.46),boots,0,-.7,-.055);limb(rightLeg,new THREE.BoxGeometry(.29,.2,.46),boots,0,-.7,-.055);
+// Broad shoulder joints overlap the torso and upper arms for a joined silhouette.
+for(const x of [-1,1]){
+ const shoulder=limb(avatar,new THREE.SphereGeometry(.19,14,12),shirt,x*.405,1.53,0);shoulder.scale.set(1,.9,1);
+ const upper=limb(avatar,new THREE.CapsuleGeometry(.135,.52,5,10),shirt,x*.465,1.29,0);upper.rotation.z=-x*.055;
+ const elbow=limb(avatar,new THREE.SphereGeometry(.14,12,10),shirt,x*.48,1.02,0);
+}
+const neck=limb(avatar,new THREE.CylinderGeometry(.14,.17,.22,12),skin,0,1.84,0);
+const collar=limb(avatar,new THREE.CylinderGeometry(.205,.22,.12,12),shirt,0,1.76,0);
 const keys={};addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(e.key.toLowerCase()))e.preventDefault()});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);addEventListener('blur',()=>Object.keys(keys).forEach(k=>keys[k]=false));
 let jumpQueued=false;document.querySelector('#jump').addEventListener('pointerdown',e=>{e.preventDefault();jumpQueued=true});let sprintTouch=false;const sprintBtn=document.querySelector('#sprint');sprintBtn.addEventListener('pointerdown',e=>{e.preventDefault();sprintTouch=true;sprintBtn.classList.add('held')});function stopSprint(){sprintTouch=false;sprintBtn.classList.remove('held')}['pointerup','pointercancel','lostpointercapture'].forEach(ev=>sprintBtn.addEventListener(ev,stopSprint));
 let joy={x:0,y:0},joyId=null;const area=document.querySelector('#stickArea'),knob=document.querySelector('#stick');function setJoy(e){const r=area.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=e.clientX-cx,dy=e.clientY-cy,max=48,len=Math.hypot(dx,dy)||1,k=Math.min(1,max/len);joy.x=dx*k/max;joy.y=dy*k/max;knob.style.transform='translate('+dx*k+'px,'+dy*k+'px)'}area.addEventListener('pointerdown',e=>{e.preventDefault();joyId=e.pointerId;area.setPointerCapture(joyId);setJoy(e)});area.addEventListener('pointermove',e=>{if(e.pointerId===joyId)setJoy(e)});function releaseJoy(){joyId=null;joy={x:0,y:0};knob.style.transform='translate(0,0)'}area.addEventListener('pointerup',releaseJoy);area.addEventListener('pointercancel',releaseJoy);
