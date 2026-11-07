@@ -62,27 +62,60 @@ function drawStats(){ui.food.textContent=collected.food+' / 2';ui.water.textCont
 function circle(x,y,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}
 function rounded(x,y,w,h,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}
 function draw(){
-ctx.clearRect(0,0,W,H);ctx.fillStyle='#456b48';ctx.fillRect(0,0,W,H);
-// grass texture
-ctx.strokeStyle='rgba(220,235,180,.10)';ctx.lineWidth=2;
-for(let i=0;i<85;i++){let x=(i*137)%W,y=(i*83)%H;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+8,y-5);ctx.stroke()}
-// road and paths
-ctx.fillStyle='#77796c';ctx.fillRect(0,250,W,42);ctx.fillStyle='#aaa58c';ctx.fillRect(0,269,W,3);
-ctx.fillStyle='#8d9279';ctx.fillRect(785,0,35,H);
-ctx.fillStyle='#c7bd9d';ctx.fillRect(795,0,4,H);
-// buildings / obstacles
-obstacles.forEach((o,i)=>{rounded(o.x,o.y,o.w,o.h,9,'#7c6953');rounded(o.x+8,o.y+8,o.w-16,o.h-16,6,'#a28b69');ctx.fillStyle='#453e34';ctx.fillRect(o.x+o.w/2-13,o.y+o.h/2-8,26,32);ctx.fillStyle='#d5c59b';ctx.fillRect(o.x+18,o.y+18,22,16)});
- // shelter
-ctx.fillStyle='rgba(255,220,120,.18)';circle(shelter.x,shelter.y,shelter.r+13,'rgba(255,220,120,.16)');
-rounded(shelter.x-37,shelter.y-30,74,60,8,'#d9d1b8');ctx.fillStyle='#8c5940';ctx.beginPath();ctx.moveTo(shelter.x-44,shelter.y-28);ctx.lineTo(shelter.x,shelter.y-60);ctx.lineTo(shelter.x+44,shelter.y-28);ctx.closePath();ctx.fill();ctx.fillStyle='#334b3a';ctx.fillRect(shelter.x-10,shelter.y+1,20,29);
-ctx.fillStyle='#fff4cf';ctx.font='bold 14px system-ui';ctx.textAlign='center';ctx.fillText('SAFE SHELTER',shelter.x,shelter.y+55);
-// supplies
-items.forEach(it=>{if(it.taken)return;circle(it.x,it.y,15,it.type==='food'?'#e8bd58':'#65bde0');ctx.fillStyle='#27352b';ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillText(it.type==='food'?'F':'W',it.x,it.y+6)});
-// family followers
-family.forEach((p,i)=>{circle(p.x,p.y,11,p.color);circle(p.x,p.y-3,5,'#f2d5bd');});
-// player
-circle(player.x,player.y,15,'#e8eee5');circle(player.x,player.y-4,7,'#384e70');ctx.fillStyle='#fff';ctx.font='bold 12px system-ui';ctx.textAlign='left';ctx.fillText('YOU',player.x+18,player.y-13);
-if(won){ctx.fillStyle='rgba(8,18,12,.72)';ctx.fillRect(0,0,W,H);ctx.textAlign='center';ctx.fillStyle='#f4d27c';ctx.font='bold 42px system-ui';ctx.fillText('FAMILY SAFE!',W/2,H/2-10);ctx.fillStyle='white';ctx.font='20px system-ui';ctx.fillText('Mission complete — great work.',W/2,H/2+28)}
+ctx.clearRect(0,0,W,H);
+// Layered dry-country ground
+let ground=ctx.createLinearGradient(0,0,W,H);ground.addColorStop(0,'#55784d');ground.addColorStop(.55,'#466c45');ground.addColorStop(1,'#344f39');ctx.fillStyle=ground;ctx.fillRect(0,0,W,H);
+for(let i=0;i<180;i++){let x=(i*137)%W,y=(i*83)%H;ctx.fillStyle=i%3===0?'rgba(220,205,135,.12)':'rgba(20,45,25,.12)';ctx.beginPath();ctx.ellipse(x,y,3+(i%4),1.5,((i%7)/7),0,Math.PI*2);ctx.fill()}
+// Bushes and small trees around the edges
+const trees=[[42,70],[325,55],[565,80],[855,90],[55,420],[455,410],[760,490],[860,500],[165,525],[710,35]];
+trees.forEach(([x,y],i)=>{circle(x+3,y+8,17,'rgba(15,30,18,.22)');circle(x,y,17,i%2?'#31563a':'#3c6340');circle(x-5,y-5,9,'#64804b');circle(x+6,y+3,7,'#4b7042')});
+// Worn road with shoulders and dashed centre line
+ctx.fillStyle='#8a8068';ctx.fillRect(0,244,W,56);ctx.fillStyle='#65685c';ctx.fillRect(0,250,W,44);ctx.setLineDash([22,18]);ctx.strokeStyle='#d0bd8a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,272);ctx.lineTo(W,272);ctx.stroke();ctx.setLineDash([]);
+// Side track leading to shelter
+ctx.fillStyle='#9b9275';ctx.fillRect(782,0,48,H);ctx.fillStyle='#c8b994';ctx.fillRect(801,0,3,H);
+// Buildings with roofs, walls, doors and windows
+obstacles.forEach((o,i)=>{
+  ctx.fillStyle='rgba(15,25,18,.25)';rounded(o.x+5,o.y+8,o.w,o.h,10,'rgba(15,25,18,.25)');
+  rounded(o.x,o.y,o.w,o.h,9,'#665744');
+  rounded(o.x+5,o.y+5,o.w-10,o.h-10,7,i%2?'#b29a72':'#a58c68');
+  ctx.fillStyle='#786044';ctx.fillRect(o.x+o.w/2-15,o.y+o.h-39,30,34);
+  ctx.fillStyle='#d7c79d';ctx.fillRect(o.x+18,o.y+18,24,18);ctx.fillRect(o.x+o.w-42,o.y+18,24,18);
+  ctx.strokeStyle='#705d45';ctx.lineWidth=3;ctx.strokeRect(o.x+18,o.y+18,24,18);ctx.strokeRect(o.x+o.w-42,o.y+18,24,18);
+  ctx.fillStyle='#d8c59a';ctx.fillRect(o.x+o.w/2-2,o.y+o.h-25,4,4);
+});
+// Safe shelter marker and detailed shelter
+ctx.fillStyle='rgba(255,220,120,.16)';circle(shelter.x,shelter.y,shelter.r+19,'rgba(255,220,120,.16)');
+ctx.fillStyle='rgba(20,25,18,.25)';rounded(shelter.x-39,shelter.y-23,78,62,8,'rgba(20,25,18,.25)');
+rounded(shelter.x-38,shelter.y-34,76,62,8,'#d9d0b7');
+ctx.fillStyle='#85513d';ctx.beginPath();ctx.moveTo(shelter.x-47,shelter.y-31);ctx.lineTo(shelter.x,shelter.y-65);ctx.lineTo(shelter.x+47,shelter.y-31);ctx.closePath();ctx.fill();
+ctx.fillStyle='#344c3c';ctx.fillRect(shelter.x-11,shelter.y-3,22,31);
+ctx.fillStyle='#f0d28c';ctx.fillRect(shelter.x-29,shelter.y-20,14,13);ctx.fillRect(shelter.x+15,shelter.y-20,14,13);
+ctx.fillStyle='#fff4cf';ctx.font='bold 14px system-ui';ctx.textAlign='center';ctx.fillText('SAFE SHELTER',shelter.x,shelter.y+48);
+// Supply packs: food crates and blue water bottles
+items.forEach(it=>{
+  if(it.taken)return;
+  ctx.fillStyle='rgba(15,25,18,.25)';circle(it.x+2,it.y+5,18,'rgba(15,25,18,.25)');
+  if(it.type==='food'){
+    rounded(it.x-14,it.y-12,28,25,4,'#b77b38');rounded(it.x-11,it.y-9,22,19,3,'#e8bd58');
+    ctx.strokeStyle='#8d5d2c';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(it.x-8,it.y-7);ctx.lineTo(it.x+8,it.y+8);ctx.moveTo(it.x+8,it.y-7);ctx.lineTo(it.x-8,it.y+8);ctx.stroke();
+    ctx.fillStyle='#fff3d1';ctx.font='bold 10px system-ui';ctx.textAlign='center';ctx.fillText('FOOD',it.x,it.y+3);
+  }else{
+    rounded(it.x-9,it.y-14,18,28,5,'#55a9d1');rounded(it.x-5,it.y-18,10,6,2,'#d8e9e9');
+    ctx.fillStyle='#d9f4f6';ctx.fillRect(it.x-5,it.y-3,10,9);ctx.fillStyle='#234b5b';ctx.font='bold 9px system-ui';ctx.textAlign='center';ctx.fillText('W',it.x,it.y+4);
+  }
+});
+// Characters with shadows, bodies, heads and simple clothing
+family.forEach((p,i)=>{
+  circle(p.x+2,p.y+5,12,'rgba(12,24,15,.28)');
+  rounded(p.x-8,p.y-4,16,19,6,p.color);
+  circle(p.x,p.y-9,7,'#e9c6a8');
+  ctx.fillStyle=i===1?'#493c35':'#594737';ctx.beginPath();ctx.arc(p.x,p.y-11,7,Math.PI,Math.PI*2);ctx.fill();
+});
+circle(player.x+2,player.y+6,16,'rgba(12,24,15,.3)');
+rounded(player.x-10,player.y-7,20,24,7,'#385b83');circle(player.x,player.y-11,8,'#efc9a9');
+ctx.fillStyle='#273a52';ctx.beginPath();ctx.arc(player.x,player.y-13,8,Math.PI,Math.PI*2);ctx.fill();
+ctx.fillStyle='#fff';ctx.font='bold 12px system-ui';ctx.textAlign='left';ctx.fillText('YOU',player.x+18,player.y-13);
+if(won){ctx.fillStyle='rgba(8,18,12,.76)';ctx.fillRect(0,0,W,H);ctx.textAlign='center';ctx.fillStyle='#f4d27c';ctx.font='bold 42px system-ui';ctx.fillText('FAMILY SAFE!',W/2,H/2-10);ctx.fillStyle='white';ctx.font='20px system-ui';ctx.fillText('Mission complete — great work.',W/2,H/2+28)}
 }
 function blocked(x,y){return obstacles.some(o=>x+11>o.x&&x-11<o.x+o.w&&y+11>o.y&&y-11<o.y+o.h)}
 function move(){
