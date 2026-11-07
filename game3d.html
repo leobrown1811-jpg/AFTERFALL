@@ -116,7 +116,10 @@ function makeHouse(x,z,accent=0x353c3a,facing=0){
  for(const child of created)houseRoot.attach(child);
  houseRoot.rotation.y=facing;
  if(Math.abs(facing)>0.001){for(let i=wallStart;i<solidWalls.length;i++){const b=solidWalls[i],dx=b.x-x,dz=b.z-z;b.x=x+Math.cos(facing)*dx+Math.sin(facing)*dz;b.z=z-Math.sin(facing)*dx+Math.cos(facing)*dz;if(Math.abs(Math.abs(facing)-Math.PI/2)<.01){const t=b.w;b.w=b.d;b.d=t;}}}
- const doorX=x+Math.sin(facing)*(dep/2),doorZ=z+Math.cos(facing)*(dep/2);
+ // Slightly enlarge each complete home, including roof, doorway, windows and furnishings.
+ houseRoot.scale.setScalar(1.15);
+ for(let i=wallStart;i<solidWalls.length;i++){const b=solidWalls[i];b.x=x+(b.x-x)*1.15;b.z=z+(b.z-z)*1.15;b.w*=1.15;b.d*=1.15;}
+ const doorX=x+Math.sin(facing)*(dep*1.15/2),doorZ=z+Math.cos(facing)*(dep*1.15/2);
  const data={x,z,w,dep,roof,front,doorX,doorZ,facing,houseRoot,doorPivot,doorOpen:false,lockAssembly,lockDropping:false,lockDropTime:0,unlocked:false,keyCollected:false};houseInteriors.push(data);
 }
 makeHouse(-17,-22,0x353c3a,Math.PI/2);
@@ -126,8 +129,8 @@ makeHouse(-34,12,0x3d4937,Math.PI/2);
 makeHouse(34,-76,0x454b58);
 makeHouse(-38,48,0x51463a,Math.PI/2);
 // New homes are distributed along the extended country roads and face their access lanes.
-makeHouse(145,145,0x4b5148,Math.PI/4);
-makeHouse(-176,168,0x51483d,-Math.PI/4);
+makeHouse(145,145,0x4b5148,-1.947);
+makeHouse(-176,168,0x51483d,2.111);
 // The two new homes are freely enterable; the original three keep their key progression.
 for(const index of [3,4,5,6]){houseInteriors[index].keyCollected=true;houseInteriors[index].unlocked=true;houseInteriors[index].lockAssembly.visible=false;}
 
