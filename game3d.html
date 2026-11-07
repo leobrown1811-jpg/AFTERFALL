@@ -49,14 +49,14 @@ function makeHouse(x,z,accent=0x353c3a){
  wall(x-3.05,.55,front,3.9,1.1,.24,0x898678);
  wall(x-3.05,2.55,front,3.9,1.1,.24,0x898678);
  // Full-height solid jambs define the window edges and prevent exposed side gaps.
- wall(x-4.0,1.55,front,.24,.9,.28,0x898678);
- wall(x-2.1,1.55,front,.24,.9,.28,0x898678);
+ wall(x-4.0,1.55,front,.34,1.02,.32,0x898678);
+ wall(x-2.1,1.55,front,.34,1.02,.32,0x898678);
  // Right front section; central 2.2m doorway remains open.
  // Right front section now has a second matching window opening; the central doorway stays clear.
  wall(x+3.05,.55,front,3.9,1.1,.24,0x898678);
  wall(x+3.05,2.55,front,3.9,1.1,.24,0x898678);
- wall(x+2.1,1.55,front,.24,.9,.28,0x898678);
- wall(x+4.0,1.55,front,.24,.9,.28,0x898678);
+ wall(x+2.1,1.55,front,.34,1.02,.32,0x898678);
+ wall(x+4.0,1.55,front,.34,1.02,.32,0x898678);
  const roof=box(x,3.25,z,10.7,.4,8.7,accent);wallMeshes.push(roof);
  box(x,.045,z,10.15,.12,8.15,0x9a8c70);
  // Window frame and inset glass, aligned inside the opening rather than floating over the wall.
@@ -85,15 +85,15 @@ function makeHouse(x,z,accent=0x353c3a){
  box(x+.35,.62,z-2.45,.22,.58,.78,0x52645b);
  box(x-1.65,.72,z-2.58,.58,.12,.48,0xb08a5e);
  box(x-.55,.72,z-2.58,.58,.12,.48,0xb08a5e);
- // Separate low coffee table in front of the sofa.
- box(x+.65,.39,z-.65,1.35,.12,.72,0x76563b);
- for(const dx of [-.55,.55])for(const dz of [-.27,.27])box(x+.65+dx,.20,z-.65+dz,.07,.28,.07,0x49392d);
- // Low two-drawer sideboard against the right wall, away from the table.
- box(x+4.05,.48,z+.15,.55,.78,1.45,0x76563b);
- box(x+3.75,.55,z-.27,.035,.22,1.12,0xa7835b);
- box(x+3.72,.55,z-.27,.05,.07,.07,0xd7c39a);
- box(x+3.75,.85,z-.27,.035,.22,1.12,0xa7835b);
- box(x+3.72,.85,z-.27,.05,.07,.07,0xd7c39a);
+ // Full-size coffee table restored to its earlier dimensions and moved to the old box's spot.
+ box(x+2.75,.48,z-1.75,1.65,.12,.92,0x76563b);
+ for(const dx of [-.68,.68])for(const dz of [-.34,.34])box(x+2.75+dx,.25,z-1.75+dz,.09,.42,.09,0x49392d);
+ // Simple, aligned two-drawer cabinet against the right wall.
+ box(x+4.05,.48,z+.15,.58,.78,1.45,0x76563b);
+ box(x+3.745,.43,z+.15,.045,.27,1.20,0xa7835b);
+ box(x+3.745,.78,z+.15,.045,.27,1.20,0xa7835b);
+ box(x+3.705,.43,z+.15,.07,.07,.07,0xd7c39a);
+ box(x+3.705,.78,z+.15,.07,.07,.07,0xd7c39a);
  // Warm interior light makes the walls and furnishings readable.
  const lamp=new THREE.PointLight(0xffd9a1,7,15);lamp.position.set(x,2.45,z);scene.add(lamp);
  const data={x,z,w,dep,roof};houseInteriors.push(data);
