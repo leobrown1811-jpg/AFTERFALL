@@ -59,18 +59,23 @@ function makeHouse(x,z,accent=0x353c3a){
  wall(x+4.495,1.55,front,1.01,1.1,.24,0x898678);
  const roof=box(x,3.25,z,10.7,.4,8.7,accent);wallMeshes.push(roof);
  box(x,.045,z,10.15,.12,8.15,0x9a8c70);
- // Window frame and inset glass, aligned inside the opening rather than floating over the wall.
- const wz=front-.02;
+ // Glass sits within the opening; the full window casing is mounted proud of the exterior wall face.
+ const glassZ=front+.015, outerFrameZ=front+.205, innerFrameZ=front-.145;
  for(const wx of [x-3.05,x+3.05]){
-   // Full casing, sill and divided panes close the visual gaps around the opening.
-   box(wx,1.55,wz,1.88,.10,.16,0x554b3d);
-   box(wx,1.55,wz-.055,1.58,.70,.045,0x78999b);
-   box(wx-.86,1.55,wz-.10,.12,.98,.16,0xd0c6a8);
-   box(wx+.86,1.55,wz-.10,.12,.98,.16,0xd0c6a8);
-   box(wx,2.04,wz-.10,1.84,.12,.16,0xd0c6a8);
-   box(wx,.99,wz-.10,1.84,.14,.20,0xd0c6a8);
-   box(wx,1.55,wz-.12,.07,.78,.16,0xd0c6a8);
-   box(wx,1.55,wz-.12,1.72,.07,.16,0xd0c6a8);
+   // Inset blue glass remains visible through the opening from both sides.
+   box(wx,1.55,glassZ,1.58,.70,.035,0x78999b);
+   // Exterior frame: projecting just beyond the outside wall surface so it cannot be hidden.
+   box(wx-.86,1.55,outerFrameZ,.12,.98,.12,0xd0c6a8);
+   box(wx+.86,1.55,outerFrameZ,.12,.98,.12,0xd0c6a8);
+   box(wx,2.04,outerFrameZ,1.84,.12,.12,0xd0c6a8);
+   box(wx,.99,outerFrameZ,1.84,.14,.16,0xd0c6a8);
+   box(wx,1.55,outerFrameZ,.07,.78,.12,0xd0c6a8);
+   box(wx,1.55,outerFrameZ,1.72,.07,.12,0xd0c6a8);
+   // Matching slim inner casing keeps the window finished from inside too.
+   box(wx-.86,1.55,innerFrameZ,.09,.94,.08,0xd0c6a8);
+   box(wx+.86,1.55,innerFrameZ,.09,.94,.08,0xd0c6a8);
+   box(wx,2.04,innerFrameZ,1.78,.09,.08,0xd0c6a8);
+   box(wx,.99,innerFrameZ,1.78,.10,.08,0xd0c6a8);
  }
  // Open doorway trim; no solid door blocks the entrance.
  box(x-1.12,1.55,front-.08,.12,3.1,.16,0x594638);
