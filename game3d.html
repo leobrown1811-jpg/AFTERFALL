@@ -48,16 +48,17 @@ function makeHouse(x,z,accent=0x353c3a){
  // Left front section with a 1.7m-wide window opening.
  wall(x-3.05,.55,front,3.9,1.1,.24,0x898678);
  wall(x-3.05,2.55,front,3.9,1.1,.24,0x898678);
- wall(x-4.0,1.55,front,.2,.9,.24,0x898678);
- wall(x-2.1,1.55,front,.2,.9,.24,0x898678);
+ // Full-height solid jambs define the window edges and prevent exposed side gaps.
+ wall(x-4.0,1.55,front,.24,.9,.28,0x898678);
+ wall(x-2.1,1.55,front,.24,.9,.28,0x898678);
  // Right front section; central 2.2m doorway remains open.
  // Right front section now has a second matching window opening; the central doorway stays clear.
  wall(x+3.05,.55,front,3.9,1.1,.24,0x898678);
  wall(x+3.05,2.55,front,3.9,1.1,.24,0x898678);
- wall(x+2.1,1.55,front,.2,.9,.24,0x898678);
- wall(x+4.0,1.55,front,.2,.9,.24,0x898678);
+ wall(x+2.1,1.55,front,.24,.9,.28,0x898678);
+ wall(x+4.0,1.55,front,.24,.9,.28,0x898678);
  const roof=box(x,3.25,z,10.7,.4,8.7,accent);wallMeshes.push(roof);
- box(x,.035,z,10.65,.20,8.65,0x9a8c70);
+ box(x,.045,z,10.15,.12,8.15,0x9a8c70);
  // Window frame and inset glass, aligned inside the opening rather than floating over the wall.
  const wz=front-.02;
  for(const wx of [x-3.05,x+3.05]){
@@ -75,25 +76,24 @@ function makeHouse(x,z,accent=0x353c3a){
  box(x-1.12,1.55,front-.08,.12,3.1,.16,0x594638);
  box(x+1.12,1.55,front-.08,.12,3.1,.16,0x594638);
  box(x,3.02,front-.08,2.35,.14,.16,0x594638);
- // Everyday living-room furniture: rug, sofa, coffee table and a small cabinet.
- box(x+.55,.145,z-.25,4.2,.06,3.0,0x8b795f);
- // Sofa against the rear wall, with seat, back and two arms.
- box(x+.35,.48,z-2.65,3.15,.42,.92,0x52645b);
- box(x+.35,.98,z-3.02,3.15,.78,.30,0x65796e);
- box(x-1.22,.72,z-2.65,.34,.78,.92,0x52645b);
- box(x+1.92,.72,z-2.65,.34,.78,.92,0x52645b);
- // Two contrasting cushions.
- box(x-.48,.78,z-2.78,.72,.18,.58,0xb08a5e);
- box(x+.62,.78,z-2.78,.72,.18,.58,0xb08a5e);
- // Low coffee table in the centre of the room.
- box(x+.35,.48,z+.05,1.65,.12,.92,0x76563b);
- for(const dx of [-.68,.68])for(const dz of [-.34,.34])box(x+.35+dx,.25,z+.05+dz,.09,.42,.09,0x49392d);
- // Small side cabinet with visible drawer fronts and knobs.
- box(x+3.65,.55,z+1.05,1.05,.95,.62,0x76563b);
- box(x+3.65,.68,z+.72,.82,.25,.035,0xa7835b);
- box(x+3.65,.68,z+.68,.08,.08,.05,0xd7c39a);
- box(x+3.65,.98,z+.72,.82,.25,.035,0xa7835b);
- box(x+3.65,.98,z+.68,.08,.08,.05,0xd7c39a);
+ // Compact living-room arrangement with clear gaps between every item.
+ box(x,.115,z-.45,3.8,.035,2.8,0x8b795f); // flat rug
+ // Two-seat sofa along the rear half of the room.
+ box(x-1.0,.43,z-2.45,2.65,.34,.78,0x52645b);
+ box(x-1.0,.83,z-2.82,2.65,.58,.22,0x65796e);
+ box(x-2.35,.62,z-2.45,.22,.58,.78,0x52645b);
+ box(x+.35,.62,z-2.45,.22,.58,.78,0x52645b);
+ box(x-1.65,.72,z-2.58,.58,.12,.48,0xb08a5e);
+ box(x-.55,.72,z-2.58,.58,.12,.48,0xb08a5e);
+ // Separate low coffee table in front of the sofa.
+ box(x+.65,.39,z-.65,1.35,.12,.72,0x76563b);
+ for(const dx of [-.55,.55])for(const dz of [-.27,.27])box(x+.65+dx,.20,z-.65+dz,.07,.28,.07,0x49392d);
+ // Low two-drawer sideboard against the right wall, away from the table.
+ box(x+4.05,.48,z+.15,.55,.78,1.45,0x76563b);
+ box(x+3.75,.55,z-.27,.035,.22,1.12,0xa7835b);
+ box(x+3.72,.55,z-.27,.05,.07,.07,0xd7c39a);
+ box(x+3.75,.85,z-.27,.035,.22,1.12,0xa7835b);
+ box(x+3.72,.85,z-.27,.05,.07,.07,0xd7c39a);
  // Warm interior light makes the walls and furnishings readable.
  const lamp=new THREE.PointLight(0xffd9a1,7,15);lamp.position.set(x,2.45,z);scene.add(lamp);
  const data={x,z,w,dep,roof};houseInteriors.push(data);
