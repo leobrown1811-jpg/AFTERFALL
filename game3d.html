@@ -217,12 +217,16 @@ const leftLeg=new THREE.Group(),rightLeg=new THREE.Group();leftLeg.position.set(
 limb(leftLeg,new THREE.CapsuleGeometry(.145,.64,5,10),pants,0,-.35,0);limb(rightLeg,new THREE.CapsuleGeometry(.145,.64,5,10),pants,0,-.35,0);
 // Continuous ankle cuffs and boots prevent visible gaps at the feet.
 limb(leftLeg,new THREE.CylinderGeometry(.145,.15,.19,12),pants,0,-.59,0);limb(rightLeg,new THREE.CylinderGeometry(.145,.15,.19,12),pants,0,-.59,0);
-limb(leftLeg,new THREE.BoxGeometry(.29,.2,.46),boots,0,-.7,-.055);limb(rightLeg,new THREE.BoxGeometry(.29,.2,.46),boots,0,-.7,-.055);
-// Broad shoulder joints overlap the torso and upper arms for a joined silhouette.
-for(const x of [-1,1]){
- const shoulder=limb(avatar,new THREE.SphereGeometry(.19,14,12),shirt,x*.405,1.53,0);shoulder.scale.set(1,.9,1);
- const upper=limb(avatar,new THREE.CapsuleGeometry(.135,.52,5,10),shirt,x*.465,1.29,0);upper.rotation.z=-x*.055;
- const elbow=limb(avatar,new THREE.SphereGeometry(.14,12,10),shirt,x*.48,1.02,0);
+limb(leftLeg,new THREE.BoxGeometry(.29,.2,.46),boots,0,-.7,.075);limb(rightLeg,new THREE.BoxGeometry(.29,.2,.46),boots,0,-.7,.075);
+// Articulated arms pivot at the shoulders, so the whole arm swings as one connected limb.
+const leftArm=new THREE.Group(),rightArm=new THREE.Group();
+leftArm.position.set(-.405,1.53,0);rightArm.position.set(.405,1.53,0);
+avatar.add(leftArm,rightArm);
+for(const [arm,side] of [[leftArm,-1],[rightArm,1]]){
+ limb(arm,new THREE.SphereGeometry(.19,14,12),shirt,0,0,0).scale.set(1,.9,1);
+ const upper=limb(arm,new THREE.CapsuleGeometry(.135,.52,5,10),shirt,side*.055,-.24,0);upper.rotation.z=-side*.055;
+ limb(arm,new THREE.SphereGeometry(.14,12,10),shirt,side*.075,-.49,0);
+ limb(arm,new THREE.CapsuleGeometry(.105,.34,5,10),skin,side*.075,-.68,0);
 }
 const neck=limb(avatar,new THREE.CylinderGeometry(.14,.17,.22,12),skin,0,1.84,0);
 const collar=limb(avatar,new THREE.CylinderGeometry(.205,.22,.12,12),shirt,0,1.76,0);
@@ -233,7 +237,7 @@ let lookPointer=null,lastX=0,lastY=0;canvas.addEventListener('pointerdown',e=>{l
 function collect(){let nearest=null,dist=2.7;for(const s of supplies){if(!s.visible)continue;const d=player.pos.distanceTo(s.position);if(d<dist){dist=d;nearest=s}}if(nearest){nearest.visible=false;found++;document.querySelector('#count').textContent='SUPPLIES: '+found+' / 3';document.querySelector('#message').textContent=found===3?'All supplies secured. Head to the lit beacon!':'Supply case secured! Keep exploring.'}else document.querySelector('#message').textContent='Move closer to a glowing supply case to collect it.'}
 document.querySelector('#interact').addEventListener('pointerdown',e=>{e.preventDefault();collect()});addEventListener('keydown',e=>{if(e.key.toLowerCase()==='e'&&!e.repeat)collect()});
 let previous=performance.now();function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-previous)/1000,.04);previous=now;
-const forward=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0)-joy.y,side=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+joy.x;const len=Math.hypot(forward,side);const moving=len>.08;const sprint=keys.shift||sprintTouch;const speed=player.speed*(sprint?1.65:1);if(moving){const f=forward/Math.max(1,len),s=side/Math.max(1,len),a=player.yaw;player.pos.x+=(-Math.sin(a)*f+Math.cos(a)*s)*speed*dt;player.pos.z+=(-Math.cos(a)*f-Math.sin(a)*s)*speed*dt;avatar.rotation.y=player.yaw-Math.atan2(s,f)+Math.PI}player.pos.x=THREE.MathUtils.clamp(player.pos.x,-52,52);player.pos.z=THREE.MathUtils.clamp(player.pos.z,-75,48);
+const forward=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0)-joy.y,side=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+joy.x;const len=Math.hypot(forward,side);const moving=len>.08;const sprint=keys.shift||sprintTouch;const speed=player.speed*(sprint?1.65:1);if(moving){const f=forward/Math.max(1,len),s=side/Math.max(1,len),a=player.yaw;const moveX=-Math.sin(a)*f+Math.cos(a)*s,moveZ=-Math.cos(a)*f-Math.sin(a)*s;player.pos.x+=moveX*speed*dt;player.pos.z+=moveZ*speed*dt;avatar.rotation.y=Math.atan2(moveX,moveZ)}player.pos.x=THREE.MathUtils.clamp(player.pos.x,-52,52);player.pos.z=THREE.MathUtils.clamp(player.pos.z,-75,48);
 if((jumpQueued||keys[' '])&&player.onGround){player.vertical=7.2;player.onGround=false}jumpQueued=false;player.vertical-=19*dt;player.pos.y+=player.vertical*dt;if(player.pos.y<=0){player.pos.y=0;player.vertical=0;player.onGround=true}
 avatar.position.copy(player.pos);avatar.position.y+=player.pos.y;if(moving){const swing=Math.sin(now*(sprint?0.014:0.01))*0.48;leftLeg.rotation.x=swing;rightLeg.rotation.x=-swing;leftArm.rotation.x=-swing*.7;rightArm.rotation.x=swing*.7}else{leftLeg.rotation.x=rightLeg.rotation.x=leftArm.rotation.x=rightArm.rotation.x=0}
 const pitch=camera.userData.pitch||.18;const target=new THREE.Vector3(player.pos.x,player.pos.y+1.35,player.pos.z);const behind=new THREE.Vector3(Math.sin(player.yaw)*6,2.5+pitch*2,Math.cos(player.yaw)*6);const desired=target.clone().add(behind);camera.position.lerp(desired,1-Math.pow(.001,dt));camera.lookAt(target.clone().add(new THREE.Vector3(0,pitch*2,0)));
