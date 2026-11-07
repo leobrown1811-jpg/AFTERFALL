@@ -51,16 +51,22 @@ function makeHouse(x,z,accent=0x353c3a){
  wall(x-4.0,1.55,front,.2,.9,.24,0x898678);
  wall(x-2.1,1.55,front,.2,.9,.24,0x898678);
  // Right front section; central 2.2m doorway remains open.
- wall(x+3.05,h/2,front,3.9,h,.24,0x898678);
+ // Right front section now has a second matching window opening; the central doorway stays clear.
+ wall(x+3.05,.55,front,3.9,1.1,.24,0x898678);
+ wall(x+3.05,2.55,front,3.9,1.1,.24,0x898678);
+ wall(x+2.1,1.55,front,.2,.9,.24,0x898678);
+ wall(x+4.0,1.55,front,.2,.9,.24,0x898678);
  const roof=box(x,3.25,z,10.7,.4,8.7,accent);wallMeshes.push(roof);
- box(x,.04,z,9.45,.12,7.45,0x9a8c70);
+ box(x,.035,z,10.12,.16,8.12,0x9a8c70);
  // Window frame and inset glass, aligned inside the opening rather than floating over the wall.
- const wx=x-3.05,wz=front-.02;
- box(wx,1.55,wz,1.82,.09,.12,0x554b3d);
- box(wx,1.55,wz-.035,1.62,.72,.035,0x78999b);
- box(wx,1.55,wz-.06,.07,.82,.08,0xd0c6a8);
- box(wx,1.55,wz-.06,1.72,.07,.08,0xd0c6a8);
- box(wx,1.55,wz-.075,.055,.72,.08,0xd0c6a8);
+ const wz=front-.02;
+ for(const wx of [x-3.05,x+3.05]){
+   box(wx,1.55,wz,1.82,.09,.12,0x554b3d);
+   box(wx,1.55,wz-.035,1.62,.72,.035,0x78999b);
+   box(wx,1.55,wz-.06,.07,.82,.08,0xd0c6a8);
+   box(wx,1.55,wz-.06,1.72,.07,.08,0xd0c6a8);
+   box(wx,1.55,wz-.075,.055,.72,.08,0xd0c6a8);
+ }
  // Open doorway trim; no solid door blocks the entrance.
  box(x-1.12,1.55,front-.08,.12,3.1,.16,0x594638);
  box(x+1.12,1.55,front-.08,.12,3.1,.16,0x594638);
@@ -283,7 +289,7 @@ if((jumpQueued||keys[' '])&&player.onGround){player.vertical=7.2;player.onGround
 avatar.position.copy(player.pos);avatar.position.y+=player.pos.y;if(moving){const swing=Math.sin(now*(sprint?0.014:0.01))*0.48;leftLeg.rotation.x=swing;rightLeg.rotation.x=-swing;leftArm.rotation.x=-swing*.7;rightArm.rotation.x=swing*.7}else{leftLeg.rotation.x=rightLeg.rotation.x=leftArm.rotation.x=rightArm.rotation.x=0}
 const pitch=camera.userData.pitch||.18;const target=new THREE.Vector3(player.pos.x,player.pos.y+1.35,player.pos.z);const behind=new THREE.Vector3(Math.sin(player.yaw)*6,2.5+pitch*2,Math.cos(player.yaw)*6);const desired=target.clone().add(behind);const camRay=new THREE.Raycaster(target,behind.clone().normalize(),0,behind.length());const wallHits=camRay.intersectObjects(wallMeshes,false);if(wallHits.length)desired.copy(target).addScaledVector(behind.clone().normalize(),Math.max(1.15,wallHits[0].distance-.35));
 // Hide only the active house roof while the player is inside its footprint. This exposes the interior without moving the approved camera.
-for(const house of houseInteriors){const inside=Math.abs(player.pos.x-house.x)<house.w/2-.35&&Math.abs(player.pos.z-house.z)<house.dep/2-.35;house.roof.visible=!inside;}
+for(const house of houseInteriors){house.roof.visible=true;}
 camera.position.lerp(desired,1-Math.pow(.001,dt));camera.lookAt(target.clone().add(new THREE.Vector3(0,pitch*2,0)));
 supplies.forEach((s,i)=>{s.rotation.y+=dt*.45;s.position.y=.65+Math.sin(now*.002+i)*.09});if(found===5&&player.pos.distanceTo(new THREE.Vector3(18,0,-35))<4)document.querySelector('#message').textContent='FIELD TEST COMPLETE — you reached the beacon with all supplies.';
 renderer.render(scene,camera)}
