@@ -26,17 +26,17 @@ main:not(.playing) #stats,main:not(.playing) #mission,main:not(.playing) .game-w
 </head>
 <body>
 <main>
-<header><div><h1>AFTER<span>FALL</span></h1><div class="tag">SURVIVAL IS A SKILL · TEAM TEST BUILD 03</div></div><div><button id="editFamily">Team &amp; Friends lobby</button> <button id="restart">Restart mission</button></div></header>
-<section id="lobby" class="lobby"><h2>Team &amp; Friends lobby</h2><p>Build your team before the mission. Add or remove team members, including family or friends, change their display names and ages, and choose who you play as. Teammates follow you in this test build. Online friend invites are a later step; this roster does not connect real friends yet.</p><div id="roster" class="roster"></div><div class="mission-choice"><label for="missionSelect">Choose a mission</label><select id="missionSelect"><option value="evacuation">1 · Team evacuation</option><option value="heatwave">2 · Heatwave support</option><option value="relief">3 · Community supply run</option></select></div><div class="lobby-actions"><button id="addMember">+ Add team member / friend</button><button id="launch" class="selected">Launch mission</button></div></section>
+<header><div><h1>AFTER<span>FALL</span></h1><div class="tag">SURVIVAL IS A SKILL · TEAM TEST BUILD 03</div></div><div><button id="editFamily">Teams</button> <button id="restart">Restart mission</button></div></header>
+<section id="lobby" class="lobby"><h2 id="groupHeading">Teams</h2><p>Choose whether this group is called Teams, Friends or Family. Add or remove members, edit their display names and ages, and choose who you play as. Other characters follow you in this test build. Online invites are a later step; this roster does not connect real friends yet.</p><label for="groupType">Group type</label> <select id="groupType"><option value="Teams">Teams</option><option value="Friends">Friends</option><option value="Family">Family</option></select><div id="roster" class="roster"></div><div class="mission-choice"><label for="missionSelect">Choose a mission</label><select id="missionSelect"><option value="evacuation">1 · Team evacuation</option><option value="heatwave">2 · Heatwave support</option><option value="relief">3 · Community supply run</option></select></div><div class="lobby-actions"><button id="addMember">+ Add team member</button><button id="launch" class="selected">Launch mission</button></div></section>
 <section id="stats">
 <div class="stat"><strong id="food">0 / 2</strong><small>Food collected</small></div>
 <div class="stat"><strong id="water">0 / 2</strong><small>Water collected</small></div>
-<div class="stat"><strong id="family">Together</strong><small>Team status</small></div>
+<div class="stat"><strong id="family">Together</strong><small>Group status</small></div>
 <div class="stat"><strong id="progress">0 / 4</strong><small>Supplies found</small></div>
 </section>
 <p id="mission">MISSION: Collect 2 food packs and 2 water bottles, then guide your team to the marked shelter.</p>
 <div class="game-wrap"><canvas id="game" width="900" height="560" aria-label="AFTERFALL top-down team survival game"></canvas></div>
-<div class="bottom"><div id="message" class="panel" aria-live="polite">Find the supplies around the area. Use WASD or the arrow keys to move. Your team follows you.</div><button id="start">Start / continue</button></div>
+<div class="bottom"><div id="message" class="panel" aria-live="polite">Find the supplies around the area. Use WASD or the arrow keys to move. Your group follows you.</div><button id="start">Start / continue</button></div>
 <div class="controls" aria-label="Touch movement controls">
 <button data-dir="up" aria-label="Move up">▲</button>
 <button data-dir="left" aria-label="Move left">◀</button>
@@ -147,10 +147,12 @@ window.addEventListener('keydown',e=>setKey(e,true));window.addEventListener('ke
 document.querySelectorAll('[data-dir]').forEach(b=>{let d=b.dataset.dir;b.addEventListener('pointerdown',e=>{e.preventDefault();keys[d]=true;b.setPointerCapture(e.pointerId)});['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,()=>keys[d]=false))});
 document.getElementById('restart').addEventListener('click',reset);
 document.getElementById('editFamily').addEventListener('click',()=>{started=false;document.querySelector('main').classList.remove('playing');renderRoster()});
+function updateGroupType(){const type=document.getElementById('groupType').value;document.getElementById('groupHeading').textContent=type;document.getElementById('editFamily').textContent=type;const singular=type==='Teams'?'team member':type==='Friends'?'friend':'family member';document.getElementById('addMember').textContent='+ Add '+singular;}
+document.getElementById('groupType').addEventListener('change',updateGroupType);
 document.getElementById('addMember').addEventListener('click',()=>{const colors=['#b8d39a','#d9b6e8','#e8c48b','#9bc6ed'];roster.push({id:nextPersonId++,name:'New member',age:18,color:colors[(roster.length)%colors.length]});selectedPersonId=roster[roster.length-1].id;renderRoster()});
-document.getElementById('launch').addEventListener('click',()=>{if(!roster.length)return;for(const p of roster){p.name=p.name.trim()||'Team member';p.age=Math.max(0,Math.min(110,Number(p.age)||0))}document.querySelector('main').classList.add('playing');reset()});document.getElementById('start').addEventListener('click',()=>{if(!started)reset();else say('Keep moving. Gather all four supplies and head to the shelter.')});
+document.getElementById('launch').addEventListener('click',()=>{if(!roster.length)return;for(const p of roster){p.name=p.name.trim()||'Group member';p.age=Math.max(0,Math.min(110,Number(p.age)||0))}document.querySelector('main').classList.add('playing');reset()});document.getElementById('start').addEventListener('click',()=>{if(!started)reset();else say('Keep moving. Gather all four supplies and head to the shelter.')});
 function renderRoster(){const box=document.getElementById('roster');box.innerHTML='';roster.forEach((p)=>{const row=document.createElement('div');row.className='person';const choose=document.createElement('button');choose.textContent=p.id===selectedPersonId?'Playing':'Play as';if(p.id===selectedPersonId)choose.classList.add('selected');choose.addEventListener('click',()=>{selectedPersonId=p.id;renderRoster()});const name=document.createElement('input');name.type='text';name.maxLength=24;name.value=p.name;name.setAttribute('aria-label','Character name');name.addEventListener('input',()=>p.name=name.value);const age=document.createElement('input');age.type='number';age.min='0';age.max='110';age.value=p.age;age.setAttribute('aria-label','Character age');age.addEventListener('input',()=>p.age=age.value);const remove=document.createElement('button');remove.textContent='Remove';remove.disabled=roster.length===1;remove.addEventListener('click',()=>{roster=roster.filter(x=>x.id!==p.id);if(selectedPersonId===p.id)selectedPersonId=roster[0].id;renderRoster()});row.append(choose,name,age,remove);box.append(row)})}
-renderRoster();loop();
+updateGroupType();renderRoster();loop();
 })();
 </script>
 </body>
