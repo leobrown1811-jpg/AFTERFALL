@@ -25,7 +25,7 @@ const canvas=document.querySelector('#view');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x9aabb0);scene.fog=new THREE.Fog(0x9aabb0,42,145);
 const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,220);
-const player={pos:new THREE.Vector3(0,0,12),yaw:0,vertical:0,onGround:true,speed:6.2};\navatarScalePending=true;let found=0;
+const player={pos:new THREE.Vector3(0,0,12),yaw:0,vertical:0,onGround:true,speed:6.2};let found=0;
 scene.add(new THREE.HemisphereLight(0xdce8ee,0x59604a,2));
 const sun=new THREE.DirectionalLight(0xffe2b4,3);sun.position.set(-28,45,24);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-65;sun.shadow.camera.right=65;sun.shadow.camera.top=65;sun.shadow.camera.bottom=-65;scene.add(sun);
 const mat=(color,roughness=1)=>new THREE.MeshStandardMaterial({color,roughness});
@@ -261,7 +261,7 @@ const forward=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0)-joy.y,side
 if((jumpQueued||keys[' '])&&player.onGround){player.vertical=7.2;player.onGround=false}jumpQueued=false;player.vertical-=19*dt;player.pos.y+=player.vertical*dt;if(player.pos.y<=0){player.pos.y=0;player.vertical=0;player.onGround=true}
 avatar.position.copy(player.pos);avatar.position.y+=player.pos.y;if(moving){const swing=Math.sin(now*(sprint?0.014:0.01))*0.48;leftLeg.rotation.x=swing;rightLeg.rotation.x=-swing;leftArm.rotation.x=-swing*.7;rightArm.rotation.x=swing*.7}else{leftLeg.rotation.x=rightLeg.rotation.x=leftArm.rotation.x=rightArm.rotation.x=0}
 const pitch=camera.userData.pitch||.18;const target=new THREE.Vector3(player.pos.x,player.pos.y+1.35,player.pos.z);const behind=new THREE.Vector3(Math.sin(player.yaw)*6,2.5+pitch*2,Math.cos(player.yaw)*6);const desired=target.clone().add(behind);camera.position.lerp(desired,1-Math.pow(.001,dt));camera.lookAt(target.clone().add(new THREE.Vector3(0,pitch*2,0)));
-supplies.forEach((s,i)=>{s.rotation.y+=dt*.45;s.position.y=.65+Math.sin(now*.002+i)*.09});if(found===3&&player.pos.distanceTo(new THREE.Vector3(18,0,-35))<4)document.querySelector('#message').textContent='FIELD TEST COMPLETE — you reached the beacon with all supplies.';
+supplies.forEach((s,i)=>{s.rotation.y+=dt*.45;s.position.y=.65+Math.sin(now*.002+i)*.09});if(found===5&&player.pos.distanceTo(new THREE.Vector3(18,0,-35))<4)document.querySelector('#message').textContent='FIELD TEST COMPLETE — you reached the beacon with all supplies.';
 renderer.render(scene,camera)}
 requestAnimationFrame(animate);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2))});
 </script></body></html>
