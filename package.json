@@ -1,0 +1,16 @@
+{
+  "name": "afterfall-multiplayer-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Private invite-code rooms for the AFTERFALL prototype",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "socket.io": "^4.8.1"
+  }
+}
