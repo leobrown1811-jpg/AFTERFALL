@@ -24,18 +24,32 @@ document.querySelector("#launch3d").addEventListener("click",()=>enterWorld());
 
 const canvas=document.querySelector('#view');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:"high-performance"});renderer.setPixelRatio(Math.min(devicePixelRatio,1.0));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
-const scene=new THREE.Scene();scene.background=new THREE.Color(0xd98768);scene.fog=new THREE.Fog(0xd98768,180,850);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0xc9d9d1);scene.fog=new THREE.Fog(0xc9d9d1,260,1050);
 const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,1500);
 const player={pos:new THREE.Vector3(0,0,12),yaw:0,vertical:0,onGround:true,speed:6.2};let found=0;const inventory=[];
-scene.add(new THREE.HemisphereLight(0xffd0a1,0x665044,1.8));
-const sun=new THREE.DirectionalLight(0xffe2b4,3);sun.position.set(-28,45,24);sun.castShadow=false;scene.add(sun);
+scene.add(new THREE.HemisphereLight(0xf3f1d8,0x506b43,2.0));
+const sun=new THREE.DirectionalLight(0xffe3b2,3.2);sun.position.set(-80,95,55);sun.castShadow=false;scene.add(sun);
 const mat=(color,roughness=1)=>new THREE.MeshStandardMaterial({color,roughness});
-const ground=new THREE.Mesh(new THREE.PlaneGeometry(1000,1000),mat(0x59634b));ground.rotation.x=-Math.PI/2;ground.position.y=-.08;ground.receiveShadow=true;scene.add(ground);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(1000,1000),mat(0x648044));ground.rotation.x=-Math.PI/2;ground.position.y=-.08;ground.receiveShadow=true;scene.add(ground);
+// Soft rolling green hills frame the village without disturbing the flat playable streets.
+const hillMat=mat(0x66834a),farHillMat=mat(0x82936b);
+for(const [x,z,sx,sy,sz] of [[-230,-170,190,34,105],[40,-245,230,43,105],[270,-110,180,30,120],[-270,80,190,36,125],[210,210,230,40,115],[-80,260,250,32,105]]){
+ const hill=new THREE.Mesh(new THREE.SphereGeometry(1,18,10),hillMat);hill.scale.set(sx,sy,sz);hill.position.set(x,sy-9,z);scene.add(hill);
+}
+for(const [x,z,sx,sy,sz] of [[-350,-300,260,54,95],[0,-390,340,65,110],[350,-310,250,48,100],[-390,210,250,52,110],[360,250,280,58,120]]){
+ const hill=new THREE.Mesh(new THREE.SphereGeometry(1,16,9),farHillMat);hill.scale.set(sx,sy,sz);hill.position.set(x,sy-14,z);scene.add(hill);
+}
 function box(x,y,z,sx,sy,sz,color){const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mat(color));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m}
 function tree(x,z,scale=1){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22*scale,.34*scale,2.8*scale,7),mat(0x554638));trunk.position.set(x,1.4*scale,z);trunk.castShadow=true;scene.add(trunk);for(let i=0;i<2;i++){const crown=new THREE.Mesh(new THREE.ConeGeometry((2.0-i*.3)*scale,3.0*scale,6),mat(i%2?0x344b3b:0x405b42));crown.position.set(x,(3.0+i*.9)*scale,z);scene.add(crown)}}
 function rock(x,z,s=1){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(s,0),mat(0x77796f));r.position.set(x,s*.55,z);r.rotation.set(.2,.8,.3);r.castShadow=true;r.receiveShadow=true;scene.add(r)}
 // Background mountain group removed to leave an open horizon.
 for(let i=0;i<180;i++){const x=Math.sin(i*91.7)*285,z=-300+(i*23.31)%600;const nearHouse=[[-17,-22],[25,-40],[-34,12],[34,-76],[-38,48]].some(([hx,hz])=>Math.abs(x-hx)<9&&Math.abs(z-hz)<10);if(nearHouse)continue;if(Math.abs(x)<5&&z>-112&&z<62)continue;if(i%3===0)rock(x,z,.7+(i%5)*.22);else tree(x,z,.65+(i%4)*.13)}
+// Distant forest edges and meadow colour variation create a layered countryside view.
+for(let i=0;i<72;i++){const x=-310+i*8.7,z=-205+Math.sin(i*.43)*28;tree(x,z,1.2+(i%4)*.18);}
+for(let i=0;i<46;i++){const x=-220+i*9.5,z=205+Math.sin(i*.57)*24;tree(x,z,1.05+(i%3)*.2);}
+const meadowColors=[0x91a94e,0xb3a94f,0xd1bd67,0x718e42];
+for(let i=0;i<48;i++){const x=Math.sin(i*12.31)*145,z=Math.cos(i*7.17)*145;if(Math.abs(x)<18&&Math.abs(z)<18)continue;const patch=new THREE.Mesh(new THREE.CircleGeometry(2.4+(i%4)*.8,9),mat(meadowColors[i%meadowColors.length]));patch.rotation.x=-Math.PI/2;patch.position.set(x,.006,z);scene.add(patch);}
+for(let i=0;i<115;i++){const x=Math.sin(i*8.17)*135,z=Math.cos(i*5.91)*135;if(Math.abs(x)<15&&Math.abs(z)<15)continue;const stem=new THREE.Mesh(new THREE.CylinderGeometry(.018,.025,.28,4),mat(0x52713b));stem.position.set(x,.14,z);scene.add(stem);const bloom=new THREE.Mesh(new THREE.SphereGeometry(.095,5,4),mat([0xf0d66e,0xf4e7bd,0xe9a64e,0xd9d0a0][i%4]));bloom.position.set(x,.31,z);scene.add(bloom);}
 // Small village: each house has a real doorway and a walkable interior.
 const solidWalls=[],wallMeshes=[];
 function wall(x,y,z,w,h,d,color=0x777365){const m=box(x,y,z,w,h,d,color);solidWalls.push({x,z,w,d});wallMeshes.push(m)}
@@ -58,7 +72,10 @@ function makeHouse(x,z,accent=0x353c3a,facing=0){
  wall(x-1.615,1.55,front,.99,1.1,.24,0x898678);
  wall(x+1.615,1.55,front,.99,1.1,.24,0x898678);
  wall(x+4.495,1.55,front,1.01,1.1,.24,0x898678);
- const roof=box(x,3.25,z,10.7,.4,8.7,accent);wallMeshes.push(roof);
+ const roof=new THREE.Group();scene.add(roof);
+ const roofLeft=new THREE.Mesh(new THREE.BoxGeometry(5.9,.34,9.15),mat(0x9b4f2e));roofLeft.position.set(x-2.35,3.72,z);roofLeft.rotation.z=-.56;roofLeft.castShadow=true;roof.add(roofLeft);
+ const roofRight=new THREE.Mesh(new THREE.BoxGeometry(5.9,.34,9.15),mat(0xb76135));roofRight.position.set(x+2.35,3.72,z);roofRight.rotation.z=.56;roofRight.castShadow=true;roof.add(roofRight);
+ const ridge=new THREE.Mesh(new THREE.BoxGeometry(.22,.25,9.35),mat(0x603b2b));ridge.position.set(x,5.28,z);roof.add(ridge);wallMeshes.push(roof);
  box(x,.045,z,10.15,.12,8.15,0x9a8c70);
  // Glass sits within the opening; the full window casing is mounted proud of the exterior wall face.
  const glassZ=front+.015, outerFrameZ=front+.205, innerFrameZ=front-.145;
