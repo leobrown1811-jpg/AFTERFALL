@@ -46,7 +46,7 @@ function limb(parent,geometry,material,x,y,z){const m=new THREE.Mesh(geometry,ma
 const torso=limb(avatar,new THREE.CapsuleGeometry(.38,.65,5,8),shirt,0,1.25,0);
 const head=limb(avatar,new THREE.SphereGeometry(.25,16,12),skin,0,2.05,0);
 const backpackMesh=limb(avatar,new THREE.BoxGeometry(.48,.55,.22),pack,0,1.3,.39);
-const skinAccessory=new THREE.Group();avatar.add(skinAccessory);
+const skinAccessory=new THREE.Group();skinAccessory.rotation.y=Math.PI;avatar.add(skinAccessory); // Put every skin accessory on the character front, toward the camera.
 const bananaFace=new THREE.Group();bananaFace.rotation.y=Math.PI;avatar.add(bananaFace); // Character front faces local -Z, toward the camera.
 const bananaSuit=limb(bananaFace,new THREE.SphereGeometry(1,24,20),mat(0xffd92e),0,1.22,0);
 bananaSuit.scale.set(.49,.91,.43);
