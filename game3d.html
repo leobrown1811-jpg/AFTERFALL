@@ -36,12 +36,17 @@ scene.add(new THREE.HemisphereLight(0xf3f1d8,0x506b43,2.0));
 const sun=new THREE.DirectionalLight(0xffe3b2,3.2);sun.position.set(-80,95,55);sun.castShadow=false;scene.add(sun);
 const mat=(color,roughness=1)=>new THREE.MeshStandardMaterial({color,roughness});
 // Broad, gentle terrain creates rolling countryside instead of a ring of blocking mountains.
-function terrainHeight(x,z){return 6.5+3.4*Math.sin((z+35)/145)+2.4*Math.sin((x-30)/175)+2.2*Math.exp(-(((x+95)**2)/18000+((z-105)**2)/22000))+2.0*Math.exp(-(((x-125)**2)/24000+((z+125)**2)/26000));}
-const groundGeometry=new THREE.PlaneGeometry(1600,1600,200,200);groundGeometry.rotateX(-Math.PI/2);const groundPositions=groundGeometry.attributes.position;for(let i=0;i<groundPositions.count;i++){const x=groundPositions.getX(i),z=groundPositions.getZ(i);groundPositions.setY(i,terrainHeight(x,z));}groundGeometry.computeVertexNormals();const ground=new THREE.Mesh(groundGeometry,mat(0x648044));ground.receiveShadow=true;scene.add(ground);
-// Distant mountain silhouettes stay on the far horizon as scenery, never as map walls.
-function mountainPeak(x,z,radius,height,depth,seed,color){const geo=new THREE.ConeGeometry(1,1,9,3),pos=geo.attributes.position;for(let i=0;i<pos.count;i++){const px=pos.getX(i),py=pos.getY(i),pz=pos.getZ(i),angle=Math.atan2(pz,px),rough=1+.08*Math.sin(angle*3+seed)+.04*Math.cos(angle*5-seed);pos.setX(i,px*rough);pos.setZ(i,pz*rough);}geo.computeVertexNormals();const peak=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color,roughness:1,flatShading:true}));peak.scale.set(radius,height,radius*depth);peak.position.set(x,terrainHeight(x,z)+height/2-.12,z);peak.castShadow=true;scene.add(peak);}
-function mountainRange(x,z,width,height,depth,seed){const palette=[0x777d78,0x858982,0x686f6c];mountainPeak(x-width*.27,z,width*.39,height*.78,1.25,seed,palette[0]);mountainPeak(x+width*.04,z-8,width*.50,height,1.12,seed+1.7,palette[1]);mountainPeak(x+width*.34,z+8,width*.35,height*.72,1.3,seed+3.1,palette[2]);}
-mountainRange(-520,-690,330,88,1.1,7);mountainRange(-80,-735,420,105,1.15,8);mountainRange(390,-680,340,90,1.1,9);
+// Rolling countryside with flattened cottage pads so buildings sit securely above the grass.
+const cottageRows=[-105,-78,-51,-24,3,30,57,84,111];
+function rawTerrainHeight(x,z){return 5.8+5.2*Math.sin((z+35)/155)+3.8*Math.sin((x-30)/190)+4.2*Math.exp(-(((x+105)**2)/26000+((z-115)**2)/26000))+3.5*Math.exp(-(((x-145)**2)/30000+((z+155)**2)/30000))+1.5*Math.sin(x/72)*Math.cos(z/95);}
+function terrainHeight(x,z){let h=rawTerrainHeight(x,z),blend=0,target=0;for(const hx of [-45,45])for(const hz of cottageRows){const d=Math.hypot((x-hx)*.82,(z-hz)*.92);if(d<10){const w=1-THREE.MathUtils.smoothstep(d,5,10);target+=rawTerrainHeight(hx,hz)*w;blend+=w;}}if(blend>0)h=THREE.MathUtils.lerp(h,target/blend,Math.min(.98,blend));return h;}
+const groundGeometry=new THREE.PlaneGeometry(1600,1600,240,240);groundGeometry.rotateX(-Math.PI/2);const groundPositions=groundGeometry.attributes.position,groundColors=[];for(let i=0;i<groundPositions.count;i++){const x=groundPositions.getX(i),z=groundPositions.getZ(i);groundPositions.setY(i,terrainHeight(x,z));const variation=.88+.08*Math.sin(x*.035)*Math.cos(z*.027)+.05*Math.sin((x+z)*.09);groundColors.push(.30*variation,.43*variation,.19*variation);}groundGeometry.setAttribute("color",new THREE.Float32BufferAttribute(groundColors,3));groundGeometry.computeVertexNormals();const ground=new THREE.Mesh(groundGeometry,new THREE.MeshStandardMaterial({vertexColors:true,roughness:1}));ground.receiveShadow=true;scene.add(ground);
+// Fine grass blades and subtle colour variation make the open meadows feel alive.
+const grassPositions=[],grassColors=[];let grassSeed=8127;const rand=()=>{grassSeed=(grassSeed*1664525+1013904223)>>>0;return grassSeed/4294967296;};for(let i=0;i<14500;i++){const x=(rand()-.5)*1480,z=(rand()-.5)*1480;if(Math.abs(x)<9&&z>-380&&z<380)continue;if(Math.abs(Math.abs(x)-45)<4.8&&z>-120&&z<125)continue;const y=terrainHeight(x,z),w=.035+rand()*.045,h=.16+rand()*.28,a=rand()*Math.PI;for(let k=0;k<3;k++){const ang=a+k*Math.PI/3,dx=Math.cos(ang)*w,dz=Math.sin(ang)*w;grassPositions.push(x-dx,y+.02,z-dz,x+dx,y+.02,z+dz,x+(rand()-.5)*.09,y+h,z+(rand()-.5)*.09);const shade=.75+rand()*.45;for(let q=0;q<3;q++)grassColors.push(.20*shade,.36*shade,.12*shade);}}const grassGeo=new THREE.BufferGeometry();grassGeo.setAttribute("position",new THREE.Float32BufferAttribute(grassPositions,3));grassGeo.setAttribute("color",new THREE.Float32BufferAttribute(grassColors,3));grassGeo.computeVertexNormals();const grassMesh=new THREE.Mesh(grassGeo,new THREE.MeshStandardMaterial({vertexColors:true,side:THREE.DoubleSide,roughness:1}));scene.add(grassMesh);
+// Large irregular mountain peaks remain distant scenery rather than enclosing walls.
+function mountainPeak(x,z,radius,height,depth,seed,color){const geo=new THREE.ConeGeometry(1,1,32,14),pos=geo.attributes.position;for(let i=0;i<pos.count;i++){const px=pos.getX(i),py=pos.getY(i),pz=pos.getZ(i),a=Math.atan2(pz,px),r=Math.hypot(px,pz),noise=1+.12*Math.sin(a*3+seed)+.075*Math.cos(a*7-seed*.7)+.035*Math.sin(a*13+py*9);pos.setX(i,px*noise);pos.setZ(i,pz*noise);if(py>-.48){const ridge=Math.sin(a*4+seed)*.035+Math.cos(a*9-seed)*.018;pos.setY(i,py+ridge*(r+.2));}}geo.computeVertexNormals();const peak=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color,roughness:1,flatShading:true}));peak.scale.set(radius,height,radius*depth);peak.position.set(x,terrainHeight(x,z)+height/2,z);peak.castShadow=true;peak.receiveShadow=true;scene.add(peak);}
+function mountainRange(x,z,width,height,depth,seed){const palette=[0x626e68,0x788079,0x56635c,0x85877d];mountainPeak(x-width*.32,z+18,width*.36,height*.78,1.2,seed,palette[0]);mountainPeak(x-width*.08,z-12,width*.42,height*.92,1.1,seed+1.7,palette[1]);mountainPeak(x+width*.19,z+10,width*.48,height,1.12,seed+3.1,palette[2]);mountainPeak(x+width*.43,z+28,width*.29,height*.68,1.25,seed+4.2,palette[3]);}
+mountainRange(-560,-1010,440,270,1.08,7);mountainRange(-95,-1080,560,330,1.12,8);mountainRange(475,-1000,470,285,1.08,9);
 function box(x,y,z,sx,sy,sz,color){const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mat(color));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m}
 function tree(x,z,scale=1){const base=terrainHeight(x,z),trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22*scale,.34*scale,2.8*scale,7),mat(0x554638));trunk.position.set(x,base+1.4*scale,z);trunk.castShadow=true;scene.add(trunk);for(let i=0;i<3;i++){const crown=new THREE.Mesh(new THREE.SphereGeometry((1.45-i*.12)*scale,9,7),mat(i%2?0x344b3b:0x405b42));crown.position.set(x,base+(3.0+i*.72)*scale,z);crown.scale.y=.92;scene.add(crown)}}
 function rock(x,z,s=1){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(s,0),mat(0x77796f));r.position.set(x,terrainHeight(x,z)+s*.55,z);r.rotation.set(.2,.8,.3);r.castShadow=true;r.receiveShadow=true;scene.add(r)}
@@ -155,7 +160,7 @@ function makeHouse(x,z,accent=0x353c3a,facing=0){
  // Warm interior light makes the walls and furnishings readable.
  const lamp=new THREE.PointLight(0xffd9a1,1.4,6);lamp.position.set(x,2.45,z);scene.add(lamp);
  // Rotate the whole house as one unit so its roof, walls, windows, door and furniture remain aligned.
- const houseRoot=new THREE.Group();houseRoot.position.set(x,terrainHeight(x,z),z);scene.add(houseRoot);
+ const houseRoot=new THREE.Group();houseRoot.position.set(x,terrainHeight(x,z)+.42,z);scene.add(houseRoot);
  const created=scene.children.slice(childStart,scene.children.length-1);
  for(const child of created)houseRoot.attach(child);
  houseRoot.rotation.y=facing;
@@ -461,7 +466,7 @@ for(const [arm,side] of [[leftArm,-1],[rightArm,1]]){
  limb(arm,new THREE.SphereGeometry(.19,14,12),shirt,0,0,0).scale.set(1,.9,1);
  const upper=limb(arm,new THREE.CapsuleGeometry(.135,.52,5,10),shirt,side*.055,-.24,0);upper.rotation.z=-side*.055;
  limb(arm,new THREE.SphereGeometry(.14,12,10),shirt,side*.075,-.49,0);
- limb(arm,new THREE.CapsuleGeometry(.105,.34,5,10),skin,side*.075,-.68,0);
+ limb(arm,new THREE.CapsuleGeometry(.105,.34,5,10),skin,side*.075,-.68,0);if(side===1){const hand=limb(arm,new THREE.SphereGeometry(.115,12,10),skin,side*.075,-.88,.07);hand.scale.set(1,.82,1);}
 }
 const weapon=new THREE.Group();const cameraWeaponModel=createWeaponVisual(weaponLoot[0]);cameraWeaponModel.rotation.y=Math.PI;cameraWeaponModel.scale.setScalar(.72);weapon.add(cameraWeaponModel);weapon.userData.muzzle=cameraWeaponModel.userData.muzzle;weapon.position.set(.34,-.28,-.72);camera.add(weapon);
 const heldWeapon=new THREE.Group();avatar.add(heldWeapon);
@@ -484,7 +489,7 @@ let equippedLoot="Compact Sidearm",selectedSlot=0,scopeAimBlend=0;
 function syncEquippedWeapon(){
  const item=weaponLoot.find(v=>v.name===equippedLoot)||weaponLoot[0];
  heldWeapon.clear();const heldModel=createWeaponVisual(item);heldModel.scale.setScalar(.58);heldWeapon.add(heldModel);
- heldWeapon.position.set(.43,1.28,.42);heldWeapon.rotation.set(-.12,0,0);
+ heldWeapon.position.set(.49,.70,.43);heldWeapon.rotation.set(-.10,0,0);
  weapon.clear();const viewModel=createWeaponVisual(item);viewModel.rotation.y=Math.PI;viewModel.scale.setScalar(.72);weapon.add(viewModel);weapon.userData.muzzle=viewModel.userData.muzzle;
 }
 syncEquippedWeapon();
