@@ -9,22 +9,26 @@
 <div id="actions"><button id="jump"><b>⬆</b>JUMP</button><button id="sprint"><b>»</b>SPRINT</button><button id="interact"><b>✋</b>COLLECT</button><button id="aim"><b>⊕</b>AIM</button><button id="attack"><b>🔫</b>FIRE</button></div>
 <div id="help">COMPUTER: WASD / arrows · mouse drag to look<br>Space: jump · Shift: sprint · E: collect · Q: aim · F: fire</div>
 <script>
-/* Touch-safe survivor screen: build choices before the 3D module starts. */
+/* Touch-safe survivor screen and 3D startup handshake. */
 (function(){
  const names=[["🍌","Banana Scout"],["🥷","Shadow Ninja"],["🚀","Cosmic Ranger"],["🌿","Jungle Tracker"],["❄️","Frost Guardian"],["🌋","Volcano Raider"],["👑","Golden Knight"],["🏁","Neon Racer"],["🏜️","Desert Nomad"],["🤖","Moon Bot"],["🐲","Magma Beast"],["🧢","Sky Captain"],["☣️","Toxic Ranger"],["🌩️","Storm Chaser"],["🍭","Candy Hero"],["🦊","Wild Fox"]];
- const grid=document.getElementById("skinGrid"), note=document.getElementById("skinNote");
+ const grid=document.getElementById("skinGrid"), note=document.getElementById("skinNote"), start=document.getElementById("skinClose"), msg=document.getElementById("message");
  if(grid && !grid.children.length) names.forEach((item,i)=>{
-  const b=document.createElement("button"); b.type="button"; b.dataset.skinIndex=String(i);
-  b.innerHTML="<span>"+item[0]+"</span>"+item[1]; if(i===0)b.classList.add("selected");
-  b.addEventListener("click",()=>{grid.querySelectorAll("button").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");if(note)note.textContent="Selected: "+item[1];});
-  grid.appendChild(b);
+  const btn=document.createElement("button");btn.type="button";btn.innerHTML="<span>"+item[0]+"</span>"+item[1];if(i===0)btn.classList.add("selected");
+  btn.addEventListener("click",()=>{grid.querySelectorAll("button").forEach(x=>x.classList.remove("selected"));btn.classList.add("selected");if(note)note.textContent="Selected: "+item[1];});
+  grid.appendChild(btn);
  });
- const start=document.getElementById("skinClose");
- if(start)start.addEventListener("click",()=>{
-  document.getElementById("skinScreen").style.display="none";
-  const lobby=document.getElementById("lobbyScreen"); if(lobby)lobby.style.display="none";
-  const msg=document.getElementById("message"); if(msg)msg.textContent="Starting AFTERFALL…";
+ if(start) start.addEventListener("click",()=>{
+  if(window.__afterfallReady) return; // The 3D module's own handler starts the game.
+  start.disabled=true;start.textContent="LOADING 3D WORLD…";
+  if(msg)msg.textContent="Loading the 3D world. Please wait…";
+  let finished=false;
+  const ready=()=>{if(finished)return;finished=true;start.disabled=false;start.textContent="START GAME →";start.click();};
+  window.addEventListener("afterfall:ready",ready,{once:true});
+  setTimeout(()=>{if(finished)return;finished=true;start.disabled=false;start.textContent="TRY START AGAIN";if(msg)msg.textContent="The 3D engine did not finish loading. Check your internet connection, then refresh this page.";if(note)note.textContent="The game engine is still loading. Please refresh and try again.";},15000);
  });
+ window.addEventListener("error",e=>{if(msg)msg.textContent="3D loading error: "+(e.message||"check your connection and refresh");});
+ window.addEventListener("unhandledrejection",e=>{if(msg)msg.textContent="3D engine could not load. Check your internet connection and refresh.";});
 })();
 </script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
@@ -499,5 +503,5 @@ for(const house of houseInteriors){
 camera.position.lerp(desired,1-Math.pow(.001,dt));camera.lookAt(target.clone().add(new THREE.Vector3(0,pitch*2+(aimMode?.22:0),0)));
 supplies.forEach((s,i)=>{s.rotation.y+=dt*.45;s.position.y=.65+Math.sin(now*.002+i)*.09});if(found===5&&player.pos.distanceTo(new THREE.Vector3(18,0,-35))<5){document.querySelector('#message').textContent='FIELD TEST COMPLETE — returning to lobby…';document.querySelector('#lobbyScreen').style.display='flex';document.querySelector('#skinScreen').style.display='none';document.querySelector('#lobbyNote').textContent='Challenge completed! Your supplies: '+found+'/5. Choose another challenge.';player.pos.set(0,0,12);found=0;document.querySelector('#count').textContent='SUPPLIES: 0 / 5';supplies.forEach(item=>item.visible=true);}
 renderer.render(scene,camera)}
-requestAnimationFrame(animate);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.35))});
+window.__afterfallReady=true;window.dispatchEvent(new Event('afterfall:ready'));requestAnimationFrame(animate);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.35))});
 </script></body></html>
