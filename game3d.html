@@ -367,7 +367,8 @@ function roadPath(points,width=7,markings=false,closed=false){
   if(i<count){const a=i*2,b=a+1,c=a+2,d=a+3;indices.push(a,c,b,b,c,d);}
  }
  const geometry=new THREE.BufferGeometry();
- roadCorridors.push(samples.map(p=>({x:p.x,z:p.z})));\n  geometry.setAttribute("position",new THREE.Float32BufferAttribute(vertices,3));
+ roadCorridors.push(samples.map(p=>({x:p.x,z:p.z})));
+  geometry.setAttribute("position",new THREE.Float32BufferAttribute(vertices,3));
  geometry.setIndex(indices);geometry.computeVertexNormals();
  const asphalt=new THREE.Mesh(geometry,roadMaterial);asphalt.material.side=THREE.DoubleSide;asphalt.receiveShadow=true;scene.add(asphalt);villageRoadMeshes.push(asphalt);
  // Open roads get rounded ends; the closed village loop joins seamlessly to itself.
@@ -514,7 +515,9 @@ function applyChallengeVillageLayout(){
  roadPath([[-88,-82],[0,-88],[88,-82],[94,0],[88,82],[0,88],[-88,82],[-94,0]],8,false,true);
  roadPath([[0,-88],[0,88]],7,false,false);
  roadPath([[-88,-26],[88,-26]],6,false,false);
- roadPath([[-88,26],[88,26]],6,false,false);\n  // Clear trees whose trunks would overlap the road surface.\n  for(const t of treeRoots){const x=t.position.x,z=t.position.z;let nearRoad=false;for(const path of roadCorridors){for(let i=0;i<path.length;i+=3){if(Math.hypot(x-path[i].x,z-path[i].z)<7.2){nearRoad=true;break}}if(nearRoad)break}if(nearRoad)scene.remove(t)}
+ roadPath([[-88,26],[88,26]],6,false,false);
+  // Clear trees whose trunks would overlap the road surface.
+  for(const t of treeRoots){const x=t.position.x,z=t.position.z;let nearRoad=false;for(const path of roadCorridors){for(let i=0;i<path.length;i+=3){if(Math.hypot(x-path[i].x,z-path[i].z)<7.2){nearRoad=true;break}}if(nearRoad)break}if(nearRoad)scene.remove(t)}
  document.querySelector("#message").textContent="Challenge village loaded: explore the central green and search the new cottage rows.";
 }
 
