@@ -89,12 +89,13 @@ document.querySelectorAll("#lobbyTabs .lobbyTab").forEach(button=>button.addEven
 
 
 const canvas=document.querySelector('#view');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:"high-performance"});renderer.setPixelRatio(Math.min(devicePixelRatio,0.65));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
-const scene=new THREE.Scene();scene.background=new THREE.Color(0xc9d9d1);scene.fog=new THREE.Fog(0xc9d9d1,420,1450);
+const renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:"high-performance"});renderer.setPixelRatio(Math.min(devicePixelRatio,0.74));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.14;if(THREE.SRGBColorSpace)renderer.outputColorSpace=THREE.SRGBColorSpace;
+const scene=new THREE.Scene();scene.background=new THREE.Color(0xb9cbd0);scene.fog=new THREE.Fog(0xb9cbd0,350,1320);
 const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,1900);
 const player={pos:new THREE.Vector3(0,0,12),yaw:0,vertical:0,onGround:true,speed:6.2};let found=0;const inventory=[];
-scene.add(new THREE.HemisphereLight(0xf3f1d8,0x506b43,2.0));
-const sun=new THREE.DirectionalLight(0xffe3b2,3.2);sun.position.set(-80,95,55);sun.castShadow=false;scene.add(sun);
+scene.add(new THREE.HemisphereLight(0xeaf5ff,0x344b3a,2.15));
+const sun=new THREE.DirectionalLight(0xffe0b0,3.45);sun.position.set(-80,95,55);sun.castShadow=false;scene.add(sun);
+const fillLight=new THREE.DirectionalLight(0x9fc9e8,0.72);fillLight.position.set(90,35,-80);scene.add(fillLight);
 const mat=(color,roughness=1)=>new THREE.MeshStandardMaterial({color,roughness});
 // Broad, gentle terrain creates rolling countryside instead of a ring of blocking mountains.
 // Rolling countryside with flattened cottage pads so buildings sit securely above the grass.
@@ -251,6 +252,21 @@ const gunLoot=[
  {name:"Pulse SMG",icon:"🔫",color:0x3f8d91,scope:false,style:"repeater",damage:1},
  {name:"Outrider Carbine",icon:"🔫",color:0x8b9460,scope:false,style:"carbine",damage:2}
 ];
+// One hundred additional fictional weapons, built from distinct model-family and variant names.
+const extraGunFamilies=["Aether","Nova","Rift","Vortex","Solar","Phantom","Tempest","Obsidian","Neon","Frontier"];
+const extraGunVariants=["Arc","Pulse","Spectre","Comet","Warden","Echo","Drift","Cyclone","Sentinel","Horizon"];
+const extraGunStyles=["sidearm","repeater","carbine","rifle","blaster","marksman"];
+const extraGunColors=[0x42a5b5,0x9b6bc4,0xd08a45,0x5f9b73,0x547eae,0xc15d70,0x9caa58,0x6e7a91,0xb18bca,0x4d9c91];
+const extraGunLoot=Array.from({length:100},(_,i)=>({
+ name:extraGunFamilies[Math.floor(i/10)]+" "+extraGunVariants[i%10],
+ icon:"🔫",
+ color:extraGunColors[i%extraGunColors.length],
+ scope:i%4===0||i%7===0,
+ style:extraGunStyles[i%extraGunStyles.length],
+ damage:1+(i%3),
+ rarity:["STANDARD","RARE","ELITE"][i%3]
+}));
+gunLoot.push(...extraGunLoot);
 const meleeLoot=[
  {name:"Woodland Hatchet",icon:"🪓",color:0x9b7950,scope:false,style:"axe"},
  {name:"Iron Sword",icon:"⚔️",color:0xb9c7d0,scope:false,style:"sword"},
