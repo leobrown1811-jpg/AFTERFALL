@@ -89,7 +89,7 @@ document.querySelectorAll("#lobbyTabs .lobbyTab").forEach(button=>button.addEven
 
 
 const canvas=document.querySelector('#view');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:"high-performance"});renderer.setPixelRatio(Math.min(devicePixelRatio,1.0));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
+const renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:"high-performance"});renderer.setPixelRatio(Math.min(devicePixelRatio,0.78));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0xc9d9d1);scene.fog=new THREE.Fog(0xc9d9d1,420,1450);
 const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,1900);
 const player={pos:new THREE.Vector3(0,0,12),yaw:0,vertical:0,onGround:true,speed:6.2};let found=0;const inventory=[];
@@ -370,11 +370,13 @@ for(const z of [-105,-78,-51,-24,3,30,57,84,111]){
 
 // Expanded AFTERFALL world regions: connected landmarks beyond the village.
 function landmarkBlock(x,z,w,d,h,color,door=true){
- const y=terrainHeight(x,z),wallH=h,th=.55;
- const pieces=[[x,y+wallH/2,z-d/2,w,wallH,th],[x,y+wallH/2,z+d/2,w,wallH,th],[x-w/2,y+wallH/2,z,th,wallH,d],[x+w/2,y+wallH/2,z,th,wallH,d]];
- for(let i=0;i<pieces.length;i++){const p=pieces[i];box(p[0],p[1],p[2],p[3],p[4],p[5],color);solidWalls.push({x:p[0],z:p[2],w:p[3],d:p[5]});}
+ const y=terrainHeight(x,z),wallH=h,th=.55,addWall=(wx,wz,ww,wd)=>{box(wx,y+wallH/2,wz,ww,wallH,wd,color);solidWalls.push({x:wx,z:wz,w:ww,d:wd});};
+ addWall(x,z-d/2,w,th);addWall(x-w/2,z,th,d);addWall(x+w/2,z,th,d);
+ // Leave a real opening in the front wall so every new building can be entered.
+ if(door){const sideWidth=Math.max(1,(w-1.8)/2);addWall(x-(.9+sideWidth/2),z+d/2,sideWidth,th);addWall(x+(.9+sideWidth/2),z+d/2,sideWidth,th);}
+ else addWall(x,z+d/2,w,th);
  const roof=box(x,y+h+.2,z,w+.8,.42,d+.8,0x343b3a);roof.material.roughness=.9;
- box(x,y+1.35,z+d/2+.32,door?1.5:2.5,2.5,.12,0x3b3027);
+ if(door)box(x+1.12,y+1.35,z+d/2+.32,.12,2.5,1.5,0x3b3027);
  box(x,y+h*.58,z-d/2-.32,w*.48,.55,.12,0xc6b27b);
  return {x,z,y,w,d};
 }
@@ -429,6 +431,9 @@ for(const [dx,dz,r,h] of [[-19,-4,4,10],[-20,9,3.2,7],[20,8,4.2,12]]){
 }
 for(let i=0;i<5;i++){const pipe=box(refineryX-7+i*3,refineryY+2.1,refineryZ-12,.55,2.4,13,0xb77d43);pipe.rotation.z=.08;}
 signBoard(300,20,"REFINERY");roadPath([[0,145],[90,115],[175,90],[245,70],[300,55]],8,true,false);
+roadPath([[300,-175],[300,-195],[300,-215]],7,true,false);
+roadPath([[-270,265],[-290,265],[-310,265]],7,true,false);
+roadPath([[-250,-10],[-275,-25],[-300,-40]],7,false,false);
 // Gas & Supplies and Forest & Lake remain as extra landmarks.
 
 // Challenge-only map: regroup the 18 cottages around a compact central green.
@@ -487,7 +492,7 @@ document.querySelector("#mapToggle").addEventListener("click",()=>{document.quer
 document.querySelector("#miniMapClose").addEventListener("click",()=>document.querySelector("#miniMapPanel").classList.remove("open"));
 let raisedPlatform=null,raisedPlatformY=0,refineryLevel=0;
 function useVerticalAccess(){
- const nearTower=Math.hypot(player.pos.x-390,player.pos.z+250)<6,nearRefinery=Math.hypot(player.pos.x-300,player.pos.z-55)<7;
+ const nearTower=Math.hypot(player.pos.x-390,player.pos.z+250)<9,nearRefinery=Math.hypot(player.pos.x-300,player.pos.z-55)<11;
  if(nearTower){if(raisedPlatform==="tower"){raisedPlatform=null;raisedPlatformY=0;player.pos.y=0;player.vertical=0;document.querySelector("#message").textContent="Back on the ground. Watch your step!";}else{raisedPlatform="tower";raisedPlatformY=10.8;player.pos.set(390,10.8,-250);player.vertical=0;document.querySelector("#message").textContent="Climbed the watchtower ladder. Lookout deck reached!";}return true;}
  if(nearRefinery){if(raisedPlatform==="refinery")refineryLevel=(refineryLevel+1)%3;else{raisedPlatform="refinery";refineryLevel=1;}if(refineryLevel===0){raisedPlatform=null;raisedPlatformY=0;player.pos.y=0;player.vertical=0;document.querySelector("#message").textContent="You took the service lift back to ground level.";}else{raisedPlatformY=refineryLevel*4.6;player.pos.set(300,raisedPlatformY,55);player.vertical=0;document.querySelector("#message").textContent="Refinery service lift: LEVEL "+refineryLevel+" / 2. Explore the catwalks!";}return true;}
  return false;
@@ -811,13 +816,14 @@ function collect(){
  if(nearestHouse){const index=houseInteriors.indexOf(nearestHouse);if(!nearestHouse.unlocked){if(!nearestHouse.keyCollected){document.querySelector('#message').textContent=index===0?'This door needs the golden key. Search outside near the village.':index===1?'This door needs the blue key. Find it inside the first house.':index===2?'This door needs the violet key. Find it inside the second house.':'This door needs its matching key. Search the previous unlocked house.';return}const usedKey=houseKeys[index]?.name;const keySlot=inventory.findIndex(item=>item.type==="key"&&item.name===usedKey);if(keySlot>=0){inventory.splice(keySlot,1);if(selectedSlot>keySlot)selectedSlot--;else if(selectedSlot===keySlot)selectedSlot=Math.min(keySlot,Math.max(0,inventory.length-1));refreshInventory()}nearestHouse.unlocked=true;updateKeyHint(-1);nearestHouse.lockDropping=true;nearestHouse.lockDropTime=0;document.querySelector('#message').textContent='The matching key turns! The lock falls away and the door unlocks.';return}nearestHouse.doorOpen=!nearestHouse.doorOpen;document.querySelector('#message').textContent=nearestHouse.doorOpen?'Door opening. Go inside!':'Door closed.';return}
  document.querySelector('#message').textContent='Find all 18 house keys. The first is outside; the rest are hidden inside the previous unlocked house.'}
 document.querySelector('#interact').addEventListener('pointerdown',e=>{e.preventDefault();collect()});addEventListener('keydown',e=>{if(e.key.toLowerCase()==='e'&&!e.repeat)collect()});
-let previous=performance.now();function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-previous)/1000,.04);previous=now;collectAutomaticPickups();
+let previous=performance.now(),lastFrameTime=0,miniMapLastDraw=0;
+function animate(now){requestAnimationFrame(animate);if(now-lastFrameTime<30)return;lastFrameTime=now;const dt=Math.min((now-previous)/1000,.04);previous=now;collectAutomaticPickups();
  if(!dead){hunger=Math.max(0,hunger-dt*.055);water=Math.max(0,water-dt*.085);if(hunger===0||water===0)health=Math.max(0,health-dt*1.4);if(health<=0)triggerDeath()}
  hitCooldown=Math.max(0,hitCooldown-dt);attackCooldown=Math.max(0,attackCooldown-dt);if(attackTimer>0)attackTimer=Math.max(0,attackTimer-dt);aimBlend=THREE.MathUtils.damp(aimBlend,aimMode?1:0,7,dt);
  if(hitTimer>0){hitTimer-=dt;avatar.rotation.z=Math.sin(hitTimer*34)*.22;document.querySelector("#hitFlash").style.opacity=".45"}else{avatar.rotation.z=0;document.querySelector("#hitFlash").style.opacity="0"}
  for(const z of zombies){if(!z.alive)continue;z.group.position.y=terrainHeight(z.group.position.x,z.group.position.z);const dx=player.pos.x-z.group.position.x,dz=player.pos.z-z.group.position.z,d=Math.hypot(dx,dz);if(d>1.25&&d<90){const stepX=dx/d*1.75*dt,stepZ=dz/d*1.75*dt,nextX=z.group.position.x+stepX,nextZ=z.group.position.z+stepZ;if(!zombieBlockedAt(nextX,z.group.position.z))z.group.position.x=nextX;if(!zombieBlockedAt(z.group.position.x,nextZ))z.group.position.z=nextZ;z.group.rotation.y=Math.atan2(dx,dz)}z.phase+=dt*7;z.legs[0].rotation.x=Math.sin(z.phase)*.45;z.legs[1].rotation.x=-Math.sin(z.phase)*.45;z.arms[0].rotation.x=-.45;z.arms[1].rotation.x=-.45;if(d<1.48&&hitCooldown<=0&&!dead){health=Math.max(0,health-10);hitCooldown=1.15;hitTimer=.32;player.pos.x+=(player.pos.x-z.group.position.x)/Math.max(d,.1)*.8;player.pos.z+=(player.pos.z-z.group.position.z)/Math.max(d,.1)*.8;document.querySelector("#message").textContent="Zombie attack! -10 health. Run or fight!";if(health<=0)triggerDeath()}}
  updateSurvivalHud();
-if(document.querySelector("#miniMapPanel").classList.contains("open"))drawAfterfallMap();
+if(document.querySelector("#miniMapPanel").classList.contains("open")&&now-miniMapLastDraw>220){drawAfterfallMap();miniMapLastDraw=now;}
 const forward=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0)-joy.y,side=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+joy.x;const len=Math.hypot(forward,side);const moving=!dead&&len>.08;const sprint=keys.shift||sprintTouch;const speed=player.speed*(sprint?1.65:1);if(moving){const f=forward/Math.max(1,len),s=side/Math.max(1,len),a=aimMode?cameraYaw:player.yaw;const moveX=-Math.sin(a)*f+Math.cos(a)*s,moveZ=-Math.cos(a)*f-Math.sin(a)*s;const nx=player.pos.x+moveX*speed*dt,nz=player.pos.z+moveZ*speed*dt;const radius=.42;const blocked=(x,z)=>solidWalls.some(w=>x+radius>w.x-w.w/2&&x-radius<w.x+w.w/2&&z+radius>w.z-w.d/2&&z-radius<w.z+w.d/2)||houseInteriors.some(h=>{const local=h.houseRoot.worldToLocal(new THREE.Vector3(x,0,z)),ax=Math.abs(local.x),az=Math.abs(local.z);const sideWall=ax>4.45&&ax<5.45&&az<4.5,backWall=local.z< -3.45&&local.z> -4.5&&ax<5.45,frontWall=local.z>3.45&&local.z<4.5&&ax<5.45,doorway=local.z>3.35&&local.z<4.6&&ax<1.42;return (sideWall||backWall||frontWall)&&!(h.unlocked&&h.doorOpen&&doorway)});if(!blocked(nx,player.pos.z))player.pos.x=nx;if(!blocked(player.pos.x,nz))player.pos.z=nz;avatar.rotation.y=aimMode?cameraYaw+Math.PI:Math.atan2(moveX,moveZ)}player.pos.x=THREE.MathUtils.clamp(player.pos.x,-780,780);player.pos.z=THREE.MathUtils.clamp(player.pos.z,-780,780);
 if((jumpQueued||keys[' '])&&player.onGround){player.vertical=7.2;player.onGround=false}jumpQueued=false;player.vertical-=19*dt;player.pos.y+=player.vertical*dt;let floorLevel=0;
 if(raisedPlatform==="tower"){if(Math.abs(player.pos.x-390)>7||Math.abs(player.pos.z+250)>7){raisedPlatform=null;raisedPlatformY=0;}else floorLevel=raisedPlatformY;}
@@ -835,7 +841,7 @@ for(const house of houseInteriors){
 // First-person camera and weapon are positioned directly in camera space above.
 supplies.forEach((s,i)=>{s.rotation.y+=dt*.45;s.position.y=terrainHeight(s.position.x,s.position.z)+.65+Math.sin(now*.002+i)*.09});auraOrbs.forEach((orb,i)=>{orb.rotation.y+=dt*.8;orb.position.y=orb.userData.baseY+Math.sin(now*.002+i)*.13});floorLoot.forEach((loot,i)=>{if(!loot.collected&&loot.mesh.visible){const phase=loot.mesh.userData.phase||i;loot.mesh.position.y=loot.mesh.userData.baseY+Math.sin(now*.0024+phase)*.055;loot.mesh.rotation.y=Math.sin(now*.0012+phase)*.08;}});if(activeMode==="challenge"&&found===5&&player.pos.distanceTo(new THREE.Vector3(18,0,-35))<5){document.querySelector('#message').textContent='FIELD TEST COMPLETE — returning to lobby…';document.querySelector('#lobbyScreen').style.display='flex';document.querySelector('#lobbyNote').textContent='Challenge completed! Your supplies: '+found+'/5. Choose another challenge.';player.pos.set(0,0,12);found=0;document.querySelector('#count').textContent='SUPPLIES: 0 / 5';supplies.forEach(item=>item.visible=true);}
 if(document.querySelector('#lobbyScreen').style.display!=='none'&&!window.AFTERFALL_GAME_STARTED){avatar.position.set(0,terrainHeight(0,0)+Math.sin(now*.0017)*.035,0);avatar.rotation.set(0,Math.PI+Math.sin(now*.0007)*.08,0);avatar.visible=true;camera.position.set(0,3.15,8.2);camera.lookAt(0,1.18,0);heldWeapon.visible=true;weapon.visible=false;}renderer.render(scene,camera)}
-requestAnimationFrame(animate);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.35))});
+requestAnimationFrame(animate);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,0.78))});
 function beginGame(){setModeGear();const weaponLabel=document.querySelector("#lockerWeaponName");if(weaponLabel)weaponLabel.textContent=equippedLoot||"No weapon equipped";window.randomizeHouseKeys();for(const house of houseInteriors){house.drawerSearched=false;for(const spot of house.searchSpots)spot.searched=false;}supplies.forEach(item=>item.visible=true);auraCount=0;document.querySelector("#auraValue").textContent="0";auraOrbs.forEach(orb=>{orb.visible=true;orb.position.y=orb.userData.baseY;});found=0;document.querySelector("#count").textContent="SUPPLIES: 0 / 5";window.AFTERFALL_GAME_STARTED=true;afterfallProgress.matches++;addProgressXP(10);renderLobbyProgress();document.querySelector("#lobbyScreen").style.setProperty("display","none","important");player.pos.set(0,0,0);raisedPlatform=null;raisedPlatformY=0;refineryLevel=0;refreshInventory();player.yaw=0;cameraYaw=0;const msg=document.querySelector("#message");if(msg)msg.textContent="SURVIVE. Search houses, collect supplies and watch for zombies.";}
 refreshLobbyCharacterPreview();window.AFTERFALL_READY=true;
 </script>
