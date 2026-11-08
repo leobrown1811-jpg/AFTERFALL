@@ -217,7 +217,7 @@ function roadPath(points,width=7,markings=false,closed=false){
  const vertices=[],indices=[],half=width/2;
  for(let i=0;i<samples.length;i++){
   const t=i/count,tangent=curve.getTangent(t).normalize(),nx=tangent.z,nz=-tangent.x,p=samples[i];
-  vertices.push(p.x+nx*half,.035,p.z+nz*half,p.x-nx*half,.035,p.z-nz*half);
+  vertices.push(p.x+nx*half,p.y,p.z+nz*half,p.x-nx*half,p.y,p.z-nz*half);
   if(i<count){const a=i*2,b=a+1,c=a+2,d=a+3;indices.push(a,c,b,b,c,d);}
  }
  const geometry=new THREE.BufferGeometry();
@@ -226,7 +226,7 @@ function roadPath(points,width=7,markings=false,closed=false){
  const asphalt=new THREE.Mesh(geometry,roadMaterial);asphalt.material.side=THREE.DoubleSide;asphalt.receiveShadow=true;scene.add(asphalt);
  // Open roads get rounded ends; the closed village loop joins seamlessly to itself.
  if(!closed)for(const p of [samples[0],samples[samples.length-1]]){
-  const cap=new THREE.Mesh(new THREE.CircleGeometry(half,20),roadMaterial);cap.rotation.x=-Math.PI/2;cap.position.set(p.x,.036,p.z);scene.add(cap);
+  const cap=new THREE.Mesh(new THREE.CircleGeometry(half,20),roadMaterial);cap.rotation.x=-Math.PI/2;cap.position.set(p.x,terrainHeight(p.x,p.z)+.046,p.z);scene.add(cap);
  }
  if(markings){
   let distance=0,nextDash=7;
