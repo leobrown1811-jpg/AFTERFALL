@@ -828,7 +828,7 @@ function setModeGear(){
  aimButton.style.display=activeMode==="challenge"?"none":"";
  aimReticle.style.display="none";document.querySelector("#scopeOverlay").style.opacity="0";
  document.querySelector("#attack").innerHTML=activeMode==="challenge"?"<b>⚔️</b>SWING":"<b>🔫</b>FIRE";
- document.querySelector("#help").innerHTML=activeMode==="challenge"?"LAPTOP: WASD move · Mouse drag look · Space jump · Shift sprint · E interact · F swing · I inventory · 1–6 hotbar":"LAPTOP: WASD move · Mouse drag look · Left-click/F fire · Right-click/Q aim · Space jump · Shift sprint · E interact · X eat/use · I inventory · 1–6 hotbar";
+ document.querySelector("#help").innerHTML=activeMode==="challenge"?"LAPTOP: WASD move · Mouse drag look · Space jump · Shift sprint · E interact · F swing · I inventory · 1–6 hotbar":"LAPTOP: WASD move · Mouse drag look · Left-click/F fire · Right-click/Q aim · Space jump · Shift sprint · E interact · X eat/use · I inventory · M map · 1–6 hotbar";
  for(let i=0;i<floorLoot.length;i++){
   const loot=floorLoot[i],item=weaponLoot[i%weaponLoot.length],position=loot.mesh.position.clone(),rotation=loot.mesh.children[2]?.rotation.y||0;
   scene.remove(loot.mesh);loot.loot=item;loot.mesh=createFloorLootVisual(item,rotation);loot.mesh.position.copy(position);loot.mesh.userData.baseY=position.y;scene.add(loot.mesh);
@@ -856,6 +856,7 @@ addEventListener("keydown",e=>{
  const key=e.key.toLowerCase();
  if(["1","2","3","4","5","6"].includes(key)){e.preventDefault();useHotbarSlot(Number(key)-1);return;}
  if(key==="i"&&!e.repeat){e.preventDefault();document.querySelector("#inventoryOpen").click();return;}
+ if(key==="m"&&!e.repeat){e.preventDefault();document.querySelector("#mapToggle").click();return;}
  if(key==="x"&&!e.repeat){e.preventDefault();document.querySelector("#consumeAction").click();return;}
 });
 canvas.addEventListener("click",e=>{if(e.button===0&&window.AFTERFALL_GAME_STARTED&&!afterfallTypingTarget(e.target))attackZombie();});
