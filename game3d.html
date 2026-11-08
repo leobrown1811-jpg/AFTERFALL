@@ -23,7 +23,7 @@ selectGameMode("challenge");
 
 // Initialise the house list before lobby callbacks can access it.
 const houseInteriors=[];
-function enterWorld(){for(const house of houseInteriors){house.doorPivot.visible=true;house.doorOpen=house.unlocked;house.lockDropping=false;house.doorPivot.rotation.y=house.doorOpen?Math.PI/2:0;}const mission=activeMode==="survival"?"Free exploration · survive as long as possible":document.querySelector("#mission3d").selectedOptions[0].textContent;document.querySelector("#lobbyScreen").style.setProperty("display","none","important");document.querySelector("#skinScreen").style.setProperty("display","flex","important");document.querySelector("#mission").textContent=(activeMode==="survival"?"SURVIVAL MODE: ":"CHALLENGE MODE: ")+mission;document.querySelector("#message").textContent="Choose your survivor, then press START GAME.";}
+function enterWorld(){if(activeMode==="challenge")applyChallengeVillageLayout();for(const house of houseInteriors){house.doorPivot.visible=true;house.doorOpen=house.unlocked;house.lockDropping=false;house.doorPivot.rotation.y=house.doorOpen?Math.PI/2:0;}const mission=activeMode==="survival"?"Free exploration · survive as long as possible":document.querySelector("#mission3d").selectedOptions[0].textContent;document.querySelector("#lobbyScreen").style.setProperty("display","none","important");document.querySelector("#skinScreen").style.setProperty("display","flex","important");document.querySelector("#mission").textContent=(activeMode==="survival"?"SURVIVAL MODE: ":"CHALLENGE MODE: ")+mission;document.querySelector("#message").textContent="Choose your survivor, then press START GAME.";}
 document.querySelector("#usernameContinue").addEventListener("click",()=>{if(savePlayerProfile()){document.querySelector("#usernameScreen").style.setProperty("display","none","important");document.querySelector("#lobbyScreen").style.setProperty("display","flex","important");}});document.querySelector("#launch3d").addEventListener("click",enterWorld);
 
 const canvas=document.querySelector('#view');
@@ -168,7 +168,7 @@ function makeHouse(x,z,accent=0x353c3a,facing=0){
  houseRoot.scale.setScalar(1.15);
  for(let i=wallStart;i<solidWalls.length;i++){const b=solidWalls[i];b.x=x+(b.x-x)*1.15;b.z=z+(b.z-z)*1.15;b.w*=1.15;b.d*=1.15;}
  const doorX=x+Math.sin(facing)*(dep*1.15/2),doorZ=z+Math.cos(facing)*(dep*1.15/2);
- const drawerPos=houseRoot.localToWorld(new THREE.Vector3(3.72,.78,.15));const searchSpots=[{label:"coffee table",pos:houseRoot.localToWorld(new THREE.Vector3(0,.62,-.45)),searched:false},{label:"cabinet",pos:drawerPos.clone(),searched:false},{label:"sofa",pos:houseRoot.localToWorld(new THREE.Vector3(-1,.8,-2.45)),searched:false}];const data={x,z,w,dep,roof,front,doorX,doorZ,facing,houseRoot,doorPivot,doorOpen:false,lockAssembly,lockDropping:false,lockDropTime:0,unlocked:false,keyCollected:false,drawerPos,drawerSearched:false,searchSpots};houseInteriors.push(data);
+ const drawerPos=houseRoot.localToWorld(new THREE.Vector3(3.72,.78,.15));const searchSpots=[{label:"coffee table",pos:houseRoot.localToWorld(new THREE.Vector3(0,.62,-.45)),searched:false},{label:"cabinet",pos:drawerPos.clone(),searched:false},{label:"sofa",pos:houseRoot.localToWorld(new THREE.Vector3(-1,.8,-2.45)),searched:false}];const data={x,z,w,dep,roof,front,doorX,doorZ,facing,houseRoot,doorPivot,doorOpen:false,lockAssembly,lockDropping:false,lockDropTime:0,unlocked:false,keyCollected:false,drawerPos,drawerSearched:false,searchSpots,wallStart,wallEnd:solidWalls.length};houseInteriors.push(data);
 }
 // Eighteen cottages are arranged in two evenly spaced rows beside one continuous village loop.
 const villageHouseColors=[0x353c3a,0x4a3933,0x3d4937,0x51463a,0x4b5148,0x51483d,0x555047,0x46544a,0x4a514e,0x4c5548,0x5b5043,0x46504b,0x574b40,0x4c5548,0x51483f,0x4d574e,0x53604e,0x655044];
@@ -178,7 +178,7 @@ for(let i=0;i<villageHouseZ.length;i++){
  makeHouse(45,villageHouseZ[i],villageHouseColors[i+9],-Math.PI/2);
 }
 // Arcade-style loot: collectible fictional gear, found in house drawers or on the floor.
-const weaponLoot=[
+const gunLoot=[
  {name:"Compact Sidearm",icon:"🔫",color:0x6b7f83,scope:false,style:"sidearm"},
  {name:"Ranger Rifle",icon:"🔫",color:0x8c7651,scope:true,style:"rifle"},
  {name:"Rapid Blaster",icon:"🔫",color:0x557b68,scope:false,style:"blaster"},
@@ -186,11 +186,37 @@ const weaponLoot=[
  {name:"Longshot Marksman",icon:"🔫",color:0x526b83,scope:true,style:"marksman"},
  {name:"Burst Repeater",icon:"🔫",color:0x80629a,scope:false,style:"repeater"}
 ];
-const carePackageLoot=[...weaponLoot.map(item=>({...item,type:"gear"})),{name:"Crisps Packet",icon:"🥔",type:"food"},{name:"Apple",icon:"🍎",type:"food"},{name:"Biscuit Pack",icon:"🍪",type:"food"},{name:"Water Bottle",icon:"🧴",type:"drink"},{name:"Juice Carton",icon:"🧃",type:"drink"},{name:"First Aid Kit",icon:"🩹",type:"healing"},{name:"Medical Pouch",icon:"➕",type:"healing"}];
+const meleeLoot=[
+ {name:"Woodland Hatchet",icon:"🪓",color:0x9b7950,scope:false,style:"axe"},
+ {name:"Iron Sword",icon:"⚔️",color:0xb9c7d0,scope:false,style:"sword"},
+ {name:"Forest Blade",icon:"🗡️",color:0x73958b,scope:false,style:"sword"},
+ {name:"Trail Axe",icon:"🪓",color:0x80694c,scope:false,style:"axe"},
+ {name:"Training Club",icon:"🏏",color:0x8a6745,scope:false,style:"club"},
+ {name:"Twin Blades",icon:"⚔️",color:0x9a9db8,scope:false,style:"sword"}
+];
+let weaponLoot=meleeLoot;
+const makeCarePackageLoot=()=>[...weaponLoot.map(item=>({...item,type:"gear"})),{name:"Crisps Packet",icon:"🥔",type:"food"},{name:"Apple",icon:"🍎",type:"food"},{name:"Biscuit Pack",icon:"🍪",type:"food"},{name:"Water Bottle",icon:"🧴",type:"drink"},{name:"Juice Carton",icon:"🧃",type:"drink"},{name:"First Aid Kit",icon:"🩹",type:"healing"},{name:"Medical Pouch",icon:"➕",type:"healing"}];
+let carePackageLoot=makeCarePackageLoot();
 // One shared stylised model builder is used for floor pickups and equipped gear.
 function createWeaponVisual(item){
  const g=new THREE.Group(),bodyMat=mat(item.color),darkMat=mat(0x20282b),trimMat=mat(0xb8c4b5);
  const add=(geo,material,x,y,z)=>{const m=new THREE.Mesh(geo,material);m.position.set(x,y,z);g.add(m);return m};
+ if(item.style==="sword"||item.style==="axe"||item.style==="club"){
+  if(item.style==="sword"){
+   add(new THREE.BoxGeometry(.075,.12,.18),darkMat,0,-.12,.02);
+   add(new THREE.BoxGeometry(.42,.075,.10),trimMat,0,-.015,.02);
+   add(new THREE.BoxGeometry(.13,.07,.78),bodyMat,0,.035,-.42);
+   add(new THREE.ConeGeometry(.065,.2,4),bodyMat,0,.035,-.91).rotation.x=-Math.PI/2;
+  }else if(item.style==="axe"){
+   add(new THREE.BoxGeometry(.09,.09,.78),darkMat,0,0,0);
+   add(new THREE.BoxGeometry(.13,.42,.24),bodyMat,.13,.04,-.28);
+   add(new THREE.BoxGeometry(.09,.20,.12),trimMat,.12,.04,-.48);
+  }else{
+   const club=add(new THREE.CylinderGeometry(.065,.105,.95,9),bodyMat,0,0,0);club.rotation.x=Math.PI/2;
+   add(new THREE.BoxGeometry(.12,.12,.13),darkMat,0,0,.45);
+  }
+  return g;
+ }
  const long=item.style==="sidearm"?.48:item.style==="blaster"?.62:item.style==="marksman"?1.12:.82;
  add(new THREE.BoxGeometry(.19,.15,long),bodyMat,0,0,0);
  add(new THREE.BoxGeometry(.12,.2,.2),darkMat,0,-.13,-long*.23);
@@ -206,7 +232,7 @@ const floorLoot=[];
 function makeLootPickup(houseIndex,localX,localZ,lootIndex){
  const host=houseInteriors[houseIndex],item=weaponLoot[lootIndex%weaponLoot.length],g=createWeaponVisual(item);
  g.scale.setScalar(.78);g.position.copy(host.houseRoot.localToWorld(new THREE.Vector3(localX,.22,localZ)));g.rotation.y=(lootIndex%4)*.7;scene.add(g);
- floorLoot.push({mesh:g,loot:item,collected:false});
+ floorLoot.push({mesh:g,loot:item,collected:false,houseIndex});
 }
 for(let i=0;i<Math.min(10,houseInteriors.length);i++){
  if(i%2===0)makeLootPickup(i,-1.8,.65,(i+1)%weaponLoot.length);
@@ -215,7 +241,7 @@ for(let i=0;i<Math.min(10,houseInteriors.length);i++){
 
 // Continuous road ribbons: one joined mesh per route prevents wedge-shaped gaps at bends.
 // Continuous village roads: dark tarmac, smooth curves, consistent width and clear centre markings.
-const roadMaterial=mat(0x555751),roadMarkMaterial=mat(0xe2dfcb);
+const roadMaterial=mat(0x555751),roadMarkMaterial=mat(0xe2dfcb),villageRoadMeshes=[];
 function roadPath(points,width=7,markings=false,closed=false){
  const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(p[0],terrainHeight(p[0],p[1])+.045,p[1])),closed,"centripetal");
  const count=Math.max(48,(points.length-1)*36),samples=curve.getPoints(count);
@@ -228,10 +254,10 @@ function roadPath(points,width=7,markings=false,closed=false){
  const geometry=new THREE.BufferGeometry();
  geometry.setAttribute("position",new THREE.Float32BufferAttribute(vertices,3));
  geometry.setIndex(indices);geometry.computeVertexNormals();
- const asphalt=new THREE.Mesh(geometry,roadMaterial);asphalt.material.side=THREE.DoubleSide;asphalt.receiveShadow=true;scene.add(asphalt);
+ const asphalt=new THREE.Mesh(geometry,roadMaterial);asphalt.material.side=THREE.DoubleSide;asphalt.receiveShadow=true;scene.add(asphalt);villageRoadMeshes.push(asphalt);
  // Open roads get rounded ends; the closed village loop joins seamlessly to itself.
  if(!closed)for(const p of [samples[0],samples[samples.length-1]]){
-  const cap=new THREE.Mesh(new THREE.CircleGeometry(half,20),roadMaterial);cap.rotation.x=-Math.PI/2;cap.position.set(p.x,terrainHeight(p.x,p.z)+.046,p.z);scene.add(cap);
+  const cap=new THREE.Mesh(new THREE.CircleGeometry(half,20),roadMaterial);cap.rotation.x=-Math.PI/2;cap.position.set(p.x,terrainHeight(p.x,p.z)+.046,p.z);scene.add(cap);villageRoadMeshes.push(cap);
  }
  if(markings){
   let distance=0,nextDash=7;
@@ -239,7 +265,7 @@ function roadPath(points,width=7,markings=false,closed=false){
    const a=samples[i],b=samples[i+1],dx=b.x-a.x,dz=b.z-a.z,len=Math.hypot(dx,dz);if(len<.001)continue;
    while(nextDash<distance+len){
     const t=(nextDash-distance)/len,dash=new THREE.Mesh(new THREE.BoxGeometry(.16,.035,2.8),roadMarkMaterial);
-    dash.position.set(a.x+dx*t,.075,a.z+dz*t);dash.rotation.y=Math.atan2(dx,dz);scene.add(dash);nextDash+=11;
+    dash.position.set(a.x+dx*t,.075,a.z+dz*t);dash.rotation.y=Math.atan2(dx,dz);scene.add(dash);villageRoadMeshes.push(dash);nextDash+=11;
    }
    distance+=len;
   }
@@ -254,6 +280,34 @@ for(const z of [-105,-78,-51,-24,3,30,57,84,111]){
   roadPath([[-3,z-5],[-12,z-2],[-24,z],[-32,z],[-36.8,z]],7.2,false,false);
   roadPath([[3,z-5],[12,z-2],[24,z],[32,z],[36.8,z]],7.2,false,false);
 }
+
+// Challenge-only map: regroup the 18 cottages around a compact central green.
+// Survival Mode keeps the original two-row village and its original roads.
+let challengeVillageApplied=false;
+function applyChallengeVillageLayout(){
+ if(challengeVillageApplied)return;
+ challengeVillageApplied=true;
+ for(const road of villageRoadMeshes)road.visible=false;
+ for(let i=0;i<houseInteriors.length;i++){
+  const house=houseInteriors[i],row=Math.floor(i/6),within=i%6;
+  const side=within%2===0?-1:1,subrow=Math.floor(within/2);
+  const nx=side*34,nz=(row-1)*52+(subrow-1)*15;
+  const dx=nx-house.x,dz=nz-house.z,oldY=terrainHeight(house.x,house.z),newY=terrainHeight(nx,nz),dy=newY-oldY;
+  house.houseRoot.position.set(nx,newY,nz);
+  house.x=nx;house.z=nz;house.doorX+=dx;house.doorZ+=dz;house.front+=dz;
+  for(let j=house.wallStart;j<house.wallEnd;j++){solidWalls[j].x+=dx;solidWalls[j].z+=dz;}
+  house.drawerPos.x+=dx;house.drawerPos.y+=dy;house.drawerPos.z+=dz;
+  for(const spot of house.searchSpots){spot.pos.x+=dx;spot.pos.y+=dy;spot.pos.z+=dz;}
+  for(const loot of floorLoot){if(loot.houseIndex===i){loot.mesh.position.x+=dx;loot.mesh.position.y+=dy;loot.mesh.position.z+=dz;}}
+ }
+ // A loop road and two cross streets frame the new plaza.
+ roadPath([[-88,-82],[0,-88],[88,-82],[94,0],[88,82],[0,88],[-88,82],[-94,0]],8,false,true);
+ roadPath([[0,-88],[0,88]],7,false,false);
+ roadPath([[-88,-26],[88,-26]],6,false,false);
+ roadPath([[-88,26],[88,26]],6,false,false);
+ document.querySelector("#message").textContent="Challenge village loaded: explore the central green and search the new cottage rows.";
+}
+
 const beaconBase=terrainHeight(18,-35);const beacon=new THREE.PointLight(0xffd17b,22,24);beacon.position.set(18,beaconBase+4,-35);scene.add(beacon);// The finish beacon has no surrounding box or platform; keep the flagpole on open ground.const beaconPole=new THREE.Mesh(new THREE.CylinderGeometry(.12,.17,5.8,12),mat(0x5a4732));beaconPole.position.set(18,beaconBase+3.7,-35);scene.add(beaconPole);const beaconFlag=new THREE.Mesh(new THREE.PlaneGeometry(4.8,2.4),new THREE.MeshStandardMaterial({color:0x263d32,side:THREE.DoubleSide,roughness:.8}));beaconFlag.position.set(20.3,beaconBase+5.2,-35);beaconFlag.rotation.y=.15;scene.add(beaconFlag);const flagCanvas=document.createElement("canvas");flagCanvas.width=768;flagCanvas.height=384;const flagCtx=flagCanvas.getContext("2d");flagCtx.fillStyle="#263d32";flagCtx.fillRect(0,0,768,384);flagCtx.strokeStyle="#e7c77c";flagCtx.lineWidth=14;flagCtx.strokeRect(12,12,744,360);flagCtx.fillStyle="#f2d58f";flagCtx.font="bold 88px system-ui";flagCtx.textAlign="center";flagCtx.textBaseline="middle";flagCtx.fillText("AFTERFALL",384,190);beaconFlag.material.map=new THREE.CanvasTexture(flagCanvas);beaconFlag.material.needsUpdate=true;
 const supplies=[];for(const [x,z] of [[-8,4],[23,-9],[-27,-43],[-20.5,-20.5],[21.5,-38.5]]){const g=new THREE.Group();const crate=new THREE.Mesh(new THREE.BoxGeometry(1.15,.85,.9),mat(0xc18a42));crate.castShadow=true;g.add(crate);const stripe=new THREE.Mesh(new THREE.BoxGeometry(1.18,.13,.94),mat(0xe7d29a));stripe.position.y=.1;g.add(stripe);g.position.set(x,terrainHeight(x,z)+.65,z);scene.add(g);supplies.push(g)}
  // One key for each of the 18 houses. The first key is outdoors; each later key is hidden inside the previously unlocked house.
@@ -504,14 +558,30 @@ function makeZombie(x,z){const g=new THREE.Group(),body=new THREE.Mesh(new THREE
 [[-28,-25],[32,-45],[-62,38],[65,72],[5,105],[-95,-25],[92,-42],[-105,95],[112,112],[0,145],[-145,5],[145,-5],[-40,175],[70,185],[175,75]].forEach(p=>makeZombie(...p));
 function updateSurvivalHud(){for(const [id,v] of [["health",health],["hunger",hunger],["water",water]]){document.getElementById(id+"Fill").style.width=v+"%";document.getElementById(id+"Value").textContent=Math.ceil(v)+"%"}document.getElementById("scoreValue").textContent=score;document.getElementById("zombieCount").textContent=zombies.filter(z=>z.alive).length}
 let aimMode=false,aimBlend=0,aimPose=0;
-const aimButton=document.querySelector("#aim"),aimReticle=document.querySelector("#aimReticle");function toggleAim(){aimMode=!aimMode;if(aimMode)cameraYaw=player.yaw;else cameraYaw=player.yaw;aimButton.classList.toggle("aiming",aimMode);aimButton.innerHTML=aimMode?"<b>⊕</b>AIM ON":"<b>⊕</b>AIM";aimReticle.style.display=aimMode?"block":"none"}aimButton.addEventListener("click",e=>{e.preventDefault();toggleAim()});function attackZombie(){if(dead||attackCooldown>0)return;attackCooldown=.42;attackTimer=.25;weapon.userData.muzzle.intensity=aimMode?3.5:1.8;setTimeout(()=>{if(weapon.userData.muzzle)weapon.userData.muzzle.intensity=0},65);let target=null,best=aimMode?48:18;const shotYaw=aimMode?cameraYaw:player.yaw;const f=new THREE.Vector3(-Math.sin(shotYaw),0,-Math.cos(shotYaw));for(const z of zombies){if(!z.alive)continue;const d=new THREE.Vector3(z.group.position.x-player.pos.x,0,z.group.position.z-player.pos.z),dist=d.length(),alignment=f.dot(d.clone().normalize());if(dist<best&&alignment>(aimMode?.985:.965)){best=dist;target=z}}if(target){target.health--;target.group.rotation.z=.08;if(target.health<=0){target.alive=false;target.group.visible=false;score+=100;document.querySelector("#message").textContent="Zombie eliminated! +100 points."}else document.querySelector("#message").textContent="Hit confirmed! "+target.health+" shots to eliminate.";updateSurvivalHud()}else document.querySelector("#message").textContent=aimMode?"Missed! Adjust your aim.":"No target in range — tap AIM for precision."}
+const aimButton=document.querySelector("#aim"),aimReticle=document.querySelector("#aimReticle");function toggleAim(){if(activeMode==="challenge")return;aimMode=!aimMode;if(aimMode)cameraYaw=player.yaw;else cameraYaw=player.yaw;aimButton.classList.toggle("aiming",aimMode);aimButton.innerHTML=aimMode?"<b>⊕</b>AIM ON":"<b>⊕</b>AIM";aimReticle.style.display=aimMode?"block":"none"}aimButton.addEventListener("click",e=>{e.preventDefault();toggleAim()});function attackZombie(){if(dead||attackCooldown>0)return;attackCooldown=activeMode==="challenge"?.58:.42;attackTimer=activeMode==="challenge"?.38:.25;if(activeMode!=="challenge"&&weapon.userData.muzzle){weapon.userData.muzzle.intensity=aimMode?3.5:1.8;setTimeout(()=>{if(weapon.userData.muzzle)weapon.userData.muzzle.intensity=0},65);}let target=null,best=activeMode==="challenge"?3.8:(aimMode?48:18);const shotYaw=activeMode==="challenge"?player.yaw:(aimMode?cameraYaw:player.yaw);const f=new THREE.Vector3(-Math.sin(shotYaw),0,-Math.cos(shotYaw));for(const z of zombies){if(!z.alive)continue;const d=new THREE.Vector3(z.group.position.x-player.pos.x,0,z.group.position.z-player.pos.z),dist=d.length(),alignment=f.dot(d.clone().normalize());if(dist<best&&alignment>(activeMode==="challenge"?.35:(aimMode?.985:.965))){best=dist;target=z}}if(target){target.health-=activeMode==="challenge"?2:1;target.group.rotation.z=.08;if(target.health<=0){target.alive=false;target.group.visible=false;score+=100;document.querySelector("#message").textContent="Zombie eliminated! +100 points."}else document.querySelector("#message").textContent="Hit confirmed! "+target.health+" shots to eliminate.";updateSurvivalHud()}else document.querySelector("#message").textContent=activeMode==="challenge"?"Swing missed — move closer and face the target.":(aimMode?"Missed! Adjust your aim.":"No target in range — tap AIM for precision.")}
 document.querySelector("#attack").addEventListener("pointerdown",e=>{e.preventDefault();attackZombie()});addEventListener("keydown",e=>{if(e.key.toLowerCase()==="f"&&!e.repeat)attackZombie();if(e.key.toLowerCase()==="q"&&!e.repeat)toggleAim()});
-let equippedLoot="Compact Sidearm",selectedSlot=0,scopeAimBlend=0;
+let equippedLoot=weaponLoot[0].name,selectedSlot=0,scopeAimBlend=0;
+
+function setModeGear(){
+ weaponLoot=activeMode==="challenge"?meleeLoot:gunLoot;
+ carePackageLoot=makeCarePackageLoot();
+ aimMode=false;aimButton.classList.remove("aiming");
+ aimButton.style.display=activeMode==="challenge"?"none":"";
+ aimReticle.style.display="none";document.querySelector("#scopeOverlay").style.opacity="0";
+ document.querySelector("#attack").innerHTML=activeMode==="challenge"?"<b>⚔️</b>SWING":"<b>🔫</b>FIRE";
+ document.querySelector("#help").innerHTML=activeMode==="challenge"?"COMPUTER: WASD / arrows · mouse drag to look<br>Space: jump · Shift: sprint · E: collect · F: swing":"COMPUTER: WASD / arrows · mouse drag to look<br>Space: jump · Shift: sprint · E: collect · Q: aim · F: fire";
+ for(let i=0;i<floorLoot.length;i++){
+  const loot=floorLoot[i],item=weaponLoot[i%weaponLoot.length],position=loot.mesh.position.clone(),rotation=loot.mesh.rotation.y,scale=loot.mesh.scale.x;
+  scene.remove(loot.mesh);loot.loot=item;loot.mesh=createWeaponVisual(item);loot.mesh.scale.setScalar(scale);loot.mesh.position.copy(position);loot.mesh.rotation.y=rotation;scene.add(loot.mesh);
+ }
+ equippedLoot=weaponLoot[0].name;syncEquippedWeapon();
+}
+
 function syncEquippedWeapon(){
  const item=weaponLoot.find(v=>v.name===equippedLoot)||weaponLoot[0];
  heldWeapon.clear();const heldModel=createWeaponVisual(item);heldModel.scale.setScalar(.58);heldWeapon.add(heldModel);
  heldWeapon.position.set(.49,1.12,.88);heldWeapon.rotation.set(-.10,0,0);
- weapon.clear();const viewModel=createWeaponVisual(item);viewModel.rotation.y=Math.PI;viewModel.scale.setScalar(.72);weapon.add(viewModel);weapon.userData.muzzle=viewModel.userData.muzzle;
+ weapon.clear();const viewModel=createWeaponVisual(item);viewModel.rotation.y=Math.PI;viewModel.scale.setScalar(.72);weapon.add(viewModel);weapon.userData.muzzle=viewModel.userData.muzzle||null;
 }
 syncEquippedWeapon();
 function addInventoryItem(item){const existing=inventory.find(v=>v.name===item.name&&v.type===item.type);if(existing&&item.type!=="gear")existing.count=(existing.count||1)+(item.count||1);else inventory.push({...item,count:item.count||1});refreshInventory()}
@@ -542,7 +612,7 @@ let previous=performance.now();function animate(now){requestAnimationFrame(anima
  updateSurvivalHud();
 const forward=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0)-joy.y,side=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+joy.x;const len=Math.hypot(forward,side);const moving=!dead&&len>.08;const sprint=keys.shift||sprintTouch;const speed=player.speed*(sprint?1.65:1);if(moving){const f=forward/Math.max(1,len),s=side/Math.max(1,len),a=aimMode?cameraYaw:player.yaw;const moveX=-Math.sin(a)*f+Math.cos(a)*s,moveZ=-Math.cos(a)*f-Math.sin(a)*s;const nx=player.pos.x+moveX*speed*dt,nz=player.pos.z+moveZ*speed*dt;const radius=.42;const blocked=(x,z)=>solidWalls.some(w=>x+radius>w.x-w.w/2&&x-radius<w.x+w.w/2&&z+radius>w.z-w.d/2&&z-radius<w.z+w.d/2)||houseInteriors.some(h=>!h.doorOpen&&Math.abs((x-h.doorX)*Math.cos(h.facing)-(z-h.doorZ)*Math.sin(h.facing))<1.12&&Math.abs((x-h.doorX)*Math.sin(h.facing)+(z-h.doorZ)*Math.cos(h.facing))<.58);if(!blocked(nx,player.pos.z))player.pos.x=nx;if(!blocked(player.pos.x,nz))player.pos.z=nz;avatar.rotation.y=aimMode?cameraYaw+Math.PI:Math.atan2(moveX,moveZ)}player.pos.x=THREE.MathUtils.clamp(player.pos.x,-780,780);player.pos.z=THREE.MathUtils.clamp(player.pos.z,-780,780);
 if((jumpQueued||keys[' '])&&player.onGround){player.vertical=7.2;player.onGround=false}jumpQueued=false;player.vertical-=19*dt;player.pos.y+=player.vertical*dt;if(player.pos.y<=0){player.pos.y=0;player.vertical=0;player.onGround=true}
-avatar.position.set(player.pos.x,terrainHeight(player.pos.x,player.pos.z)+player.pos.y,player.pos.z);if(dead){deathTimer+=dt;const fall=Math.min(1,deathTimer/1.05);avatar.rotation.z=Math.sin(deathTimer*8)*.12;avatar.rotation.x=-fall*1.28;avatar.position.y=Math.max(-.65,player.pos.y-fall*1.05);leftArm.rotation.x=-fall*.9;rightArm.rotation.x=fall*.9;leftLeg.rotation.x=fall*.35;rightLeg.rotation.x=-fall*.35;}else if(moving){const swing=Math.sin(now*(sprint?0.014:0.01))*0.48;leftLeg.rotation.x=swing;rightLeg.rotation.x=-swing;leftArm.rotation.x=-swing*.7;rightArm.rotation.x=swing*.7}else{avatar.rotation.x=0;leftLeg.rotation.x=rightLeg.rotation.x=0;leftArm.rotation.x=rightArm.rotation.x=0}if(!dead){rightArm.rotation.x=THREE.MathUtils.lerp(-.88,-1.12,aimBlend);leftArm.rotation.x=THREE.MathUtils.lerp(-.62,-.98,aimBlend);if(aimMode)avatar.rotation.y=cameraYaw+Math.PI;}const equippedDef=weaponLoot.find(v=>v.name===equippedLoot)||weaponLoot[0];scopeAimBlend=THREE.MathUtils.damp(scopeAimBlend,aimMode&&equippedDef.scope?1:0,8,dt);const pitch=camera.userData.pitch||.18;const viewYaw=aimMode?cameraYaw:player.yaw;const baseY=terrainHeight(player.pos.x,player.pos.z);const eye=new THREE.Vector3(player.pos.x,baseY+player.pos.y+1.62,player.pos.z);const lookDir=new THREE.Vector3(-Math.sin(viewYaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(viewYaw)*Math.cos(pitch));const firstLook=eye.clone().add(lookDir);const thirdPos=new THREE.Vector3(player.pos.x+Math.sin(player.yaw)*6,baseY+player.pos.y+2.55,player.pos.z+Math.cos(player.yaw)*6);const shoulderPos=new THREE.Vector3(player.pos.x+Math.sin(viewYaw)*3.15+Math.cos(viewYaw)*.82,baseY+player.pos.y+1.95,player.pos.z+Math.cos(viewYaw)*3.15-Math.sin(viewYaw)*.82);const thirdLook=new THREE.Vector3(player.pos.x,baseY+player.pos.y+1.25,player.pos.z);const shoulderLook=new THREE.Vector3(player.pos.x-Math.sin(viewYaw)*6,baseY+player.pos.y+1.48,player.pos.z-Math.cos(viewYaw)*6);const scopedThirdPos=new THREE.Vector3(player.pos.x+Math.sin(player.yaw)*4.5,baseY+player.pos.y+2.25,player.pos.z+Math.cos(player.yaw)*4.5);const aimCameraPos=thirdPos.clone().lerp(shoulderPos,aimBlend).lerp(eye,scopeAimBlend);const aimCameraLook=thirdLook.clone().lerp(shoulderLook,aimBlend).lerp(firstLook,scopeAimBlend);const activeInterior=houseInteriors.find(h=>{const p=h.houseRoot.worldToLocal(new THREE.Vector3(player.pos.x,0,player.pos.z));return Math.abs(p.x)<4.9&&Math.abs(p.z)<3.9;});if(activeInterior&&scopeAimBlend<.92){const camYaw=aimMode?cameraYaw:player.yaw;const desired=new THREE.Vector3(player.pos.x+Math.sin(camYaw)*2.0,baseY+player.pos.y+1.95,player.pos.z+Math.cos(camYaw)*2.0);const localCam=activeInterior.houseRoot.worldToLocal(desired);localCam.x=THREE.MathUtils.clamp(localCam.x,-4.65,4.65);localCam.z=THREE.MathUtils.clamp(localCam.z,-3.65,3.65);camera.position.copy(activeInterior.houseRoot.localToWorld(localCam));camera.lookAt(thirdLook);}else{camera.position.copy(aimCameraPos);camera.lookAt(aimCameraLook);}avatar.visible=scopeAimBlend<.92;heldWeapon.visible=scopeAimBlend<.92;weapon.visible=scopeAimBlend>.08;const scopeOverlay=document.querySelector("#scopeOverlay");scopeOverlay.style.opacity=String(scopeAimBlend);aimReticle.style.display=aimMode&&!equippedDef.scope?"block":"none";const aimFov=equippedDef.scope?30:55;camera.fov=THREE.MathUtils.damp(camera.fov,aimMode?aimFov:72,9,dt);camera.updateProjectionMatrix();weapon.position.set(.34,-.28,-.72);weapon.rotation.set(THREE.MathUtils.lerp(0,-.025,aimBlend),0,THREE.MathUtils.lerp(0,-.015,aimBlend));if(attackTimer>0){weapon.position.z+=Math.sin((attackTimer/.25)*Math.PI)*.075;weapon.rotation.x-=Math.sin((attackTimer/.25)*Math.PI)*.045;}
+avatar.position.set(player.pos.x,terrainHeight(player.pos.x,player.pos.z)+player.pos.y,player.pos.z);if(dead){deathTimer+=dt;const fall=Math.min(1,deathTimer/1.05);avatar.rotation.z=Math.sin(deathTimer*8)*.12;avatar.rotation.x=-fall*1.28;avatar.position.y=Math.max(-.65,player.pos.y-fall*1.05);leftArm.rotation.x=-fall*.9;rightArm.rotation.x=fall*.9;leftLeg.rotation.x=fall*.35;rightLeg.rotation.x=-fall*.35;}else if(moving){const swing=Math.sin(now*(sprint?0.014:0.01))*0.48;leftLeg.rotation.x=swing;rightLeg.rotation.x=-swing;leftArm.rotation.x=-swing*.7;rightArm.rotation.x=swing*.7}else{avatar.rotation.x=0;leftLeg.rotation.x=rightLeg.rotation.x=0;leftArm.rotation.x=rightArm.rotation.x=0}if(!dead){rightArm.rotation.x=THREE.MathUtils.lerp(-.88,-1.12,aimBlend);leftArm.rotation.x=THREE.MathUtils.lerp(-.62,-.98,aimBlend);if(aimMode)avatar.rotation.y=cameraYaw+Math.PI;}const equippedDef=weaponLoot.find(v=>v.name===equippedLoot)||weaponLoot[0];scopeAimBlend=THREE.MathUtils.damp(scopeAimBlend,activeMode!=="challenge"&&aimMode&&equippedDef.scope?1:0,8,dt);const pitch=camera.userData.pitch||.18;const viewYaw=aimMode?cameraYaw:player.yaw;const baseY=terrainHeight(player.pos.x,player.pos.z);const eye=new THREE.Vector3(player.pos.x,baseY+player.pos.y+1.62,player.pos.z);const lookDir=new THREE.Vector3(-Math.sin(viewYaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(viewYaw)*Math.cos(pitch));const firstLook=eye.clone().add(lookDir);const thirdPos=new THREE.Vector3(player.pos.x+Math.sin(player.yaw)*6,baseY+player.pos.y+2.55,player.pos.z+Math.cos(player.yaw)*6);const shoulderPos=new THREE.Vector3(player.pos.x+Math.sin(viewYaw)*3.15+Math.cos(viewYaw)*.82,baseY+player.pos.y+1.95,player.pos.z+Math.cos(viewYaw)*3.15-Math.sin(viewYaw)*.82);const thirdLook=new THREE.Vector3(player.pos.x,baseY+player.pos.y+1.25,player.pos.z);const shoulderLook=new THREE.Vector3(player.pos.x-Math.sin(viewYaw)*6,baseY+player.pos.y+1.48,player.pos.z-Math.cos(viewYaw)*6);const scopedThirdPos=new THREE.Vector3(player.pos.x+Math.sin(player.yaw)*4.5,baseY+player.pos.y+2.25,player.pos.z+Math.cos(player.yaw)*4.5);const aimCameraPos=thirdPos.clone().lerp(shoulderPos,aimBlend).lerp(eye,scopeAimBlend);const aimCameraLook=thirdLook.clone().lerp(shoulderLook,aimBlend).lerp(firstLook,scopeAimBlend);const activeInterior=houseInteriors.find(h=>{const p=h.houseRoot.worldToLocal(new THREE.Vector3(player.pos.x,0,player.pos.z));return Math.abs(p.x)<4.9&&Math.abs(p.z)<3.9;});if(activeInterior&&scopeAimBlend<.92){const camYaw=aimMode?cameraYaw:player.yaw;const desired=new THREE.Vector3(player.pos.x+Math.sin(camYaw)*2.0,baseY+player.pos.y+1.95,player.pos.z+Math.cos(camYaw)*2.0);const localCam=activeInterior.houseRoot.worldToLocal(desired);localCam.x=THREE.MathUtils.clamp(localCam.x,-4.65,4.65);localCam.z=THREE.MathUtils.clamp(localCam.z,-3.65,3.65);camera.position.copy(activeInterior.houseRoot.localToWorld(localCam));camera.lookAt(thirdLook);}else{camera.position.copy(aimCameraPos);camera.lookAt(aimCameraLook);}avatar.visible=scopeAimBlend<.92;heldWeapon.visible=scopeAimBlend<.92;weapon.visible=scopeAimBlend>.08;const scopeOverlay=document.querySelector("#scopeOverlay");scopeOverlay.style.opacity=String(scopeAimBlend);aimReticle.style.display=aimMode&&!equippedDef.scope?"block":"none";const aimFov=equippedDef.scope?30:55;camera.fov=THREE.MathUtils.damp(camera.fov,aimMode?aimFov:72,9,dt);camera.updateProjectionMatrix();weapon.position.set(.34,-.28,-.72);weapon.rotation.set(THREE.MathUtils.lerp(0,-.025,aimBlend),0,THREE.MathUtils.lerp(0,-.015,aimBlend));if(attackTimer>0){const swing= Math.sin((attackTimer/(activeMode==="challenge"?.38:.25))*Math.PI);weapon.position.z+=swing*(activeMode==="challenge"?.11:.075);weapon.rotation.x-=swing*(activeMode==="challenge"?.72:.045);}
 // Hide only the active house roof while the player is inside its footprint. This exposes the interior without moving the approved camera.
 for(const house of houseInteriors){
  house.roof.visible=house!==activeInterior;
@@ -554,7 +624,7 @@ for(const house of houseInteriors){
 supplies.forEach((s,i)=>{s.rotation.y+=dt*.45;s.position.y=terrainHeight(s.position.x,s.position.z)+.65+Math.sin(now*.002+i)*.09});if(activeMode==="challenge"&&found===5&&player.pos.distanceTo(new THREE.Vector3(18,0,-35))<5){document.querySelector('#message').textContent='FIELD TEST COMPLETE — returning to lobby…';document.querySelector('#lobbyScreen').style.display='flex';document.querySelector('#skinScreen').style.display='none';document.querySelector('#lobbyNote').textContent='Challenge completed! Your supplies: '+found+'/5. Choose another challenge.';player.pos.set(0,0,12);found=0;document.querySelector('#count').textContent='SUPPLIES: 0 / 5';supplies.forEach(item=>item.visible=true);}
 renderer.render(scene,camera)}
 requestAnimationFrame(animate);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.35))});
-const skinStart=document.querySelector("#skinClose");if(skinStart){const begin=()=>{const skin=document.querySelector("#skinScreen"),lobby=document.querySelector("#lobbyScreen");window.randomizeHouseKeys();for(const house of houseInteriors){house.drawerSearched=false;for(const spot of house.searchSpots)spot.searched=false;}supplies.forEach(item=>item.visible=true);found=0;document.querySelector("#count").textContent="SUPPLIES: 0 / 5";window.AFTERFALL_GAME_STARTED=true;if(skin)skin.style.setProperty("display","none","important");if(lobby)lobby.style.setProperty("display","none","important");player.pos.set(0,0,151);player.yaw=0;cameraYaw=0;const msg=document.querySelector("#message");if(msg)msg.textContent="SURVIVE. Search houses, collect supplies and watch for zombies.";};skinStart.addEventListener("click",begin);}
+const skinStart=document.querySelector("#skinClose");if(skinStart){const begin=()=>{const skin=document.querySelector("#skinScreen"),lobby=document.querySelector("#lobbyScreen");setModeGear();window.randomizeHouseKeys();for(const house of houseInteriors){house.drawerSearched=false;for(const spot of house.searchSpots)spot.searched=false;}supplies.forEach(item=>item.visible=true);found=0;document.querySelector("#count").textContent="SUPPLIES: 0 / 5";window.AFTERFALL_GAME_STARTED=true;if(skin)skin.style.setProperty("display","none","important");if(lobby)lobby.style.setProperty("display","none","important");player.pos.set(0,0,151);player.yaw=0;cameraYaw=0;const msg=document.querySelector("#message");if(msg)msg.textContent="SURVIVE. Search houses, collect supplies and watch for zombies.";};skinStart.addEventListener("click",begin);}
 window.AFTERFALL_READY=true;
 </script>
 <script>
