@@ -401,12 +401,12 @@ for(const z of [-105,-78,-51,-24,3,30,57,84,111]){
 
 // Expanded AFTERFALL world regions: connected landmarks beyond the village.
 function landmarkBlock(x,z,w,d,h,color,door=true,facing=0){
- door=door&&Math.abs(x)<120&&Math.abs(z)<160;
+ const doorway=door,showDoor=door&&Math.abs(x)<120&&Math.abs(z)<160;
  const y=terrainHeight(x,z),wallH=h,th=.55,world=(lx,lz)=>({x:x+lx*Math.cos(facing)+lz*Math.sin(facing),z:z-lx*Math.sin(facing)+lz*Math.cos(facing)}),addWall=(lx,lz,ww,wd)=>{const p=world(lx,lz),m=box(p.x,y+wallH/2,p.z,ww,wallH,wd,color);m.rotation.y=facing;solidWalls.push({x:p.x,z:p.z,w:Math.abs(ww*Math.cos(facing))+Math.abs(wd*Math.sin(facing)),d:Math.abs(ww*Math.sin(facing))+Math.abs(wd*Math.cos(facing))});};
  addWall(0,-d/2,w,th);addWall(-w/2,0,th,d);addWall(w/2,0,th,d);
- if(door){const sideWidth=Math.max(1,(w-1.8)/2);addWall(-(.9+sideWidth/2),d/2,sideWidth,th);addWall(.9+sideWidth/2,d/2,sideWidth,th);}else addWall(0,d/2,w,th);
+ if(doorway){const sideWidth=Math.max(1,(w-1.8)/2);addWall(-(.9+sideWidth/2),d/2,sideWidth,th);addWall(.9+sideWidth/2,d/2,sideWidth,th);}else addWall(0,d/2,w,th);
  const rp=world(0,0),roof=box(rp.x,y+h+.2,rp.z,w+.8,.42,d+.8,0x343b3a);roof.rotation.y=facing;roof.material.roughness=.9;
- if(door){const p=world(1.12,d/2+.32),panel=box(p.x,y+1.35,p.z,.12,2.5,1.5,0x3b3027);panel.rotation.y=facing;}
+ if(showDoor){const p=world(1.12,d/2+.32),panel=box(p.x,y+1.35,p.z,.12,2.5,1.5,0x3b3027);panel.rotation.y=facing;}
  const tp=world(0,-d/2-.32),trim=box(tp.x,y+h*.58,tp.z,w*.48,.55,.12,0xc6b27b);trim.rotation.y=facing;
  return {x,z,y,w,d,facing};
 }
