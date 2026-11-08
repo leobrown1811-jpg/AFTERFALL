@@ -258,9 +258,10 @@ function roadPath(points,width=7,markings=false,closed=false){
   }
  }
 }
-// One continuous, closed village road: every cottage faces this same connected loop.
-const villageRoad=[[-30,-130],[-30,-65],[-30,0],[-30,65],[-30,115],[-18,130],[18,130],[30,115],[30,65],[30,0],[30,-65],[30,-115],[18,-130],[-18,-130]];
-roadPath(villageRoad,8.2,true,true);
+// One continuous, closed village road. Its edges meet every cottage entrance.
+ // The two straight sides run just outside the inward-facing front doors of both house rows.
+const villageRoad=[[-35.3,-135],[-35.3,-110],[-35.3,-55],[-35.3,0],[-35.3,55],[-35.3,110],[-35.3,125],[-25,135],[25,135],[35.3,125],[35.3,110],[35.3,55],[35.3,0],[35.3,-55],[35.3,-110],[35.3,-125],[25,-135],[-25,-135]];
+roadPath(villageRoad,10.2,false,true);
 const beacon=new THREE.PointLight(0xffd17b,22,24);beacon.position.set(18,4,-35);scene.add(beacon);// The finish beacon has no surrounding box or platform; keep the flagpole on open ground.const beaconPole=new THREE.Mesh(new THREE.CylinderGeometry(.12,.17,5.8,12),mat(0x5a4732));beaconPole.position.set(18,3.7,-35);scene.add(beaconPole);const beaconFlag=new THREE.Mesh(new THREE.PlaneGeometry(4.8,2.4),new THREE.MeshStandardMaterial({color:0x263d32,side:THREE.DoubleSide,roughness:.8}));beaconFlag.position.set(20.3,5.2,-35);beaconFlag.rotation.y=.15;scene.add(beaconFlag);const flagCanvas=document.createElement("canvas");flagCanvas.width=768;flagCanvas.height=384;const flagCtx=flagCanvas.getContext("2d");flagCtx.fillStyle="#263d32";flagCtx.fillRect(0,0,768,384);flagCtx.strokeStyle="#e7c77c";flagCtx.lineWidth=14;flagCtx.strokeRect(12,12,744,360);flagCtx.fillStyle="#f2d58f";flagCtx.font="bold 88px system-ui";flagCtx.textAlign="center";flagCtx.textBaseline="middle";flagCtx.fillText("AFTERFALL",384,190);beaconFlag.material.map=new THREE.CanvasTexture(flagCanvas);beaconFlag.material.needsUpdate=true;
 const supplies=[];for(const [x,z] of [[-8,4],[23,-9],[-27,-43],[-20.5,-20.5],[21.5,-38.5]]){const g=new THREE.Group();const crate=new THREE.Mesh(new THREE.BoxGeometry(1.15,.85,.9),mat(0xc18a42));crate.castShadow=true;g.add(crate);const stripe=new THREE.Mesh(new THREE.BoxGeometry(1.18,.13,.94),mat(0xe7d29a));stripe.position.y=.1;g.add(stripe);g.position.set(x,.65,z);scene.add(g);supplies.push(g)}
  // One key for each of the 18 houses. The first key is outdoors; each later key is hidden inside the previously unlocked house.
