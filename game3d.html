@@ -1,74 +1,483 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>AFTERFALL — 3D Field Test</title>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>AFTERFALL — 3D Field Test</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101713;color:#eef2e9;font:15px system-ui,Arial}
-#view{position:fixed;inset:0;display:block;width:100%;height:100%;touch-action:none}
-#brand{position:fixed;top:12px;left:14px;z-index:2;width:190px;max-height:65px;object-fit:contain;object-position:left top;filter:drop-shadow(0 2px 5px #000)}
-#hud{position:fixed;top:12px;right:12px;z-index:2;background:#101713c9;border:1px solid #73806d;border-radius:10px;padding:10px 13px;min-width:180px;backdrop-filter:blur(5px)}
-#hud strong{color:#f0cc7a}#mission{font-size:12px;color:#d2dccd;margin-top:5px;max-width:250px}
-#message{position:fixed;left:50%;bottom:122px;transform:translateX(-50%);z-index:2;background:#101713d9;border:1px solid #77836e;border-radius:9px;padding:9px 13px;text-align:center;max-width:90%;font-size:13px}
-#controls{position:fixed;bottom:16px;left:16px;z-index:3;display:grid;grid-template-columns:repeat(3,54px);grid-template-rows:repeat(2,52px);gap:5px}
-button{border:1px solid #a3ae91;background:#18251fd9;color:white;border-radius:12px;font-size:21px;font-weight:700;touch-action:none}
-button:active{background:#526448}
-#up{grid-column:2}#left{grid-column:1;grid-row:2}#down{grid-column:2;grid-row:2}#right{grid-column:3;grid-row:2}
-#help{position:fixed;bottom:18px;right:14px;z-index:2;text-align:right;color:#e2e8dc;background:#101713b8;border-radius:9px;padding:8px 10px;font-size:11px;max-width:45%}
-#back{position:fixed;top:88px;left:14px;z-index:3;font-size:12px;padding:8px 11px}
-@media(min-width:800px){#controls{opacity:.75}}
-</style>
-</head>
-<body>
-<canvas id="view"></canvas>
-<img id="brand" src="logo.png" alt="AFTERFALL">
-<button id="back" onclick="location.href='index.html'">← Original game</button>
-<div id="hud"><strong>AFTERFALL · 3D FIELD TEST</strong><div id="mission">MISSION: Explore the valley and collect the 3 supply cases.</div><div id="count">SUPPLIES: 0 / 3</div></div>
-<div id="message">Explore the valley. Collect the glowing supply cases.</div>
-<div id="controls"><button id="up" aria-label="Forward">▲</button><button id="left" aria-label="Left">◀</button><button id="down" aria-label="Back">▼</button><button id="right" aria-label="Right">▶</button></div>
-<div id="help">Touch: drag the scene to look · use arrows to walk<br>Computer: WASD / arrows + mouse to look</div>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101713;color:#eef2e9;font:15px system-ui,Arial}#view{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}#brand{position:fixed;top:12px;left:14px;z-index:2;width:170px;max-height:58px;object-fit:contain;object-position:left top;filter:drop-shadow(0 2px 5px #000)}#hud{position:fixed;top:12px;right:12px;z-index:2;background:#101713d9;border:1px solid #73806d;border-radius:10px;padding:10px 13px;min-width:180px;backdrop-filter:blur(5px)}#hud strong{color:#f0cc7a}#mission{font-size:12px;color:#d2dccd;margin-top:5px;max-width:250px}#count{font-size:12px;margin-top:5px}#message{position:fixed;left:50%;bottom:112px;transform:translateX(-50%);z-index:2;background:#101713df;border:1px solid #77836e;border-radius:9px;padding:9px 13px;text-align:center;max-width:90%;font-size:13px;pointer-events:none}button{border:1px solid #a3ae91;background:#18251fe8;color:white;border-radius:50%;font-size:17px;font-weight:700;touch-action:none;user-select:none;-webkit-user-select:none}button:active,.held{background:#526448}#back{position:fixed;top:80px;left:14px;z-index:4;font-size:12px;padding:8px 11px;border-radius:10px}#stickArea{position:fixed;left:18px;bottom:20px;width:142px;height:142px;border:2px solid #d5dfc477;background:#18251f66;border-radius:50%;z-index:3;touch-action:none}#stick{position:absolute;left:42px;top:42px;width:54px;height:54px;border:2px solid #e8efdc;background:#64745cdd;border-radius:50%;pointer-events:none}#actions{position:fixed;right:18px;bottom:20px;z-index:3;display:grid;grid-template-columns:repeat(2,64px);gap:10px}#actions button{width:64px;height:64px;font-size:12px;border-radius:50%;background:#18251fe8}#actions button b{display:block;font-size:20px}#aim{border:1px solid #d5c68a}#aim.aiming{background:#8b7130;color:#fff4c6;box-shadow:0 0 14px #eac75a}#aimReticle{position:fixed;left:50%;top:50%;width:28px;height:28px;transform:translate(-50%,-50%);z-index:4;display:none;pointer-events:none}#aimReticle:before,#aimReticle:after{content:'';position:absolute;background:#ff5757;box-shadow:0 0 3px #210}#aimReticle:before{left:13px;top:0;width:2px;height:28px}#aimReticle:after{left:0;top:13px;width:28px;height:2px}#aimReticle i{position:absolute;left:9px;top:9px;width:10px;height:10px;border:2px solid #ff5757;border-radius:50%}#help{position:fixed;right:14px;top:105px;z-index:2;text-align:right;color:#e2e8dc;background:#101713b8;border-radius:9px;padding:8px 10px;font-size:11px;max-width:42%}#skinOpen{position:fixed;left:14px;top:80px;z-index:5;border-radius:10px;padding:9px 12px;font-size:12px}#skinScreen{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:18px;background:#07100df2;backdrop-filter:blur(8px);pointer-events:auto;touch-action:pan-y}#skinPanel{position:relative;z-index:1001;pointer-events:auto}#skinGrid,#skinGrid button,#skinClose{position:relative;z-index:1002;pointer-events:auto!important;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,255,255,.18)}#skinPanel{width:min(760px,100%);max-height:92%;overflow:auto;background:#17231ff5;border:1px solid #839078;border-radius:18px;padding:18px;box-shadow:0 18px 70px #000a}#skinPanel h1{margin:0;color:#f2cf83;font-size:clamp(22px,4vw,32px)}#skinPanel p{margin:5px 0 15px;color:#d4dfd0;font-size:13px}#skinGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}#skinGrid button{border-radius:12px;min-height:94px;padding:9px 5px;background:#26372e;border:1px solid #647762;font-size:12px}#skinGrid button span{display:block;font-size:27px;margin-bottom:4px}#skinGrid button.selected{border:2px solid #f2cf83;background:#46553b}#skinClose{display:block;border-radius:10px;padding:10px 18px;margin:14px auto 0;background:#687b4d}@media(max-width:430px){#skinGrid{grid-template-columns:repeat(3,minmax(0,1fr))}#skinPanel{padding:13px}}@media(min-width:800px){#stickArea,#actions{opacity:.72}#message{bottom:24px}}#inventoryOpen{position:fixed;left:14px;top:126px;z-index:5;border-radius:10px;padding:9px 12px;font-size:12px}#inventoryPanel{position:fixed;left:14px;top:174px;z-index:9;width:min(300px,calc(100% - 28px));max-height:45vh;overflow:auto;padding:14px;background:#101713ed;border:1px solid #a3ae91;border-radius:12px;display:none}#inventoryPanel h2{margin:0 0 8px;color:#f2cf83;font-size:18px}#inventoryItems{font-size:13px;line-height:1.8}
+#lobbyScreen{position:fixed;inset:0;z-index:20000;display:flex;align-items:center;justify-content:center;padding:16px;background:radial-gradient(ellipse at 50% 12%,#667d59 0%,#344a39 38%,#17251e 72%,#0b120f 100%);overflow:auto}#lobbyPanel{width:min(720px,100%);max-height:95%;overflow:auto;background:#17231ff7;border:1px solid #839078;border-radius:18px;padding:20px;box-shadow:0 18px 70px #000b}#lobbyPanel h1{margin:0;color:#f2cf83;font-size:clamp(26px,5vw,42px);letter-spacing:2px}#lobbyPanel p{color:#d4dfd0;font-size:13px;line-height:1.5}#lobbyPanel label{display:block;margin:12px 0 5px;color:#f0d59a;font-size:13px}#lobbyPanel select,#lobbyPanel input{width:100%;padding:10px;border:1px solid #60745f;border-radius:8px;background:#101915;color:white}#lobbyRoster{display:grid;gap:8px;margin:10px 0}#lobbyRoster .member{display:grid;grid-template-columns:minmax(0,1fr) 82px auto;gap:8px;align-items:center;background:#22332a;padding:8px;border-radius:8px}#lobbyRoster button,#lobbyPanel .lobbyAction{border-radius:9px;padding:10px 13px;font-size:13px}#lobbyPanel .lobbyAction{margin:10px 6px 0 0}#launch3d{background:#80632e;border-color:#e5c477}@media(max-width:480px){#lobbyPanel{padding:14px}#lobbyRoster .member{grid-template-columns:minmax(0,1fr) 64px auto}#lobbyRoster button{padding:8px 6px;font-size:11px}}#survivalHud{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:4;display:flex;gap:8px;width:min(520px,calc(100% - 220px));padding:8px;background:#101713e8;border:1px solid #839078;border-radius:12px}.survivalStat{flex:1;min-width:0;font-size:10px;font-weight:800}.survivalTrack{height:9px;margin-top:4px;background:#344036;border-radius:8px;overflow:hidden}.survivalFill{height:100%;width:100%;border-radius:8px}.healthFill{background:#df554c}.hungerFill{background:#e6b84e}.waterFill{background:#52b9e4}#hitFlash{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse,transparent 45%,#e52d2d99);opacity:0;transition:opacity .12s}#scoreHud{color:#f3d28a;font-weight:800;margin-top:5px}#message{bottom:105px}@media(max-width:600px){#survivalHud{bottom:10px;width:calc(100% - 205px);gap:5px;padding:6px}.survivalStat{font-size:9px}} #deathScreen{position:fixed;inset:0;z-index:15;display:none;align-items:center;justify-content:center;text-align:center;padding:24px;background:radial-gradient(ellipse at center,#8e1010e8 0%,#4a0505f2 58%,#180000fa 100%);color:white;animation:deathPulse 1.6s ease-in-out infinite alternate}#deathScreen .deathCard{max-width:520px;border:2px solid #ff7777;border-radius:18px;padding:30px 34px;background:#250707d9;box-shadow:0 0 55px #f00a}#deathScreen h1{font-size:clamp(32px,7vw,62px);letter-spacing:3px;margin:0 0 12px;color:#fff;text-shadow:0 3px 16px #f00}#deathScreen p{font-size:clamp(15px,3vw,20px);margin:0 0 22px}#deathScreen button{border-radius:10px;padding:12px 22px;background:#8d2424;border-color:#ffaaaa;font-size:14px}#deathScreen .lobbyReturn{margin-left:8px;background:#263d32;border-color:#a8c4a7;color:#f1f5ec}@keyframes deathPulse{from{filter:brightness(.78)}to{filter:brightness(1.18)}} </style></head><body>
+<canvas id="view" style="z-index:0"></canvas><img id="brand" src="logo.png" alt="AFTERFALL"><button id="back" onclick="location.href='index.html'">← Original game</button>
+<button id="skinOpen" type="button">🎭 CHANGE SKIN</button><div id="lobbyScreen"><div id="lobbyPanel"><h1>AFTERFALL</h1><p>SURVIVAL IS A SKILL · TEAM LOBBY<br>Set up your group and choose a mission before entering the 3D world.</p><label for="groupType3d">Group type</label><select id="groupType3d"><option>Teams</option><option>Friends</option><option>Family</option></select><div id="lobbyRoster"></div><button class="lobbyAction" id="addMember3d" type="button">+ Add team member</button><label for="mission3d">Choose a mission</label><select id="mission3d"><option value="evacuation">1 · Team evacuation</option><option value="heatwave">2 · Heatwave support</option><option value="relief">3 · Community supply run</option></select><p id="lobbyNote">Choose who is playing and customise your group. Online invites are not available in this test build.</p><button class="lobbyAction" id="launch3d" type="button">CHALLENGE MODE →</button></div></div><div id="skinScreen"><div id="skinPanel"><h1>CHOOSE YOUR SURVIVOR</h1><p>Tap a survivor to select them. Then press START GAME.</p><p id="skinNote" aria-live="polite">Selected: Banana Scout</p><div id="skinGrid"></div><button id="skinClose" type="button">START GAME →</button></div></div><button id="inventoryOpen" type="button">🎒 INVENTORY</button><div id="inventoryPanel"><h2>🎒 INVENTORY</h2><div id="inventoryItems">Nothing collected yet.</div></div><div id="hud"><strong>AFTERFALL · 3D FIELD TEST</strong><div id="mission">MISSION: Explore the village, search the houses and collect all 5 supply cases.</div><div id="count">SUPPLIES: 0 / 5</div><div id="scoreHud">SCORE: <span id="scoreValue">0</span> · ZOMBIES: <span id="zombieCount">5</span></div></div><div id="hitFlash"></div><div id="aimReticle"><i></i></div><div id="deathScreen"><div class="deathCard"><h1>MISSION FAILED</h1><p>You failed to complete the mission.<br>Your survivor has been lost.</p><button id="retryMission">TRY AGAIN</button><button id="backToLobby" class="lobbyReturn">BACK TO LOBBY</button></div></div><div id="survivalHud"><div class="survivalStat">❤️ HEALTH<div class="survivalTrack"><div id="healthFill" class="survivalFill healthFill"></div></div><span id="healthValue">100%</span></div><div class="survivalStat">🍖 HUNGER<div class="survivalTrack"><div id="hungerFill" class="survivalFill hungerFill"></div></div><span id="hungerValue">100%</span></div><div class="survivalStat">💧 WATER<div class="survivalTrack"><div id="waterFill" class="survivalFill waterFill"></div></div><span id="waterValue">100%</span></div></div><div id="message">Use the joystick or WASD to move. Drag to look around.</div>
+<div id="stickArea" aria-label="Movement joystick"><div id="stick"></div></div>
+<div id="actions"><button id="jump"><b>⬆</b>JUMP</button><button id="sprint"><b>»</b>SPRINT</button><button id="interact"><b>✋</b>COLLECT</button><button id="aim"><b>⊕</b>AIM</button><button id="attack"><b>🔫</b>FIRE</button></div>
+<div id="help">COMPUTER: WASD / arrows · mouse drag to look<br>Space: jump · Shift: sprint · E: collect · Q: aim · F: fire</div>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 <script type="module">
 import * as THREE from 'three';
+
+// Restored pre-game team lobby (roster setup; companion AI is not part of this prototype yet).
+const lobbyMembers=[{name:"Player 1",age:18},{name:"Player 2",age:18},{name:"Player 3",age:11}];
+const lobbyRoster=document.querySelector("#lobbyRoster");
+function renderLobbyRoster(){lobbyRoster.innerHTML="";lobbyMembers.forEach((member,index)=>{const row=document.createElement("div");row.className="member";const name=document.createElement("input");name.value=member.name;name.maxLength=24;name.setAttribute("aria-label","Member "+(index+1)+" name");name.addEventListener("input",()=>member.name=name.value);const age=document.createElement("input");age.type="number";age.min="0";age.max="110";age.value=member.age;age.setAttribute("aria-label","Member "+(index+1)+" age");age.addEventListener("input",()=>member.age=age.value);const remove=document.createElement("button");remove.type="button";remove.textContent="Remove";remove.disabled=lobbyMembers.length===1;remove.addEventListener("click",()=>{lobbyMembers.splice(index,1);renderLobbyRoster()});row.append(name,age,remove);lobbyRoster.append(row)})}
+renderLobbyRoster();
+document.querySelector("#groupType3d").addEventListener("change",e=>{document.querySelector("#lobbyNote").textContent=e.target.value+" selected. Customise your group before entering the 3D world. Online invites are not available in this test build."});
+document.querySelector("#addMember3d").addEventListener("click",()=>{if(lobbyMembers.length>=8){document.querySelector("#lobbyNote").textContent="The lobby supports up to 8 roster entries in this test build.";return}lobbyMembers.push({name:"New member",age:18});renderLobbyRoster()});
+function enterWorld(){for(const house of houseInteriors){house.doorPivot.visible=true;house.doorOpen=house.unlocked;house.lockDropping=false;house.doorPivot.rotation.y=house.doorOpen?Math.PI/2:0;}const group=document.querySelector("#groupType3d").value;const mission=document.querySelector("#mission3d").selectedOptions[0].textContent;document.querySelector("#lobbyScreen").style.setProperty("display","none","important");document.querySelector("#skinScreen").style.setProperty("display","flex","important");document.querySelector("#mission").textContent="MISSION: "+mission+" · GROUP: "+group;document.querySelector("#message").textContent="Choose your survivor, then press START GAME.";}
+document.querySelector("#launch3d").addEventListener("click",()=>enterWorld());
+
 const canvas=document.querySelector('#view');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x9aabb0);scene.fog=new THREE.Fog(0x9aabb0,42,145);
-const camera=new THREE.PerspectiveCamera(72,innerWidth/innerHeight,.1,220);camera.position.set(0,1.75,15);
-const player={yaw:0,pitch:0,speed:7};let found=0;
-scene.add(new THREE.HemisphereLight(0xdce8ee,0x59604a,2.0));
-const sun=new THREE.DirectionalLight(0xffe2b4,3.0);sun.position.set(-28,45,24);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-65;sun.shadow.camera.right=65;sun.shadow.camera.top=65;sun.shadow.camera.bottom=-65;scene.add(sun);
+const renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:"high-performance"});renderer.setPixelRatio(Math.min(devicePixelRatio,1.0));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
+const scene=new THREE.Scene();scene.background=new THREE.Color(0xc9d9d1);scene.fog=new THREE.Fog(0xc9d9d1,260,1050);
+const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,1500);
+const player={pos:new THREE.Vector3(0,0,12),yaw:0,vertical:0,onGround:true,speed:6.2};let found=0;const inventory=[];
+scene.add(new THREE.HemisphereLight(0xf3f1d8,0x506b43,2.0));
+const sun=new THREE.DirectionalLight(0xffe3b2,3.2);sun.position.set(-80,95,55);sun.castShadow=false;scene.add(sun);
 const mat=(color,roughness=1)=>new THREE.MeshStandardMaterial({color,roughness});
-const ground=new THREE.Mesh(new THREE.PlaneGeometry(220,220),mat(0x59634b));ground.rotation.x=-Math.PI/2;ground.position.y=-.08;ground.receiveShadow=true;scene.add(ground);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(1000,1000),mat(0x648044));ground.rotation.x=-Math.PI/2;ground.position.y=-.08;ground.receiveShadow=true;scene.add(ground);
+// Soft rolling green hills frame the village without disturbing the flat playable streets.
+const hillMat=mat(0x66834a),farHillMat=mat(0x82936b);
+for(const [x,z,sx,sy,sz] of [[-230,-210,190,18,125],[40,-285,230,22,125],[270,-170,180,17,135],[-270,80,190,19,135],[210,250,230,21,125],[-80,300,250,18,125]]){
+ const hill=new THREE.Mesh(new THREE.SphereGeometry(1,18,10),hillMat);hill.scale.set(sx,sy,sz);hill.position.set(x,sy-9,z);scene.add(hill);
+}
+for(const [x,z,sx,sy,sz] of [[-390,-390,260,24,120],[0,-480,340,28,135],[390,-390,250,23,125],[-430,270,250,25,130],[430,310,280,27,140]]){
+ const hill=new THREE.Mesh(new THREE.SphereGeometry(1,16,9),farHillMat);hill.scale.set(sx,sy,sz);hill.position.set(x,sy-14,z);scene.add(hill);
+}
 function box(x,y,z,sx,sy,sz,color){const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mat(color));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m}
-function tree(x,z,scale=1){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22*scale,.34*scale,2.8*scale,7),mat(0x554638));trunk.position.set(x,1.4*scale,z);trunk.castShadow=true;scene.add(trunk);for(let i=0;i<3;i++){const crown=new THREE.Mesh(new THREE.ConeGeometry((2.1-i*.28)*scale,3.3*scale,7),mat(i%2?0x344b3b:0x405b42));crown.position.set(x,(3.2+i*.85)*scale,z);crown.castShadow=true;scene.add(crown)}}
+function tree(x,z,scale=1){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22*scale,.34*scale,2.8*scale,7),mat(0x554638));trunk.position.set(x,1.4*scale,z);trunk.castShadow=true;scene.add(trunk);for(let i=0;i<2;i++){const crown=new THREE.Mesh(new THREE.ConeGeometry((2.0-i*.3)*scale,3.0*scale,6),mat(i%2?0x344b3b:0x405b42));crown.position.set(x,(3.0+i*.9)*scale,z);scene.add(crown)}}
 function rock(x,z,s=1){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(s,0),mat(0x77796f));r.position.set(x,s*.55,z);r.rotation.set(.2,.8,.3);r.castShadow=true;r.receiveShadow=true;scene.add(r)}
-// Distant mountain ridges
-for(let i=0;i<13;i++){const h=13+(i%4)*5;const m=new THREE.Mesh(new THREE.ConeGeometry(10+(i%3)*4,h,5),mat(i%2?0x657a7a:0x596d70));m.position.set(-75+i*13,h/2-1,-82-(i%3)*8);m.rotation.y=i*.7;scene.add(m)}
-// Rocky valley and scattered forest
-for(let i=0;i<85;i++){const x=Math.sin(i*91.7)*47,z=-48+(i*17.31)%95;if(Math.abs(x)<9&&z> -5&&z<28)continue;if(i%3===0)rock(x,z,.7+(i%5)*.22);else tree(x,z,.65+(i%4)*.13)}
-// Small abandoned field station
-box(-17,1.7,-22,10,3.4,8,0x777365);const roof=box(-17,3.7,-22,11,.45,9,0x353c3a);roof.rotation.z=.04;box(-17,1,-17.9,1.5,2.1,.15,0x342d27);box(-20,2,-17.85,1.5,.9,.18,0x8b9b9b);box(-14,2,-17.85,1.5,.9,.18,0x8b9b9b);
-// Track
-const road=new THREE.Mesh(new THREE.PlaneGeometry(7,100),mat(0x777365));road.rotation.x=-Math.PI/2;road.position.set(0,.005,-27);scene.add(road);
-for(let z=-70;z<25;z+=8)box(0,.018,z,.13,.02,3.2,0xc6b78d);
-// Shelter beacon
-const beacon=new THREE.PointLight(0xffd17b,22,24);beacon.position.set(18,4,-35);scene.add(beacon);box(18,.8,-35,4,1.6,4,0x77786b);const beaconMesh=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,2.2,12),new THREE.MeshStandardMaterial({color:0xffd17b,emissive:0x9b5b13,emissiveIntensity:2}));beaconMesh.position.set(18,2.6,-35);scene.add(beaconMesh);
-// Supply cases
-const supplies=[];for(const [x,z] of [[-8,4],[23,-9],[-27,-43]]){const g=new THREE.Group();const crate=new THREE.Mesh(new THREE.BoxGeometry(1.15,.85,.9),mat(0xc18a42));crate.castShadow=true;g.add(crate);const stripe=new THREE.Mesh(new THREE.BoxGeometry(1.18,.13,.94),mat(0xe7d29a));stripe.position.y=.1;g.add(stripe);const glow=new THREE.PointLight(0xffd16b,5,7);glow.position.y=1.1;g.add(glow);g.position.set(x,.65,z);scene.add(g);supplies.push(g)}
-const keys={};addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);addEventListener('blur',()=>Object.keys(keys).forEach(k=>keys[k]=false));
-for(const [id,key] of [['up','w'],['down','s'],['left','a'],['right','d']]){const b=document.getElementById(id);const on=e=>{e.preventDefault();keys[key]=true};const off=()=>keys[key]=false;b.addEventListener('pointerdown',on);['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,off))}
-let dragging=false,lastX=0,lastY=0;canvas.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;player.yaw-=dx*.004;player.pitch=Math.max(-1.1,Math.min(1.1,player.pitch-dy*.0035))});canvas.addEventListener('pointerup',()=>dragging=false);canvas.addEventListener('pointercancel',()=>dragging=false);
+// Background mountain group removed to leave an open horizon.
+for(let i=0;i<180;i++){const x=Math.sin(i*91.7)*285,z=-300+(i*23.31)%600;const nearHouse=[[-17,-22],[25,-40],[-34,12],[34,-76],[-38,48]].some(([hx,hz])=>Math.abs(x-hx)<9&&Math.abs(z-hz)<10);if(nearHouse)continue;if(Math.abs(x)<5&&z>-112&&z<62)continue;if(i%3===0)rock(x,z,.7+(i%5)*.22);else tree(x,z,.65+(i%4)*.13)}
+// Distant forest edges and meadow colour variation create a layered countryside view.
+for(let i=0;i<72;i++){const x=-310+i*8.7,z=-205+Math.sin(i*.43)*28;tree(x,z,1.2+(i%4)*.18);}
+for(let i=0;i<46;i++){const x=-220+i*9.5,z=205+Math.sin(i*.57)*24;tree(x,z,1.05+(i%3)*.2);}
+const meadowColors=[0x91a94e,0xb3a94f,0xd1bd67,0x718e42],patchGeo=new THREE.CircleGeometry(1,9);
+const patches=new THREE.InstancedMesh(patchGeo,mat(0xffffff),48),patchDummy=new THREE.Object3D();
+for(let i=0;i<48;i++){const x=Math.sin(i*12.31)*145,z=Math.cos(i*7.17)*145;if(Math.abs(x)<18&&Math.abs(z)<18){patchDummy.scale.setScalar(0);patchDummy.updateMatrix();patches.setMatrixAt(i,patchDummy.matrix);continue;}patchDummy.position.set(x,.006,z);patchDummy.rotation.set(-Math.PI/2,0,0);patchDummy.scale.setScalar(2.4+(i%4)*.8);patchDummy.updateMatrix();patches.setMatrixAt(i,patchDummy.matrix);patches.setColorAt(i,new THREE.Color(meadowColors[i%meadowColors.length]));}
+scene.add(patches);
+const flowerStemGeo=new THREE.CylinderGeometry(.018,.025,.28,4),flowerBloomGeo=new THREE.SphereGeometry(.095,5,4);
+const flowerStems=new THREE.InstancedMesh(flowerStemGeo,mat(0x52713b),115),flowerDummy=new THREE.Object3D();
+const bloomMaterials=[mat(0xf0d66e),mat(0xf4e7bd),mat(0xe9a64e),mat(0xd9d0a0)];
+const bloomMeshes=bloomMaterials.map(material=>new THREE.InstancedMesh(flowerBloomGeo,material,115));bloomMeshes.forEach(mesh=>scene.add(mesh));
+for(let i=0;i<115;i++){const x=Math.sin(i*8.17)*135,z=Math.cos(i*5.91)*135;flowerDummy.position.set(x,.14,z);flowerDummy.scale.setScalar(Math.abs(x)<15&&Math.abs(z)<15?0:1);flowerDummy.updateMatrix();flowerStems.setMatrixAt(i,flowerDummy.matrix);flowerDummy.position.y=.31;flowerDummy.scale.setScalar(Math.abs(x)<15&&Math.abs(z)<15?0:1);flowerDummy.updateMatrix();bloomMeshes[i%4].setMatrixAt(i,flowerDummy.matrix);}
+scene.add(flowerStems);
+// Small village: each house has a real doorway and a walkable interior.
+const solidWalls=[],wallMeshes=[];
+function wall(x,y,z,w,h,d,color=0x777365){const m=box(x,y,z,w,h,d,color);solidWalls.push({x,z,w,d});wallMeshes.push(m)}
+const houseInteriors=[];
+function makeHouse(x,z,accent=0x353c3a,facing=0){
+ const w=10,dep=8,h=3.1,front=z+dep/2,wallStart=solidWalls.length,childStart=scene.children.length;
+ // Solid side/rear walls. The front has a clear central doorway and a real window opening.
+ wall(x-w/2+.12,h/2,z,.24,h,dep,0x898678);
+ wall(x+w/2-.12,h/2,z,.24,h,dep,0x898678);
+ wall(x,h/2,z-dep/2,w,h,.24,0x898678);
+ // Front wall built as adjoining solid sections around two precisely sized window openings.
+ // Lower and upper courses run continuously across both window bays.
+ wall(x-3.05,.55,front,3.9,1.1,.24,0x898678);
+ wall(x-3.05,2.55,front,3.9,1.1,.24,0x898678);
+ wall(x+3.05,.55,front,3.9,1.1,.24,0x898678);
+ wall(x+3.05,2.55,front,3.9,1.1,.24,0x898678);
+ // Window-side wall piers exactly fill the spaces between each frame and the doorway/outer corner.
+ // Match the main wall depth and front face so there are no projecting patches or narrow gaps.
+ wall(x-4.495,1.55,front,1.01,1.1,.24,0x898678);
+ wall(x-1.615,1.55,front,.99,1.1,.24,0x898678);
+ wall(x+1.615,1.55,front,.99,1.1,.24,0x898678);
+ wall(x+4.495,1.55,front,1.01,1.1,.24,0x898678);
+ // Fill the open triangular gable spaces at both ends of the roof.
+ // These wall panels close the gap between the rectangular walls and the roof peak.
+ const gableShape=new THREE.Shape();gableShape.moveTo(-5.08,0);gableShape.lineTo(5.08,0);gableShape.lineTo(0,1.88);gableShape.close();
+ const gableGeo=new THREE.ShapeGeometry(gableShape),gableMat=mat(0x898678);
+ for(const endZ of [z-dep/2-.015,z+dep/2+.015]){const gable=new THREE.Mesh(gableGeo,gableMat);gable.position.set(x,3.1,endZ);gable.material.side=THREE.DoubleSide;gable.castShadow=true;gable.receiveShadow=true;scene.add(gable);}
+ const roof=new THREE.Group();scene.add(roof);
+ // Compact gable roof: matching slopes meet cleanly at the raised ridge.
+ const roofLeft=new THREE.Mesh(new THREE.BoxGeometry(5.5,.22,8.5),mat(0x9b4f2e));roofLeft.position.set(x-2.45,4.05,z);roofLeft.rotation.z=.34;roofLeft.castShadow=true;roofLeft.receiveShadow=true;roof.add(roofLeft);
+ const roofRight=new THREE.Mesh(new THREE.BoxGeometry(5.5,.22,8.5),mat(0xb76135));roofRight.position.set(x+2.45,4.05,z);roofRight.rotation.z=-.34;roofRight.castShadow=true;roofRight.receiveShadow=true;roof.add(roofRight);
+ const ridge=new THREE.Mesh(new THREE.BoxGeometry(.2,.2,8.7),mat(0x603b2b));ridge.position.set(x,5.02,z);roof.add(ridge);wallMeshes.push(roof);
+ box(x,.045,z,10.15,.12,8.15,0x9a8c70);
+ // Glass sits within the opening; the full window casing is mounted proud of the exterior wall face.
+ const glassZ=front+.015, outerFrameZ=front+.205, innerFrameZ=front-.145;
+ for(const wx of [x-3.05,x+3.05]){
+   // Inset blue glass remains visible through the opening from both sides.
+   box(wx,1.55,glassZ,1.58,.70,.035,0x78999b);
+   // Exterior frame: projecting just beyond the outside wall surface so it cannot be hidden.
+   box(wx-.86,1.55,outerFrameZ,.12,.98,.12,0xd0c6a8);
+   box(wx+.86,1.55,outerFrameZ,.12,.98,.12,0xd0c6a8);
+   box(wx,2.04,outerFrameZ,1.84,.12,.12,0xd0c6a8);
+   box(wx,.99,outerFrameZ,1.84,.14,.16,0xd0c6a8);
+   box(wx,1.55,outerFrameZ,.07,.78,.12,0xd0c6a8);
+   box(wx,1.55,outerFrameZ,1.72,.07,.12,0xd0c6a8);
+   // Matching slim inner casing keeps the window finished from inside too.
+   box(wx-.86,1.55,innerFrameZ,.09,.94,.08,0xd0c6a8);
+   box(wx+.86,1.55,innerFrameZ,.09,.94,.08,0xd0c6a8);
+   box(wx,2.04,innerFrameZ,1.78,.09,.08,0xd0c6a8);
+   box(wx,.99,innerFrameZ,1.78,.10,.08,0xd0c6a8);
+ }
+ // Hinged wooden front door with visible handle and lock plate.
+ box(x-1.12,1.55,front-.08,.12,3.1,.16,0x594638);
+ box(x+1.12,1.55,front-.08,.12,3.1,.16,0x594638);
+ box(x,3.02,front-.08,2.35,.14,.16,0x594638);
+ const doorPivot=new THREE.Group();doorPivot.position.set(x-1.06,.08,front+.02);scene.add(doorPivot);
+ const doorPanel=box(0,0,0,2.08,2.9,.13,0x68452f);doorPanel.position.set(1.04,1.45,0);doorPivot.add(doorPanel);
+ const doorInset=box(0,0,0,1.62,2.35,.055,0x80583a);doorInset.position.set(1.04,1.45,.095);doorPivot.add(doorInset);
+ const doorHandle=box(0,0,0,.09,.18,.09,0xd8b45d);doorHandle.position.set(1.78,1.42,.17);doorPivot.add(doorHandle);
+ const lockAssembly=new THREE.Group();lockAssembly.position.set(1.78,1.12,.16);doorPivot.add(lockAssembly);
+ const lockPlate=box(0,0,0,.18,.28,.055,0x3c3a35);lockAssembly.add(lockPlate);
+ const lockShackle=new THREE.Mesh(new THREE.TorusGeometry(.065,.018,6,12,Math.PI),mat(0xc7c7c0));lockShackle.position.y=.13;lockAssembly.add(lockShackle);
+ // Compact living-room arrangement with clear gaps between every item.
+ box(x,.115,z-.45,3.8,.035,2.8,0x8b795f); // flat rug
+ // Two-seat sofa along the rear half of the room.
+ box(x-1.0,.43,z-2.45,2.65,.34,.78,0x52645b);
+ box(x-1.0,.83,z-2.82,2.65,.58,.22,0x65796e);
+ box(x-2.35,.62,z-2.45,.22,.58,.78,0x52645b);
+ box(x+.35,.62,z-2.45,.22,.58,.78,0x52645b);
+ box(x-1.65,.72,z-2.58,.58,.12,.48,0xb08a5e);
+ box(x-.55,.72,z-2.58,.58,.12,.48,0xb08a5e);
+ // Broad coffee table sized to sit neatly within the rug, with an even border on all sides.
+ box(x,.48,z-.45,3.3,.12,2.3,0x76563b);
+ for(const dx of [-1.45,1.45])for(const dz of [-.95,.95])box(x+dx,.25,z-.45+dz,.10,.42,.10,0x49392d);
+ // Simple, aligned two-drawer cabinet against the right wall.
+ box(x+4.05,.48,z+.15,.58,.78,1.45,0x76563b);
+ box(x+3.745,.43,z+.15,.045,.27,1.20,0xa7835b);
+ box(x+3.745,.78,z+.15,.045,.27,1.20,0xa7835b);
+ box(x+3.705,.43,z+.15,.07,.07,.07,0xd7c39a);
+ box(x+3.705,.78,z+.15,.07,.07,.07,0xd7c39a);
+ // Warm interior light makes the walls and furnishings readable.
+ const lamp=new THREE.PointLight(0xffd9a1,1.4,6);lamp.position.set(x,2.45,z);scene.add(lamp);
+ // Rotate the whole house as one unit so its roof, walls, windows, door and furniture remain aligned.
+ const houseRoot=new THREE.Group();houseRoot.position.set(x,0,z);scene.add(houseRoot);
+ const created=scene.children.slice(childStart,scene.children.length-1);
+ for(const child of created)houseRoot.attach(child);
+ houseRoot.rotation.y=facing;
+ if(Math.abs(facing)>0.001){for(let i=wallStart;i<solidWalls.length;i++){const b=solidWalls[i],dx=b.x-x,dz=b.z-z;b.x=x+Math.cos(facing)*dx+Math.sin(facing)*dz;b.z=z-Math.sin(facing)*dx+Math.cos(facing)*dz;if(Math.abs(Math.abs(facing)-Math.PI/2)<.01){const t=b.w;b.w=b.d;b.d=t;}}}
+ // Slightly enlarge each complete home, including roof, doorway, windows and furnishings.
+ houseRoot.scale.setScalar(1.15);
+ for(let i=wallStart;i<solidWalls.length;i++){const b=solidWalls[i];b.x=x+(b.x-x)*1.15;b.z=z+(b.z-z)*1.15;b.w*=1.15;b.d*=1.15;}
+ const doorX=x+Math.sin(facing)*(dep*1.15/2),doorZ=z+Math.cos(facing)*(dep*1.15/2);
+ const data={x,z,w,dep,roof,front,doorX,doorZ,facing,houseRoot,doorPivot,doorOpen:false,lockAssembly,lockDropping:false,lockDropTime:0,unlocked:false,keyCollected:false};houseInteriors.push(data);
+}
+makeHouse(-16,-105,0x353c3a,1.571);
+makeHouse(14,-105,0x4a3933,-1.571);
+makeHouse(-17,-75,0x3d4937,1.571);
+// Two extra village homes extend the settlement beyond the original three.
+makeHouse(-52,51,0x51463a,0.661);
+// New homes are distributed along the extended country roads and face their access lanes.
+makeHouse(45,70,0x4b5148,-2.78);
+makeHouse(-63,65,0x51483d,1.571);
+// More scattered homes make the countryside feel like a lived-in settlement.
+makeHouse(75,92,0x555047,2.93);
+makeHouse(29,-75,0x46544a,-1.571);
+makeHouse(-100,91,0x59483b,2.55);
+makeHouse(123,48,0x4a514e,-1.45);
+makeHouse(-124,31,0x51483f,0.98);
+makeHouse(-18,-15,0x4c5548,1.571);
+makeHouse(20,60,0x5b5043,-1.571);
+makeHouse(-24,15,0x46504b,1.571);
+makeHouse(38,8,0x574b40,-1.571);
+makeHouse(-17,48,0x4c5548,1.571);
+makeHouse(34,-88,0x51483f,-1.8);
+makeHouse(-34,-64,0x4d574e,1.45);
+// All 18 houses participate in the matching-key progression; the first key is found outdoors.
+
+// Continuous road ribbons: one joined mesh per route prevents wedge-shaped gaps at bends.
+const roadMaterial=mat(0x777365),roadMarkMaterial=mat(0xc6b78d);
+function roadPath(points,width=7,markings=false){
+ const controls=points.map(p=>new THREE.Vector3(p[0],.018,p[1]));
+ const curve=new THREE.CatmullRomCurve3(controls,false,"centripetal");
+ const samples=curve.getPoints(Math.max(24,(points.length-1)*18));
+ const vertices=[],indices=[],half=width/2;
+ for(let i=0;i<samples.length;i++){
+  const t=i/(samples.length-1),tangent=curve.getTangent(t).normalize();
+  const nx=tangent.z,nz=-tangent.x,p=samples[i];
+  vertices.push(p.x+nx*half,.018,p.z+nz*half,p.x-nx*half,.018,p.z-nz*half);
+  if(i<samples.length-1){const a=i*2,b=a+1,c=a+2,d=a+3;indices.push(a,b,c,b,d,c);}
+ }
+ const geometry=new THREE.BufferGeometry();
+ geometry.setAttribute("position",new THREE.Float32BufferAttribute(vertices,3));
+ geometry.setIndex(indices);geometry.computeVertexNormals();
+ const asphalt=new THREE.Mesh(geometry,roadMaterial);
+ asphalt.material.side=THREE.DoubleSide;asphalt.receiveShadow=true;scene.add(asphalt);
+ if(markings){
+  let distance=0,nextDash=7;
+  for(let i=0;i<samples.length-1;i++){
+   const a=samples[i],b=samples[i+1],dx=b.x-a.x,dz=b.z-a.z,len=Math.hypot(dx,dz);
+   if(len<.001)continue;
+   while(nextDash<distance+len){
+    const t=(nextDash-distance)/len;
+    const dash=new THREE.Mesh(new THREE.BoxGeometry(.13,.025,2.1),roadMarkMaterial);
+    dash.position.set(a.x+dx*t,.045,a.z+dz*t);dash.rotation.y=Math.atan2(dx,dz);scene.add(dash);
+    nextDash+=9;
+   }
+   distance+=len;
+  }
+ }
+}
+const mainRoad=[[-2,-118],[-2,-96],[5,-78],[14,-60],[17,-43],[10,-25],[-3,-7],[-12,12],[-9,32],[1,52],[4,72]];
+roadPath(mainRoad,7,true);
+const sideRoads=[
+ [[16,-45],[28,-44],[35,-42]],
+ [[6,-20],[-7,-21],[-14,-22]],
+ [[-9,7],[-23,10],[-31,11]],
+ [[-5,39],[-22,45],[-35,48]]
+];
+for(const branch of sideRoads)roadPath(branch,5.4,false);
+// Long outer routes open the playable countryside beyond the original village.
+roadPath([[2,39],[12,49],[26,55],[42,62],[59,68],[78,78],[98,86]],8,true);
+roadPath([[-4,17],[-18,33],[-34,47],[-52,61],[-72,72],[-94,82]],8,true);
+roadPath([[98,86],[102,68],[107,50],[112,29],[115,10]],7,false);
+roadPath([[-94,82],[-103,61],[-109,41],[-114,18],[-115,-4]],7,false);
+// Smooth road ribbons meet directly at their junctions; no oversized overlap pads.
+const beacon=new THREE.PointLight(0xffd17b,22,24);beacon.position.set(18,4,-35);scene.add(beacon);// The finish beacon has no surrounding box or platform; keep the flagpole on open ground.const beaconPole=new THREE.Mesh(new THREE.CylinderGeometry(.12,.17,5.8,12),mat(0x5a4732));beaconPole.position.set(18,3.7,-35);scene.add(beaconPole);const beaconFlag=new THREE.Mesh(new THREE.PlaneGeometry(4.8,2.4),new THREE.MeshStandardMaterial({color:0x263d32,side:THREE.DoubleSide,roughness:.8}));beaconFlag.position.set(20.3,5.2,-35);beaconFlag.rotation.y=.15;scene.add(beaconFlag);const flagCanvas=document.createElement("canvas");flagCanvas.width=768;flagCanvas.height=384;const flagCtx=flagCanvas.getContext("2d");flagCtx.fillStyle="#263d32";flagCtx.fillRect(0,0,768,384);flagCtx.strokeStyle="#e7c77c";flagCtx.lineWidth=14;flagCtx.strokeRect(12,12,744,360);flagCtx.fillStyle="#f2d58f";flagCtx.font="bold 88px system-ui";flagCtx.textAlign="center";flagCtx.textBaseline="middle";flagCtx.fillText("AFTERFALL",384,190);beaconFlag.material.map=new THREE.CanvasTexture(flagCanvas);beaconFlag.material.needsUpdate=true;
+const supplies=[];for(const [x,z] of [[-8,4],[23,-9],[-27,-43],[-20.5,-20.5],[21.5,-38.5]]){const g=new THREE.Group();const crate=new THREE.Mesh(new THREE.BoxGeometry(1.15,.85,.9),mat(0xc18a42));crate.castShadow=true;g.add(crate);const stripe=new THREE.Mesh(new THREE.BoxGeometry(1.18,.13,.94),mat(0xe7d29a));stripe.position.y=.1;g.add(stripe);g.position.set(x,.65,z);scene.add(g);supplies.push(g)}
+ // One key for each of the 18 houses. The first key is outdoors; each later key is hidden inside the previously unlocked house.
+ const houseKeys=[];
+ const keyColors=[0xe7b83f,0x72c7d5,0xb68be8,0xe78b48,0x8fc56b,0xd56a82,0x6da8df,0xd4b65e,0x9d83d4,0x65c1b2,0xd28b55,0x9dbb69,0xc77dba,0x7e9bd0,0xd0a36b,0x83b7a0,0xc47b70,0xb6b0d8];
+ const keyNames=["Golden House Key","Blue House Key","Violet House Key",...Array.from({length:15},(_,i)=>"House Key "+(i+4))];
+ const roomSpots=[[0,.55,1.7],[-3,.55,1.6],[3,.55,1.6],[-3.2,.55,-.3],[2.9,.55,-.3],[0,.55,2.5],[-2.8,.55,-1.5],[2.8,.55,-1.5],[0,.55,.9],[-3.1,.55,.5],[3.1,.55,.5],[-2.4,.55,2.1],[2.4,.55,2.1],[0,.55,-1.7],[-3.3,.55,-1.1],[3.3,.55,-1.1],[0,.55,2.9]];
+ for(let i=0;i<18;i++){
+  const color=keyColors[i],g=new THREE.Group();
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(i===1?.18:.22,.045,8,18),mat(color));ring.position.y=.16;g.add(ring);
+  const stem=new THREE.Mesh(new THREE.BoxGeometry(.085,.42,.085),mat(color));stem.position.y=-.12;g.add(stem);
+  const tooth=new THREE.Mesh(new THREE.BoxGeometry(.2,.085,.085),mat(color));tooth.position.set(.075,-.29,0);g.add(tooth);
+  if(i===1){const extra=new THREE.Mesh(new THREE.BoxGeometry(.17,.07,.085),mat(color));extra.position.set(-.07,-.22,0);g.add(extra)}
+  if(i===2){const extra=new THREE.Mesh(new THREE.BoxGeometry(.08,.16,.085),mat(color));extra.position.set(.12,-.23,0);g.add(extra)}
+  
+  if(i===0){g.position.set(8,.48,-8);scene.add(g);}
+  else{
+   const host=houseInteriors[i-1],spot=roomSpots[(i-1)%roomSpots.length];
+   const world=host.houseRoot.localToWorld(new THREE.Vector3(spot[0],spot[1],spot[2]));
+   g.position.copy(world);scene.add(g);
+  }
+  houseKeys.push({mesh:g,houseIndex:i,collected:false,name:keyNames[i]});
+ }
+// Procedural third-person player model
+const avatar=new THREE.Group();avatar.scale.setScalar(.72);scene.add(avatar);
+const skin=mat(0xc99b78),shirt=mat(0x344b43),pants=mat(0x303943),boots=mat(0x211f1b),pack=mat(0x6b5638);
+function limb(parent,geometry,material,x,y,z){const m=new THREE.Mesh(geometry,material);m.position.set(x,y,z);m.castShadow=true;parent.add(m);return m}
+const torso=limb(avatar,new THREE.CapsuleGeometry(.38,.65,5,8),shirt,0,1.25,0);
+const head=limb(avatar,new THREE.SphereGeometry(.25,16,12),skin,0,2.05,0);
+const backpackMesh=limb(avatar,new THREE.BoxGeometry(.48,.55,.22),pack,0,1.3,-.39);
+const skinAccessory=new THREE.Group();avatar.add(skinAccessory); // Skin details face the camera at the default player heading.
+const bananaFace=new THREE.Group();avatar.add(bananaFace); // Character front faces the camera at the default player heading.
+const humanFace=new THREE.Group();avatar.add(humanFace);
+const eyeWhite=mat(0xffffff),eyeDark=mat(0x211a18),mouthDark=mat(0x542c27),noseMat=mat(0xb98268);
+for(const x of [-.095,.095]){
+ limb(humanFace,new THREE.SphereGeometry(.052,12,10),eyeWhite,x,2.105,.222);
+ limb(humanFace,new THREE.SphereGeometry(.027,12,10),eyeDark,x,2.105,.263);
+ const brow=limb(humanFace,new THREE.BoxGeometry(.105,.025,.025),mat(0x49332b),x,2.19,.225);brow.rotation.z=x<0?-.12:.12;
+}
+limb(humanFace,new THREE.SphereGeometry(.045,12,10),noseMat,0,2.025,.25);
+const smile=new THREE.CatmullRomCurve3([new THREE.Vector3(-.065,1.96,.235),new THREE.Vector3(0,1.935,.255),new THREE.Vector3(.065,1.96,.235)]);
+limb(humanFace,new THREE.TubeGeometry(smile,10,.012,6,false),mouthDark,0,0,0);
+const bodyDetails=new THREE.Group();avatar.add(bodyDetails);
+const chestPanel=limb(bodyDetails,new THREE.SphereGeometry(1,20,14),mat(0x8a8a8a),0,1.38,.315);chestPanel.scale.set(.30,.235,.065);
+const belt=limb(bodyDetails,new THREE.TorusGeometry(.34,.04,8,48),mat(0x292929),0,.94,0);belt.rotation.x=Math.PI/2;
+const beltBuckle=limb(bodyDetails,new THREE.BoxGeometry(.12,.09,.025),mat(0xd7b45c),0,.94,.378);
+for(const x of [-.39,.39]){
+ const pad=limb(bodyDetails,new THREE.SphereGeometry(.19,12,10),mat(0x666666),x,1.52,0);pad.scale.set(1,.72,1);
+ limb(bodyDetails,new THREE.SphereGeometry(.115,12,10),mat(0x333333),x*1.38,1.02,0);
+}
+
+const bananaSuit=limb(bananaFace,new THREE.SphereGeometry(1,24,20),mat(0xffd92e),0,1.22,0);
+bananaSuit.scale.set(.49,.91,.43);
+const bananaBelly=limb(bananaFace,new THREE.SphereGeometry(1,20,16),mat(0xffed72),0,1.23,.245);bananaBelly.scale.set(.32,.69,.19);
+const bananaEyeMat=mat(0x171717),bananaWhite=mat(0xffffff),bananaMouthMat=mat(0x57251b),bananaGreen=mat(0x328b43),bananaTip=mat(0x543521);
+for(const x of [-.145,.145]){limb(bananaFace,new THREE.SphereGeometry(.085,14,12),bananaWhite,x,1.82,.345);limb(bananaFace,new THREE.SphereGeometry(.043,12,10),bananaEyeMat,x,1.82,.414)}
+const bananaSmileCurve=new THREE.CatmullRomCurve3([new THREE.Vector3(-.105,1.64,.398),new THREE.Vector3(0,1.59,.43),new THREE.Vector3(.105,1.64,.398)]);
+limb(bananaFace,new THREE.TubeGeometry(bananaSmileCurve,12,.018,6,false),bananaMouthMat,0,0,0);
+limb(bananaFace,new THREE.ConeGeometry(.09,.2,8),bananaTip,0,2.13,0);
+const peelLeft=limb(bananaFace,new THREE.ConeGeometry(.22,.66,8),bananaGreen,-.28,.48,.02);peelLeft.rotation.z=-.45;
+const peelRight=limb(bananaFace,new THREE.ConeGeometry(.22,.66,8),bananaGreen,.28,.48,.02);peelRight.rotation.z=.45;
+const peelFront=limb(bananaFace,new THREE.ConeGeometry(.2,.62,8),mat(0x42a34b),0,.43,.27);peelFront.rotation.x=-.2;
+const bananaLeaf=limb(bananaFace,new THREE.ConeGeometry(.12,.38,7),bananaGreen,0,2.31,0);bananaLeaf.rotation.z=.35;
+bananaFace.visible=false;
+const skinList=[
+{name:"Banana Scout",icon:"🍌",shirt:0xf3d52b,pants:0x4d8b45,skin:0xffe58a,boots:0x46351f,pack:0x34834a,detail:0x2f9b50,kind:"leaf"},
+{name:"Shadow Ninja",icon:"🥷",shirt:0x202631,pants:0x11151d,skin:0xb9a18e,boots:0x090d13,pack:0x7c2630,detail:0xb52e3b,kind:"hood"},
+{name:"Cosmic Ranger",icon:"🚀",shirt:0x5c8cae,pants:0x303e59,skin:0xd8b99d,boots:0x202b42,pack:0xd4e6ec,detail:0x69d9ed,kind:"antenna"},
+{name:"Jungle Tracker",icon:"🌿",shirt:0x426c3e,pants:0x394b32,skin:0xb98768,boots:0x443728,pack:0x79552e,detail:0x9aa84a,kind:"cap"},
+{name:"Frost Guardian",icon:"❄️",shirt:0x8bc8d8,pants:0x496b8c,skin:0xd9bda9,boots:0xe4edf0,pack:0x477c9b,detail:0xbcefff,kind:"crown"},
+{name:"Volcano Raider",icon:"🌋",shirt:0x9a3d2e,pants:0x3c2928,skin:0x9a6b53,boots:0x211b1b,pack:0x57251e,detail:0xff8a32,kind:"horns"},
+{name:"Golden Knight",icon:"👑",shirt:0xb28a32,pants:0x55452d,skin:0xd7b38d,boots:0x332b20,pack:0x8a6425,detail:0xf4d46b,kind:"crown"},
+{name:"Neon Racer",icon:"🏁",shirt:0x20a9a2,pants:0x26394a,skin:0xc99b78,boots:0x15242b,pack:0xe74b9b,detail:0x50fff0,kind:"visor"},
+{name:"Desert Nomad",icon:"🏜️",shirt:0xc58a48,pants:0x80613d,skin:0xd0a078,boots:0x59402b,pack:0x9b6236,detail:0xe7c27d,kind:"scarf"},
+{name:"Moon Bot",icon:"🤖",shirt:0x87969f,pants:0x4b5964,skin:0xc5d4d8,boots:0x333f49,pack:0x526b79,detail:0x67e7ff,kind:"antenna"},
+{name:"Magma Beast",icon:"🐲",shirt:0x39765d,pants:0x263f37,skin:0x71a58b,boots:0x1d302a,pack:0x573c31,detail:0xff713c,kind:"horns"},
+{name:"Sky Captain",icon:"🧢",shirt:0x526aa0,pants:0x343c56,skin:0xd1a27e,boots:0x292b36,pack:0x9a6738,detail:0xe2c16f,kind:"cap"},
+{name:"Toxic Ranger",icon:"☣️",shirt:0x8dbb35,pants:0x3d4c2b,skin:0xb2c58c,boots:0x242d20,pack:0x566b2a,detail:0xcaff42,kind:"visor"},
+{name:"Storm Chaser",icon:"🌩️",shirt:0x555b78,pants:0x292e43,skin:0xc39b87,boots:0x202331,pack:0x414c6c,detail:0x9c9dff,kind:"hood"},
+{name:"Candy Hero",icon:"🍭",shirt:0xd66caa,pants:0x6a4b91,skin:0xf0c2ae,boots:0x52365f,pack:0x62b9c4,detail:0xffd0ed,kind:"crown"},
+{name:"Wild Fox",icon:"🦊",shirt:0xc56b32,pants:0x573c2e,skin:0xe7b68d,boots:0x35251e,pack:0x8a4829,detail:0xf4a64e,kind:"ears"}
+];
+let selectedSkin=0;
+function applySkin(index){
+ selectedSkin=(index+skinList.length)%skinList.length;const s=skinList[selectedSkin];
+ shirt.color.setHex(s.shirt);pants.color.setHex(s.pants);skin.color.setHex(s.skin);boots.color.setHex(s.boots);pack.color.setHex(s.pack);
+ const isBanana=s.name==="Banana Scout";torso.visible=!isBanana;head.visible=!isBanana;backpackMesh.visible=!isBanana;bananaFace.visible=isBanana;humanFace.visible=!isBanana;bodyDetails.visible=!isBanana;chestPanel.material.color.setHex(s.detail);beltBuckle.material.color.setHex(s.detail);
+ skinAccessory.clear();
+ const detail=mat(s.detail);
+ if(s.kind==="leaf"&&!isBanana){const leaf=limb(skinAccessory,new THREE.ConeGeometry(.13,.48,5),detail,0,2.43,0);leaf.rotation.z=.25}
+ if(s.kind==="hood"){limb(skinAccessory,new THREE.SphereGeometry(.3,12,10),detail,0,2.12,-.06);limb(skinAccessory,new THREE.BoxGeometry(.34,.1,.12),mat(0x151923),0,2.02,.2)}
+ if(s.kind==="antenna"){limb(skinAccessory,new THREE.CylinderGeometry(.025,.035,.28,8),detail,0,2.34,0);limb(skinAccessory,new THREE.SphereGeometry(.09,10,8),detail,0,2.5,0)}
+ if(s.kind==="cap"){limb(skinAccessory,new THREE.CylinderGeometry(.24,.27,.12,12),detail,0,2.27,0);limb(skinAccessory,new THREE.BoxGeometry(.34,.045,.22),detail,0,2.22,.13)}
+ if(s.kind==="crown"){limb(skinAccessory,new THREE.CylinderGeometry(.2,.24,.16,8),detail,0,2.28,0);for(let j=0;j<5;j++)limb(skinAccessory,new THREE.ConeGeometry(.045,.16,5),detail,-.16+j*.08,2.41,0)}
+ if(s.kind==="horns"||s.kind==="ears"){for(const side of [-1,1]){const h=limb(skinAccessory,new THREE.ConeGeometry(.09,.3,6),detail,side*.2,2.3,0);h.rotation.z=-side*.55}}
+ if(s.kind==="visor"){limb(skinAccessory,new THREE.BoxGeometry(.42,.11,.12),detail,0,2.08,.2)}
+ if(s.kind==="scarf"){limb(skinAccessory,new THREE.BoxGeometry(.58,.13,.18),detail,0,1.83,.05);limb(skinAccessory,new THREE.BoxGeometry(.12,.42,.1),detail,.27,1.62,.02)}
+ // Distinctive silhouette pieces for each original AFTERFALL skin.
+ const accent=mat(s.detail),dark=mat(0x20252a),bright=mat(0xf2ead5);
+ const addBox=(x,y,z,w,h,d,m=accent,rz=0)=>{const o=limb(skinAccessory,new THREE.BoxGeometry(w,h,d),m,x,y,z);o.rotation.z=rz;return o};
+ const addBall=(x,y,z,sx,sy,sz,m=accent)=>{const o=limb(skinAccessory,new THREE.SphereGeometry(1,16,12),m,x,y,z);o.scale.set(sx,sy,sz);return o};
+ const addCone=(x,y,z,rad,len,m=accent,rz=0)=>{const o=limb(skinAccessory,new THREE.ConeGeometry(rad,len,8),m,x,y,z);o.rotation.z=rz;return o};
+ if(s.name==="Shadow Ninja"){
+   addBall(0,2.08,-.04,.32,.34,.29,dark);addBox(0,2.02,.235,.42,.12,.08,accent);
+   addBox(0,1.78,.02,.72,.13,.24,accent,.08);addBox(-.55,1.35,0,.18,.65,.18,dark,-.22);addBox(.55,1.35,0,.18,.65,.18,dark,.22);
+   for(const x of [-.22,.22])addBox(x,1.5,.03,.18,.22,.18,accent);
+ }
+ if(s.name==="Cosmic Ranger"){
+   addBall(0,2.08,0,.36,.37,.34,bright);addBall(0,2.08,.29,.29,.18,.08,accent);
+   addBox(0,1.2,-.25,.62,.55,.24,bright);addBox(-.43,1.32,-.02,.2,.6,.2,accent,-.18);addBox(.43,1.32,-.02,.2,.6,.2,accent,.18);
+   addBall(-.22,1.24,.19,.07,.07,.05,bright);addBall(.22,1.24,.19,.07,.07,.05,bright);
+ }
+ if(s.name==="Jungle Tracker"){
+   addBox(0,2.27,0,.66,.12,.58,accent);addBall(0,2.34,0,.24,.13,.25,dark);
+   for(let j=0;j<3;j++){const leaf=addCone(-.32+j*.32,1.75,.05,.15,.48,j%2?accent:bright,(j-1)*.45);leaf.rotation.x=-.5}
+   addBox(0,1.78,.18,.48,.13,.12,mat(0x876039),-.1);addBox(-.43,1.32,0,.2,.48,.2,mat(0x876039),-.15);
+ }
+ if(s.name==="Frost Guardian"){
+   addBall(0,2.08,0,.32,.34,.3,bright);addBox(0,2.08,.27,.48,.13,.08,accent);
+   for(let j=0;j<5;j++)addCone(-.28+j*.14,2.42,0,.075,.25,accent,(j-2)*.16);
+   addBall(-.43,1.38,0,.2,.2,.2,bright);addBall(.43,1.38,0,.2,.2,.2,bright);
+   addBox(0,1.18,.24,.5,.42,.12,accent);
+ }
+ if(s.name==="Volcano Raider"){
+   addBall(0,2.08,0,.34,.35,.3,dark);for(const x of [-.23,.23])addCone(x,2.35,0,.14,.42,accent,x<0?-.5:.5);
+   addBox(0,1.25,.23,.5,.48,.12,dark);for(let j=0;j<3;j++)addBall(-.16+j*.16,1.3,.31,.045,.16,.035,mat(0xff8a32));
+   addBall(-.43,1.35,0,.2,.2,.2,accent);addBall(.43,1.35,0,.2,.2,.2,accent);
+ }
+ if(s.name==="Golden Knight"){
+   addBall(0,2.08,0,.33,.36,.31,accent);addBox(0,2.05,.28,.48,.15,.08,bright);
+   addBox(0,1.32,-.23,.78,.68,.15,accent);addBox(0,1.0,-.32,.56,.16,.12,bright);
+   for(const x of [-.45,.45]){addBall(x,1.45,0,.23,.24,.23,accent);addBox(x,1.18,.02,.18,.34,.18,bright)}
+   addCone(0,2.48,0,.11,.32,bright);
+ }
+ if(s.name==="Neon Racer"){
+   addBall(0,2.08,0,.31,.34,.29,dark);addBox(0,2.08,.26,.5,.15,.1,accent);
+   addBox(0,1.22,.23,.55,.42,.12,bright);addBox(0,1.22,.31,.34,.12,.04,accent);
+   addBox(-.48,1.42,0,.18,.5,.18,accent,-.18);addBox(.48,1.42,0,.18,.5,.18,accent,.18);
+   for(let j=0;j<3;j++)addBox(-.16+j*.16,1.52,.27,.07,.07,.04,bright);
+ }
+ if(s.name==="Desert Nomad"){
+   addBall(0,2.13,0,.34,.35,.31,accent);addBox(0,2.02,.27,.5,.22,.12,mat(0xead6b0));
+   addBox(0,1.86,.18,.52,.12,.14,mat(0xead6b0));addBox(.28,1.64,.18,.14,.5,.12,accent,.12);
+   addBall(-.43,1.35,0,.2,.2,.2,mat(0x876039));addBox(0,1.18,-.25,.58,.5,.22,mat(0x876039));
+ }
+ if(s.name==="Moon Bot"){
+   addBox(0,2.08,0,.52,.5,.48,bright);addBox(0,2.1,.25,.39,.14,.06,accent);
+   for(const x of [-.14,.14])addBall(x,2.1,.31,.045,.045,.035,dark);
+   addBox(0,1.27,.24,.52,.5,.12,accent);addBox(-.43,1.36,0,.2,.48,.2,bright);addBox(.43,1.36,0,.2,.48,.2,bright);
+   addCone(0,2.42,0,.06,.22,accent);addBall(0,2.55,0,.09,.09,.09,accent);
+ }
+ if(s.name==="Magma Beast"){
+   addBall(0,2.08,0,.35,.36,.31,mat(0x527c67));for(const x of [-.24,.24])addCone(x,2.38,-.02,.15,.43,accent,x<0?-.45:.45);
+   addBall(0,1.78,.27,.3,.16,.08,mat(0x273d34));for(const x of [-.12,.12])addCone(x,1.72,.34,.045,.14,bright);
+   for(let j=0;j<3;j++)addBall(-.18+j*.18,1.25,.3,.045,.22,.035,accent);
+   addBox(-.45,1.4,0,.24,.42,.2,mat(0x527c67),-.25);addBox(.45,1.4,0,.24,.42,.2,mat(0x527c67),.25);
+ }
+ if(s.name==="Sky Captain"){
+   addBox(0,2.28,0,.58,.13,.5,accent);addBox(0,2.21,.2,.62,.06,.28,bright);
+   addBox(0,1.82,.22,.48,.14,.08,bright);addBox(-.43,1.36,0,.18,.5,.18,accent,-.16);
+   addBox(.43,1.36,0,.18,.5,.18,accent,.16);addBox(0,1.2,-.26,.62,.5,.2,mat(0x80542c));
+   addBall(0,1.56,.28,.08,.08,.04,bright);
+ }
+ if(s.name==="Toxic Ranger"){
+   addBall(0,2.08,0,.34,.35,.3,mat(0x303b2a));addBox(0,2.08,.27,.52,.18,.1,accent);
+   for(const x of [-.16,.16])addBall(x,2.1,.34,.055,.055,.035,bright);
+   addBox(0,1.22,.23,.54,.5,.12,mat(0x303b2a));addBox(0,1.22,.31,.3,.24,.04,accent);
+   addBall(-.44,1.38,0,.2,.2,.2,accent);addBall(.44,1.38,0,.2,.2,.2,accent);
+ }
+ if(s.name==="Storm Chaser"){
+   addBall(0,2.12,-.03,.36,.39,.34,dark);addBox(0,1.99,.24,.46,.13,.1,accent);
+   addBox(0,1.76,.04,.7,.16,.25,accent,.06);addBox(-.5,1.35,0,.2,.56,.2,dark,-.2);addBox(.5,1.35,0,.2,.56,.2,dark,.2);
+   addCone(-.27,2.4,0,.07,.25,bright,-.3);addCone(.27,2.4,0,.07,.25,bright,.3);
+ }
+ if(s.name==="Candy Hero"){
+   addBall(0,2.08,0,.33,.35,.3,bright);addCone(0,2.43,0,.16,.28,accent);
+   for(const x of [-.25,.25])addBall(x,2.12,.19,.08,.08,.05,accent);
+   addBox(0,1.24,.23,.58,.48,.12,bright);addBox(0,1.24,.31,.35,.13,.04,accent);
+   addCone(.48,1.52,0,.12,.35,accent,-.9);addCone(-.48,1.52,0,.12,.35,bright,.9);
+ }
+ if(s.name==="Wild Fox"){
+   addBall(0,2.1,0,.34,.34,.3,mat(0xc56b32));
+   for(const x of [-.22,.22]){const ear=addCone(x,2.45,0,.14,.42,accent,x<0?-.25:.25);addCone(x,2.44,.035,.07,.28,bright,x<0?-.25:.25)}
+   addBall(0,1.91,.25,.22,.15,.12,bright);addBall(0,1.89,.36,.08,.06,.05,dark);
+   addBall(-.14,2.13,.26,.045,.06,.035,dark);addBall(.14,2.13,.26,.045,.06,.035,dark);
+   addBall(0,1.24,-.28,.26,.42,.25,accent);
+ }
+
+ document.querySelectorAll("#skinGrid button").forEach((b,i)=>b.classList.toggle("selected",i===selectedSkin));
+}
+const skinGrid=document.querySelector("#skinGrid");
+skinList.forEach((s,i)=>{const b=document.createElement("button");b.type="button";b.innerHTML="<span>"+s.icon+"</span>"+s.name;b.addEventListener("click",()=>{applySkin(i);document.querySelector("#skinNote").textContent="Selected: "+s.name;document.querySelector("#message").textContent=s.name+" selected. Press START GAME when ready.";});skinGrid.appendChild(b)});
+applySkin(0);
+function closeSkinScreen(){document.querySelector("#skinScreen").style.setProperty("display","none","important");document.querySelector("#lobbyScreen").style.setProperty("display","none","important");player.pos.set(0,0,12);player.yaw=0;document.querySelector("#message").textContent="SURVIVE. Search houses, collect supplies and watch for zombies.";}
+document.querySelector("#skinClose").addEventListener("click",closeSkinScreen);document.querySelector("#skinClose").onclick=closeSkinScreen;
+document.querySelector("#skinOpen").addEventListener("click",()=>{document.querySelector("#skinScreen").style.display="flex"});
+
+const leftLeg=new THREE.Group(),rightLeg=new THREE.Group();leftLeg.position.set(-.19,.83,0);rightLeg.position.set(.19,.83,0);avatar.add(leftLeg,rightLeg);
+limb(leftLeg,new THREE.CapsuleGeometry(.145,.64,5,10),pants,0,-.35,0);limb(rightLeg,new THREE.CapsuleGeometry(.145,.64,5,10),pants,0,-.35,0);
+// Continuous ankle cuffs and boots prevent visible gaps at the feet.
+limb(leftLeg,new THREE.CylinderGeometry(.145,.15,.19,12),pants,0,-.59,0);limb(rightLeg,new THREE.CylinderGeometry(.145,.15,.19,12),pants,0,-.59,0);
+limb(leftLeg,new THREE.BoxGeometry(.29,.2,.46),boots,0,-.7,.075);limb(rightLeg,new THREE.BoxGeometry(.29,.2,.46),boots,0,-.7,.075);
+// Articulated arms pivot at the shoulders, so the whole arm swings as one connected limb.
+const leftArm=new THREE.Group(),rightArm=new THREE.Group();
+leftArm.position.set(-.405,1.53,0);rightArm.position.set(.405,1.53,0);
+avatar.add(leftArm,rightArm);
+for(const [arm,side] of [[leftArm,-1],[rightArm,1]]){
+ limb(arm,new THREE.SphereGeometry(.19,14,12),shirt,0,0,0).scale.set(1,.9,1);
+ const upper=limb(arm,new THREE.CapsuleGeometry(.135,.52,5,10),shirt,side*.055,-.24,0);upper.rotation.z=-side*.055;
+ limb(arm,new THREE.SphereGeometry(.14,12,10),shirt,side*.075,-.49,0);
+ limb(arm,new THREE.CapsuleGeometry(.105,.34,5,10),skin,side*.075,-.68,0);
+}
+const weapon=new THREE.Group();const gunMetal=mat(0x30383d),gunDark=mat(0x171d21);const pistolSlide=new THREE.Mesh(new THREE.BoxGeometry(.19,.17,.62),gunMetal);pistolSlide.position.set(0,.03,-.2);weapon.add(pistolSlide);const pistolGrip=new THREE.Mesh(new THREE.BoxGeometry(.15,.34,.19),gunDark);pistolGrip.position.set(0,-.2,.015);pistolGrip.rotation.x=-.16;weapon.add(pistolGrip);const barrel=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.28,10),gunDark);barrel.rotation.x=Math.PI/2;barrel.position.set(0,.035,-.63);weapon.add(barrel);const sight=new THREE.Mesh(new THREE.BoxGeometry(.045,.045,.09),gunDark);sight.position.set(0,.135,-.28);weapon.add(sight);const scope=new THREE.Mesh(new THREE.CylinderGeometry(.075,.075,.2,12),mat(0x20292d));scope.rotation.x=Math.PI/2;scope.position.set(0,.19,-.3);weapon.add(scope);const scopeLens=new THREE.Mesh(new THREE.CircleGeometry(.055,12),mat(0x79b7c4));scopeLens.position.set(0,.19,-.405);weapon.add(scopeLens);const muzzle=new THREE.PointLight(0xffbd55,0,3);muzzle.position.set(0,.03,-.8);weapon.add(muzzle);weapon.userData.muzzle=muzzle;weapon.position.set(.08,-.63,.08);rightArm.add(weapon);
+const neck=limb(avatar,new THREE.CylinderGeometry(.14,.17,.22,12),skin,0,1.84,0);
+const collar=limb(avatar,new THREE.CylinderGeometry(.205,.22,.12,12),shirt,0,1.76,0);
+const keys={};addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(e.key.toLowerCase()))e.preventDefault()});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);addEventListener('blur',()=>Object.keys(keys).forEach(k=>keys[k]=false));
+let jumpQueued=false;document.querySelector('#jump').addEventListener('pointerdown',e=>{e.preventDefault();jumpQueued=true});let sprintTouch=false;const sprintBtn=document.querySelector('#sprint');sprintBtn.addEventListener('pointerdown',e=>{e.preventDefault();sprintTouch=true;sprintBtn.classList.add('held')});function stopSprint(){sprintTouch=false;sprintBtn.classList.remove('held')}['pointerup','pointercancel','lostpointercapture'].forEach(ev=>sprintBtn.addEventListener(ev,stopSprint));
+let joy={x:0,y:0},joyId=null;const area=document.querySelector('#stickArea'),knob=document.querySelector('#stick');function setJoy(e){const r=area.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=e.clientX-cx,dy=e.clientY-cy,max=48,len=Math.hypot(dx,dy)||1,k=Math.min(1,max/len);joy.x=dx*k/max;joy.y=dy*k/max;knob.style.transform='translate('+dx*k+'px,'+dy*k+'px)'}area.addEventListener('pointerdown',e=>{e.preventDefault();joyId=e.pointerId;area.setPointerCapture(joyId);setJoy(e)});area.addEventListener('pointermove',e=>{if(e.pointerId===joyId)setJoy(e)});function releaseJoy(){joyId=null;joy={x:0,y:0};knob.style.transform='translate(0,0)'}area.addEventListener('pointerup',releaseJoy);area.addEventListener('pointercancel',releaseJoy);
+let lookPointer=null,lastX=0,lastY=0;canvas.addEventListener('pointerdown',e=>{lookPointer=e.pointerId;lastX=e.clientX;lastY=e.clientY;canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointermove',e=>{if(lookPointer!==e.pointerId)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;player.yaw-=dx*.005;camera.userData.pitch=THREE.MathUtils.clamp((camera.userData.pitch||.18)-dy*.004,-.85,1.05)});function endLook(){lookPointer=null}canvas.addEventListener('pointerup',endLook);canvas.addEventListener('pointercancel',endLook);
+let health=100,hunger=100,water=100,score=0,hitCooldown=0,attackCooldown=0,attackTimer=0,hitTimer=0,dead=false,deathTimer=0;
+function triggerDeath(){if(dead)return;dead=true;deathTimer=0;hitTimer=0;document.querySelector("#deathScreen").style.display="flex";document.querySelector("#message").textContent="MISSION FAILED";document.querySelector("#hitFlash").style.opacity=".9";document.querySelector("#retryMission").onclick=()=>location.reload();document.querySelector("#backToLobby").onclick=()=>{location.reload()};}
+const zombieMat=mat(0x526b48),zombieDark=mat(0x29382c),zombieSkin=mat(0x82916b),zombieEye=mat(0xd84b36),zombies=[];
+function makeZombie(x,z){const g=new THREE.Group(),body=new THREE.Mesh(new THREE.CapsuleGeometry(.36,.72,4,7),zombieMat);body.position.y=1.05;g.add(body);const head=new THREE.Mesh(new THREE.SphereGeometry(.29,9,7),zombieSkin);head.position.set(0,1.72,.04);g.add(head);for(const ex of [-.105,.105]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.045,6,5),zombieEye);eye.position.set(ex,1.77,.29);g.add(eye)}const arms=[],legs=[];for(const side of [-1,1]){const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.12,.53,3,6),zombieSkin);arm.position.set(side*.43,1.13,.02);g.add(arm);arms.push(arm);const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.14,.55,3,6),zombieDark);leg.position.set(side*.19,.43,0);g.add(leg);legs.push(leg)}g.position.set(x,0,z);scene.add(g);zombies.push({group:g,health:3,alive:true,arms,legs,phase:0})}
+[[-28,-25],[32,-45],[-62,38],[65,72],[5,105],[-95,-25],[92,-42],[-105,95],[112,112],[0,145],[-145,5],[145,-5],[-40,175],[70,185],[175,75]].forEach(p=>makeZombie(...p));
+function updateSurvivalHud(){for(const [id,v] of [["health",health],["hunger",hunger],["water",water]]){document.getElementById(id+"Fill").style.width=v+"%";document.getElementById(id+"Value").textContent=Math.ceil(v)+"%"}document.getElementById("scoreValue").textContent=score;document.getElementById("zombieCount").textContent=zombies.filter(z=>z.alive).length}
+let aimMode=false,aimBlend=0;const aimButton=document.querySelector("#aim"),aimReticle=document.querySelector("#aimReticle");function toggleAim(){aimMode=!aimMode;aimButton.classList.toggle("aiming",aimMode);aimButton.innerHTML=aimMode?"<b>⊕</b>AIM ON":"<b>⊕</b>AIM";aimReticle.style.display=aimMode?"block":"none"}aimButton.addEventListener("pointerdown",e=>{e.preventDefault();toggleAim()});function attackZombie(){if(dead||attackCooldown>0)return;attackCooldown=.42;attackTimer=.25;weapon.userData.muzzle.intensity=aimMode?3.5:1.8;setTimeout(()=>{if(weapon.userData.muzzle)weapon.userData.muzzle.intensity=0},65);let target=null,best=aimMode?48:18;const f=new THREE.Vector3(-Math.sin(player.yaw),0,-Math.cos(player.yaw));for(const z of zombies){if(!z.alive)continue;const d=new THREE.Vector3(z.group.position.x-player.pos.x,0,z.group.position.z-player.pos.z),dist=d.length(),alignment=f.dot(d.clone().normalize());if(dist<best&&alignment>(aimMode?.985:.965)){best=dist;target=z}}if(target){target.health--;target.group.rotation.z=.08;if(target.health<=0){target.alive=false;target.group.visible=false;score+=100;document.querySelector("#message").textContent="Zombie eliminated! +100 points."}else document.querySelector("#message").textContent="Hit confirmed! "+target.health+" shots to eliminate.";updateSurvivalHud()}else document.querySelector("#message").textContent=aimMode?"Missed! Adjust your aim.":"No target in range — tap AIM for precision."}
+document.querySelector("#attack").addEventListener("pointerdown",e=>{e.preventDefault();attackZombie()});addEventListener("keydown",e=>{if(e.key.toLowerCase()==="f"&&!e.repeat)attackZombie();if(e.key.toLowerCase()==="q"&&!e.repeat)toggleAim()});
+function refreshInventory(){const target=document.querySelector("#inventoryItems");target.innerHTML=inventory.length?inventory.map(item=>item.icon+" "+item.name).join("<br>")+"<hr>Items: "+inventory.length:"Nothing collected yet.";}
+document.querySelector("#inventoryOpen").addEventListener("click",()=>{const panel=document.querySelector("#inventoryPanel");panel.style.display=panel.style.display==="block"?"none":"block";refreshInventory()});
+function collect(){
+ for(const key of houseKeys){if(key.collected)continue;const d=player.pos.distanceTo(key.mesh.position);if(d<2.25){key.collected=true;key.mesh.visible=false;houseInteriors[key.houseIndex].keyCollected=true;inventory.push({name:key.name,icon:"🗝️"});refreshInventory();document.querySelector('#message').textContent=key.houseIndex===0?'Golden key found! It opens the first house.':key.houseIndex===1?'Blue key found! It opens the second house.':key.houseIndex===2?'Violet key found! It opens the third house.':key.name+' found! It opens house '+(key.houseIndex+1)+'.';return}}
+ let nearest=null,dist=2.7;for(const item of supplies){if(!item.visible)continue;const d=player.pos.distanceTo(item.position);if(d<dist){dist=d;nearest=item}}
+ if(nearest){nearest.visible=false;found++;inventory.push({name:"Supply Case "+found,icon:"📦"});refreshInventory();document.querySelector('#count').textContent='SUPPLIES: '+found+' / 5';document.querySelector('#message').textContent=found===5?'All 5 supplies secured. Reach the lit beacon to finish the mission!':'Supply secured! Search inside the houses for the remaining cases.';return}
+ let nearestHouse=null,doorDist=3.2;for(const house of houseInteriors){const dx=player.pos.x-house.doorX,dz=player.pos.z-house.doorZ,side=Math.abs(dx*Math.cos(house.facing)-dz*Math.sin(house.facing)),d=Math.hypot(dx,dz);if(d<doorDist&&side<2.2){doorDist=d;nearestHouse=house}}
+ if(nearestHouse){const index=houseInteriors.indexOf(nearestHouse);if(!nearestHouse.unlocked){if(!nearestHouse.keyCollected){document.querySelector('#message').textContent=index===0?'This door needs the golden key. Search outside near the village.':index===1?'This door needs the blue key. Find it inside the first house.':index===2?'This door needs the violet key. Find it inside the second house.':'This door needs its matching key. Search the previous unlocked house.';return}nearestHouse.unlocked=true;nearestHouse.lockDropping=true;nearestHouse.lockDropTime=0;document.querySelector('#message').textContent='The matching key turns! The lock falls away and the door unlocks.';return}nearestHouse.doorOpen=!nearestHouse.doorOpen;document.querySelector('#message').textContent=nearestHouse.doorOpen?'Door opening. Go inside!':'Door closed.';return}
+ document.querySelector('#message').textContent='Find all 18 house keys. The first is outside; the rest are hidden inside the previous unlocked house.'}
+document.querySelector('#interact').addEventListener('pointerdown',e=>{e.preventDefault();collect()});addEventListener('keydown',e=>{if(e.key.toLowerCase()==='e'&&!e.repeat)collect()});
 let previous=performance.now();function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-previous)/1000,.04);previous=now;
-const forward=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0),side=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0);const length=Math.hypot(forward,side)||1;
-const angle=player.yaw;camera.position.x+=((Math.sin(angle)*forward+Math.cos(angle)*side)/length)*player.speed*dt;camera.position.z+=((-Math.cos(angle)*forward+Math.sin(angle)*side)/length)*player.speed*dt;
-camera.position.x=THREE.MathUtils.clamp(camera.position.x,-52,52);camera.position.z=THREE.MathUtils.clamp(camera.position.z,-75,48);
-camera.rotation.order='YXZ';camera.rotation.y=player.yaw;camera.rotation.x=player.pitch;
-supplies.forEach((s,i)=>{s.rotation.y+=dt*.45;s.position.y=.65+Math.sin(now*.002+i)*.09;if(s.visible&&camera.position.distanceTo(s.position)<2.2){s.visible=false;found++;document.querySelector('#count').textContent='SUPPLIES: '+found+' / 3';document.querySelector('#message').textContent=found===3?'All supplies secured. Head to the lit beacon!':'Supply case secured. Keep exploring.'}});
-if(found===3&&camera.position.distanceTo(new THREE.Vector3(18,1,-35))<4)document.querySelector('#message').textContent='FIELD TEST COMPLETE — you reached the beacon with all supplies.';
+ if(!dead){hunger=Math.max(0,hunger-dt*.055);water=Math.max(0,water-dt*.085);if(hunger===0||water===0)health=Math.max(0,health-dt*1.4);if(health<=0)triggerDeath()}
+ hitCooldown=Math.max(0,hitCooldown-dt);attackCooldown=Math.max(0,attackCooldown-dt);if(attackTimer>0)attackTimer=Math.max(0,attackTimer-dt);aimBlend=THREE.MathUtils.damp(aimBlend,aimMode?1:0,7,dt);
+ if(hitTimer>0){hitTimer-=dt;avatar.rotation.z=Math.sin(hitTimer*34)*.22;document.querySelector("#hitFlash").style.opacity=".45"}else{avatar.rotation.z=0;document.querySelector("#hitFlash").style.opacity="0"}
+ for(const z of zombies){if(!z.alive)continue;const dx=player.pos.x-z.group.position.x,dz=player.pos.z-z.group.position.z,d=Math.hypot(dx,dz);if(d>1.25&&d<90){z.group.position.x+=dx/d*1.75*dt;z.group.position.z+=dz/d*1.75*dt;z.group.rotation.y=Math.atan2(dx,dz)}z.phase+=dt*7;z.legs[0].rotation.x=Math.sin(z.phase)*.45;z.legs[1].rotation.x=-Math.sin(z.phase)*.45;z.arms[0].rotation.x=-.45;z.arms[1].rotation.x=-.45;if(d<1.48&&hitCooldown<=0&&!dead){health=Math.max(0,health-10);hitCooldown=1.15;hitTimer=.32;player.pos.x+=(player.pos.x-z.group.position.x)/Math.max(d,.1)*.8;player.pos.z+=(player.pos.z-z.group.position.z)/Math.max(d,.1)*.8;document.querySelector("#message").textContent="Zombie attack! -10 health. Run or fight!";if(health<=0)triggerDeath()}}
+ updateSurvivalHud();
+const forward=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0)-joy.y,side=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+joy.x;const len=Math.hypot(forward,side);const moving=!dead&&len>.08;const sprint=keys.shift||sprintTouch;const speed=player.speed*(sprint?1.65:1);if(moving){const f=forward/Math.max(1,len),s=side/Math.max(1,len),a=player.yaw;const moveX=-Math.sin(a)*f+Math.cos(a)*s,moveZ=-Math.cos(a)*f-Math.sin(a)*s;const nx=player.pos.x+moveX*speed*dt,nz=player.pos.z+moveZ*speed*dt;const radius=.42;const blocked=(x,z)=>solidWalls.some(w=>x+radius>w.x-w.w/2&&x-radius<w.x+w.w/2&&z+radius>w.z-w.d/2&&z-radius<w.z+w.d/2)||houseInteriors.some(h=>!h.doorOpen&&Math.abs((x-h.doorX)*Math.cos(h.facing)-(z-h.doorZ)*Math.sin(h.facing))<1.12&&Math.abs((x-h.doorX)*Math.sin(h.facing)+(z-h.doorZ)*Math.cos(h.facing))<.58);if(!blocked(nx,player.pos.z))player.pos.x=nx;if(!blocked(player.pos.x,nz))player.pos.z=nz;avatar.rotation.y=Math.atan2(moveX,moveZ)}player.pos.x=THREE.MathUtils.clamp(player.pos.x,-300,300);player.pos.z=THREE.MathUtils.clamp(player.pos.z,-320,320);
+if((jumpQueued||keys[' '])&&player.onGround){player.vertical=7.2;player.onGround=false}jumpQueued=false;player.vertical-=19*dt;player.pos.y+=player.vertical*dt;if(player.pos.y<=0){player.pos.y=0;player.vertical=0;player.onGround=true}
+avatar.position.copy(player.pos);avatar.position.y+=player.pos.y;if(dead){deathTimer+=dt;const fall=Math.min(1,deathTimer/1.05);avatar.rotation.z=Math.sin(deathTimer*8)*.12;avatar.rotation.x=-fall*1.28;avatar.position.y=Math.max(-.65,player.pos.y-fall*1.05);leftArm.rotation.x=-fall*.9;rightArm.rotation.x=fall*.9;leftLeg.rotation.x=fall*.35;rightLeg.rotation.x=-fall*.35;}else if(moving){const swing=Math.sin(now*(sprint?0.014:0.01))*0.48;leftLeg.rotation.x=swing;rightLeg.rotation.x=-swing;leftArm.rotation.x=-swing*.7;rightArm.rotation.x=swing*.7}else{avatar.rotation.x=0;leftLeg.rotation.x=rightLeg.rotation.x=leftArm.rotation.x=rightArm.rotation.x=0}const aimPose=aimBlend;rightArm.rotation.x=THREE.MathUtils.lerp(rightArm.rotation.x,1.08,aimPose);rightArm.rotation.z=THREE.MathUtils.lerp(rightArm.rotation.z,-.12,aimPose);leftArm.rotation.x=THREE.MathUtils.lerp(leftArm.rotation.x,.92,aimPose);leftArm.rotation.z=THREE.MathUtils.lerp(leftArm.rotation.z,.42,aimPose);head.rotation.x=THREE.MathUtils.lerp(0,.16,aimPose);weapon.position.set(.08,THREE.MathUtils.lerp(-.63,-.35,aimPose),THREE.MathUtils.lerp(.08,-.12,aimPose));
+const pitch=camera.userData.pitch||.18;const target=new THREE.Vector3(player.pos.x,player.pos.y+1.35,player.pos.z);const behind=new THREE.Vector3(Math.sin(player.yaw)*(aimMode?3.05:6),aimMode?1.65-pitch*1.55:2.5+pitch*2,Math.cos(player.yaw)*(aimMode?3.05:6));const desired=target.clone().add(behind);const camRay=new THREE.Raycaster(target,behind.clone().normalize(),0,behind.length());const wallHits=camRay.intersectObjects(wallMeshes,false);if(wallHits.length)desired.copy(target).addScaledVector(behind.clone().normalize(),Math.max(1.15,wallHits[0].distance-.35));
+// Hide only the active house roof while the player is inside its footprint. This exposes the interior without moving the approved camera.
+for(const house of houseInteriors){
+ house.roof.visible=true;
+ if(house.lockDropping){house.lockDropTime+=dt;house.lockAssembly.position.y-=dt*1.35;house.lockAssembly.rotation.z-=dt*5.5;house.lockAssembly.rotation.x+=dt*2.2;if(house.lockDropTime>.48){house.lockDropping=false;house.doorOpen=true;}}
+ const targetAngle=house.doorOpen?Math.PI/2:0;
+ house.doorPivot.rotation.y=THREE.MathUtils.damp(house.doorPivot.rotation.y,targetAngle,7,dt);
+}
+camera.position.lerp(desired,1-Math.pow(.001,dt));camera.lookAt(target.clone().add(new THREE.Vector3(0,pitch*2+(aimMode?.22:0),0)));
+supplies.forEach((s,i)=>{s.rotation.y+=dt*.45;s.position.y=.65+Math.sin(now*.002+i)*.09});if(found===5&&player.pos.distanceTo(new THREE.Vector3(18,0,-35))<5){document.querySelector('#message').textContent='FIELD TEST COMPLETE — returning to lobby…';document.querySelector('#lobbyScreen').style.display='flex';document.querySelector('#skinScreen').style.display='none';document.querySelector('#lobbyNote').textContent='Challenge completed! Your supplies: '+found+'/5. Choose another challenge.';player.pos.set(0,0,12);found=0;document.querySelector('#count').textContent='SUPPLIES: 0 / 5';supplies.forEach(item=>item.visible=true);}
 renderer.render(scene,camera)}
-requestAnimationFrame(animate);
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2))});
-</script>
-</body></html>
+requestAnimationFrame(animate);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.35))});
+</script></body></html>
