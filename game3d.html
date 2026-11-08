@@ -8,6 +8,25 @@
 <div id="stickArea" aria-label="Movement joystick"><div id="stick"></div></div>
 <div id="actions"><button id="jump"><b>⬆</b>JUMP</button><button id="sprint"><b>»</b>SPRINT</button><button id="interact"><b>✋</b>COLLECT</button><button id="aim"><b>⊕</b>AIM</button><button id="attack"><b>🔫</b>FIRE</button></div>
 <div id="help">COMPUTER: WASD / arrows · mouse drag to look<br>Space: jump · Shift: sprint · E: collect · Q: aim · F: fire</div>
+<script>
+/* Touch-safe survivor screen: build choices before the 3D module starts. */
+(function(){
+ const names=[["🍌","Banana Scout"],["🥷","Shadow Ninja"],["🚀","Cosmic Ranger"],["🌿","Jungle Tracker"],["❄️","Frost Guardian"],["🌋","Volcano Raider"],["👑","Golden Knight"],["🏁","Neon Racer"],["🏜️","Desert Nomad"],["🤖","Moon Bot"],["🐲","Magma Beast"],["🧢","Sky Captain"],["☣️","Toxic Ranger"],["🌩️","Storm Chaser"],["🍭","Candy Hero"],["🦊","Wild Fox"]];
+ const grid=document.getElementById("skinGrid"), note=document.getElementById("skinNote");
+ if(grid && !grid.children.length) names.forEach((item,i)=>{
+  const b=document.createElement("button"); b.type="button"; b.dataset.skinIndex=String(i);
+  b.innerHTML="<span>"+item[0]+"</span>"+item[1]; if(i===0)b.classList.add("selected");
+  b.addEventListener("click",()=>{grid.querySelectorAll("button").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");if(note)note.textContent="Selected: "+item[1];});
+  grid.appendChild(b);
+ });
+ const start=document.getElementById("skinClose");
+ if(start)start.addEventListener("click",()=>{
+  document.getElementById("skinScreen").style.display="none";
+  const lobby=document.getElementById("lobbyScreen"); if(lobby)lobby.style.display="none";
+  const msg=document.getElementById("message"); if(msg)msg.textContent="Starting AFTERFALL…";
+ });
+})();
+</script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 <script type="module">
 import * as THREE from 'three';
@@ -413,7 +432,8 @@ function applySkin(index){
  document.querySelectorAll("#skinGrid button").forEach((b,i)=>b.classList.toggle("selected",i===selectedSkin));
 }
 const skinGrid=document.querySelector("#skinGrid");
-skinList.forEach((s,i)=>{const b=document.createElement("button");b.type="button";b.innerHTML="<span>"+s.icon+"</span>"+s.name;b.addEventListener("click",()=>{applySkin(i);document.querySelector("#skinNote").textContent="Selected: "+s.name;document.querySelector("#message").textContent=s.name+" selected. Press START GAME when ready.";});skinGrid.appendChild(b)});
+if(!skinGrid.children.length){skinList.forEach((s,i)=>{const b=document.createElement("button");b.type="button";b.innerHTML="<span>"+s.icon+"</span>"+s.name;skinGrid.appendChild(b)});}
+skinGrid.querySelectorAll("button").forEach((b,i)=>{b.addEventListener("click",()=>{applySkin(i);document.querySelector("#skinNote").textContent="Selected: "+skinList[i].name;document.querySelector("#message").textContent=skinList[i].name+" selected. Press START GAME when ready.";});});
 applySkin(0);
 function closeSkinScreen(){document.querySelector("#skinScreen").style.setProperty("display","none","important");document.querySelector("#lobbyScreen").style.setProperty("display","none","important");player.pos.set(0,0,12);player.yaw=0;document.querySelector("#message").textContent="SURVIVE. Search houses, collect supplies and watch for zombies.";}
 document.querySelector("#skinClose").addEventListener("click",closeSkinScreen);document.querySelector("#skinClose").onclick=closeSkinScreen;
