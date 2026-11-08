@@ -502,7 +502,7 @@ let equippedLoot="Compact Sidearm",selectedSlot=0,scopeAimBlend=0;
 function syncEquippedWeapon(){
  const item=weaponLoot.find(v=>v.name===equippedLoot)||weaponLoot[0];
  heldWeapon.clear();const heldModel=createWeaponVisual(item);heldModel.scale.setScalar(.58);heldWeapon.add(heldModel);
- heldWeapon.position.set(.32,1.08,-.48);heldWeapon.rotation.set(-.04,Math.PI,0);
+ heldWeapon.position.set(.43,1.28,-.92);heldWeapon.rotation.set(-.12,Math.PI,0);
  weapon.clear();const viewModel=createWeaponVisual(item);viewModel.rotation.y=Math.PI;viewModel.scale.setScalar(.72);weapon.add(viewModel);weapon.userData.muzzle=viewModel.userData.muzzle;
 }
 syncEquippedWeapon();
