@@ -479,9 +479,5 @@ for(const house of houseInteriors){
 camera.position.lerp(desired,1-Math.pow(.001,dt));camera.lookAt(target.clone().add(new THREE.Vector3(0,pitch*2+(aimMode?.22:0),0)));
 supplies.forEach((s,i)=>{s.rotation.y+=dt*.45;s.position.y=.65+Math.sin(now*.002+i)*.09});if(found===5&&player.pos.distanceTo(new THREE.Vector3(18,0,-35))<5){document.querySelector('#message').textContent='FIELD TEST COMPLETE — returning to lobby…';document.querySelector('#lobbyScreen').style.display='flex';document.querySelector('#skinScreen').style.display='none';document.querySelector('#lobbyNote').textContent='Challenge completed! Your supplies: '+found+'/5. Choose another challenge.';player.pos.set(0,0,12);found=0;document.querySelector('#count').textContent='SUPPLIES: 0 / 5';supplies.forEach(item=>item.visible=true);}
 renderer.render(scene,camera)}
-// AUTO_START_ADVANCED_BUILD: skip the broken lobby/skin transition and enter the restored world immediately.
-document.querySelector("#lobbyScreen").style.setProperty("display","none","important");
-document.querySelector("#skinScreen").style.setProperty("display","none","important");
-document.querySelector("#message").textContent="SURVIVE. Search houses, collect supplies and watch for zombies.";
 requestAnimationFrame(animate);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.35))});
 </script></body></html>
