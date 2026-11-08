@@ -186,7 +186,7 @@ function makeHouse(x,z,accent=0x353c3a,facing=0){
 }
 makeHouse(-16,-105,0x353c3a,1.571);
 makeHouse(14,-105,0x4a3933,-1.571);
-makeHouse(-17,-75,0x3d4937,1.571);
+makeHouse(4,-88,0x3d4937,1.571);
 // Two extra village homes extend the settlement beyond the original three.
 makeHouse(-52,51,0x51463a,0.661);
 // New homes are distributed along the extended country roads and face their access lanes.
@@ -201,10 +201,10 @@ makeHouse(123,48,0x4a514e,-1.45);
 makeHouse(-18,-15,0x4c5548,1.571);
 makeHouse(20,60,0x5b5043,-1.571);
 makeHouse(-24,15,0x46504b,1.571);
-makeHouse(38,8,0x574b40,-1.571);
+makeHouse(36,22,0x574b40,-1.571);
 makeHouse(-17,48,0x4c5548,1.571);
 makeHouse(34,-88,0x51483f,-1.8);
-makeHouse(-34,-64,0x4d574e,1.45);
+makeHouse(5,-68,0x4d574e,1.45);
 // Arcade-style loot: collectible fictional gear, found in house drawers or on the floor.
 const weaponLoot=[
  {name:"Compact Sidearm",icon:"🔫",color:0x6b7f83,scope:false,style:"sidearm"},
@@ -281,6 +281,8 @@ const sideRoads=[
  [[-5,39],[-22,45],[-35,48]]
 ];
 for(const branch of sideRoads)roadPath(branch,5.8,false);
+// A short access lane connects the relocated eastern cottage to the village road network.
+roadPath([[-9,32],[4,36],[16,34],[25,28],[31,22]],5.8,false);
 roadPath([[2,39],[12,49],[26,55],[42,62],[59,68],[78,78],[98,86]],7.6,true);
 roadPath([[-4,17],[-18,33],[-34,47],[-52,61],[-72,72],[-94,82]],7.6,true);
 roadPath([[98,86],[102,68],[107,50],[112,29],[115,10]],7.2,false);
