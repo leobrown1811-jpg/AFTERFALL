@@ -123,10 +123,10 @@ mountainRange(-560,-1010,440,270,1.08,7);mountainRange(-95,-1080,560,330,1.12,8)
 function box(x,y,z,sx,sy,sz,color){const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mat(color));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m}
 const treeRoots=[],roadCorridors=[];function tree(x,z,scale=1){const base=terrainHeight(x,z),group=new THREE.Group();group.position.set(x,base,z);const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22*scale,.34*scale,2.8*scale,7),mat(0x554638));trunk.position.y=1.4*scale;trunk.castShadow=true;group.add(trunk);for(let i=0;i<3;i++){const crown=new THREE.Mesh(new THREE.SphereGeometry((1.45-i*.12)*scale,9,7),mat(i%2?0x344b3b:0x405b42));crown.position.y=(3.0+i*.72)*scale;crown.scale.y=.92;group.add(crown)}scene.add(group);treeRoots.push(group)}
 function rock(x,z,s=1){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(s,0),mat(0x77796f));r.position.set(x,terrainHeight(x,z)+s*.55,z);r.rotation.set(.2,.8,.3);r.castShadow=true;r.receiveShadow=true;scene.add(r)}
-for(let i=0;i<110;i++){const x=Math.sin(i*91.7)*285,z=-300+(i*31.7)%600;const nearHouse=[[-17,-22],[25,-40],[-34,12],[34,-76],[-38,48]].some(([hx,hz])=>Math.abs(x-hx)<9&&Math.abs(z-hz)<10);if(nearHouse)continue;if(Math.abs(x)<5&&z>-112&&z<62)continue;if(i%3===0)rock(x,z,.7+(i%5)*.22);else tree(x,z,.65+(i%4)*.13)}
+for(let i=0;i<55;i++){ // Reduced scattered tree/rock props for smoother rendering.const x=Math.sin(i*91.7)*285,z=-300+(i*31.7)%600;const nearHouse=[[-17,-22],[25,-40],[-34,12],[34,-76],[-38,48]].some(([hx,hz])=>Math.abs(x-hx)<9&&Math.abs(z-hz)<10);if(nearHouse)continue;if(Math.abs(x)<5&&z>-112&&z<62)continue;if(i%3===0)rock(x,z,.7+(i%5)*.22);else tree(x,z,.65+(i%4)*.13)}
 // Distant forest edges and meadow colour variation create a layered countryside view.
-for(let i=0;i<42;i++){const x=-310+i*14.8,z=-205+Math.sin(i*.74)*28;tree(x,z,1.2+(i%4)*.18);}
-for(let i=0;i<28;i++){const x=-220+i*15.8,z=205+Math.sin(i*.94)*24;tree(x,z,1.05+(i%3)*.2);}
+for(let i=0;i<16;i++){ // Fewer distant trees.const x=-310+i*14.8,z=-205+Math.sin(i*.74)*28;tree(x,z,1.2+(i%4)*.18);}
+for(let i=0;i<12;i++){const x=-220+i*15.8,z=205+Math.sin(i*.94)*24;tree(x,z,1.05+(i%3)*.2);}
 // Removed random coloured meadow circles and scattered flower clumps for a clean, natural grass field.
 // Small village: each house has a real doorway and a walkable interior.
 const solidWalls=[],wallMeshes=[];
@@ -432,17 +432,7 @@ for(const dx of [-.55,.55])box(towerX+dx,towerY+5.4,towerZ-2.65,.12,10.8,.12,0x9
 const towerLamp=new THREE.PointLight(0xffd36a,1.8,38);towerLamp.position.set(towerX,towerY+15,towerZ);scene.add(towerLamp);
 box(towerX,towerY+15,towerZ,.55,.55,.55,0xffc85b);
 signBoard(390,-270,"WATCHTOWER");roadPath([[300,-175],[345,-205],[390,-250]],7,true,false);
-// Gas station: canopy, pumps, shop, forecourt and fuel signage.
-landmarkBlock(-285,-235,24,18,6,0x9a8054,true,.65);const gasY=terrainHeight(-255,-235);
-box(-255,gasY+5,-235,34,.65,20,0xc7c2a9);for(const [x,z] of [[-270,-243],[-240,-243],[-270,-227],[-240,-227]])box(x,terrainHeight(x,z)+2.5,z,.65,5,.65,0x777d76);
-for(const x of [-267,-252,-237]){const y=terrainHeight(x,-205);box(x,y+1.25,-205,1.5,2.5,1.2,0xc9c9b8);box(x,y+2.1,-205,1.1,.45,.12,0x303c3b);box(x,y+1.45,-204.35,.12,1,.12,0x292d2a);}
-signBoard(-285,-265,"GAS & SUPPLIES",0xd8b66c);roadPath([[0,145],[-90,115],[-175,45],[-245,-95],[-255,-190]],9,true,false);
-// Forest and lake: a visible blue water feature, cabins, dock and denser tree cover.
-const lake=new THREE.Mesh(new THREE.CircleGeometry(48,64),new THREE.MeshStandardMaterial({color:0x327f91,roughness:.22,metalness:.18,transparent:true,opacity:.9}));lake.rotation.x=-Math.PI/2;lake.position.set(300,terrainHeight(300,270)-.28,270);scene.add(lake);
-for(let i=0;i<28;i++){const a=i*Math.PI*2/28,x=300+Math.cos(a)*58,z=270+Math.sin(a)*58;tree(x,z,1.15+(i%4)*.12);}
-for(const [x,z] of [[220,245],[365,305],[240,345]])landmarkBlock(x,z,13,11,4.5,0x66513d,true,.7);
-
-signBoard(300,190,"FOREST & LAKE");roadPath([[0,145],[90,175],[175,220],[235,255],[270,270]],8,false,false);
+// Removed the gas station and lake regions, including their buildings, water, props and access roads.
 // Abandoned city: varied building heights, broken rooftops, street lamps and ruined facades.
 const townRoofAccesses=[];
 for(let i=0;i<13;i++){
@@ -493,7 +483,7 @@ signBoard(300,20,"REFINERY · HIGH DANGER");roadPath([[0,145],[90,115],[175,90],
 roadPath([[300,-175],[300,-195],[300,-215]],7,true,false);
 roadPath([[-270,265],[-290,265],[-310,265]],7,true,false);
 roadPath([[-250,-10],[-275,-25],[-300,-40]],7,false,false);
-// Gas & Supplies and Forest & Lake remain as extra landmarks.
+// The removed gas and lake regions are no longer part of the playable map.
 
 // Challenge-only map: regroup the 18 cottages around a compact central green.
 // Survival Mode keeps the original two-row village and its original roads.
@@ -527,7 +517,7 @@ function applyChallengeVillageLayout(){
 const beaconBase=terrainHeight(18,-35);const beacon=new THREE.PointLight(0xffd17b,22,24);beacon.position.set(18,beaconBase+4,-35);scene.add(beacon);// The finish beacon has no surrounding box or platform; keep the flagpole on open ground.const beaconPole=new THREE.Mesh(new THREE.CylinderGeometry(.12,.17,5.8,12),mat(0x5a4732));beaconPole.position.set(18,beaconBase+3.7,-35);scene.add(beaconPole);const beaconFlag=new THREE.Mesh(new THREE.PlaneGeometry(4.8,2.4),new THREE.MeshStandardMaterial({color:0x263d32,side:THREE.DoubleSide,roughness:.8}));beaconFlag.position.set(20.3,beaconBase+5.2,-35);beaconFlag.rotation.y=.15;scene.add(beaconFlag);const flagCanvas=document.createElement("canvas");flagCanvas.width=768;flagCanvas.height=384;const flagCtx=flagCanvas.getContext("2d");flagCtx.fillStyle="#263d32";flagCtx.fillRect(0,0,768,384);flagCtx.strokeStyle="#e7c77c";flagCtx.lineWidth=14;flagCtx.strokeRect(12,12,744,360);flagCtx.fillStyle="#f2d58f";flagCtx.font="bold 88px system-ui";flagCtx.textAlign="center";flagCtx.textBaseline="middle";flagCtx.fillText("AFTERFALL",384,190);beaconFlag.material.map=new THREE.CanvasTexture(flagCanvas);beaconFlag.material.needsUpdate=true;
 const supplies=[];function makeSupplyCrate(x,z){const g=new THREE.Group();const crate=new THREE.Mesh(new THREE.BoxGeometry(1.15,.85,.9),mat(0xc18a42));g.add(crate);const stripe=new THREE.Mesh(new THREE.BoxGeometry(1.18,.13,.94),mat(0xe7d29a));stripe.position.y=.1;g.add(stripe);g.position.set(x,terrainHeight(x,z)+.65,z);scene.add(g);supplies.push(g)}for(const [x,z] of [[-8,4],[23,-9],[-27,-43],[-20.5,-20.5],[21.5,-38.5]])makeSupplyCrate(x,z);
 for(const [x,z] of [[-340,215],[-260,215],[-300,350],[-340,300]])makeSupplyCrate(x,z);
-for(const [x,z] of [[270,-285],[330,-285],[300,-185],[-335,285],[-265,330],[-300,175],[270,25],[330,85],[300,110],[-335,-55],[-265,-90],[-300,-15],[-275,-225],[-245,-245],[300,300],[340,260]])makeSupplyCrate(x,z);
+for(const [x,z] of [[270,-285],[330,-285],[300,-185],[-335,285],[-265,330],[-300,175],[270,25],[330,85],[300,110],[-335,-55],[-265,-90],[-300,-15]])makeSupplyCrate(x,z);
 const auraOrbs=[];let auraCount=0;for(const [x,z] of [[0,300],[0,185],[8,45],[0,-135],[8,-275],[-18,290],[18,90],[-18,-40],[18,-95],[-10,-205],[10,-310],[0,0]]){const orb=new THREE.Group();const core=new THREE.Mesh(new THREE.IcosahedronGeometry(.28,1),new THREE.MeshStandardMaterial({color:0x8cf6e4,emissive:0x26bda9,emissiveIntensity:1.7,metalness:.15,roughness:.25}));orb.add(core);const halo=new THREE.Mesh(new THREE.TorusGeometry(.48,.045,8,24),new THREE.MeshStandardMaterial({color:0xa7fff0,emissive:0x36cbb6,emissiveIntensity:1.1}));halo.rotation.x=Math.PI/2;orb.add(halo);const glow=new THREE.PointLight(0x58e8d2,1.1,4);orb.add(glow);orb.position.set(x,terrainHeight(x,z)+1.05,z);orb.userData.baseY=orb.position.y;scene.add(orb);auraOrbs.push(orb)}
  // One key for each of the 18 houses. The first key is outdoors; each later key is hidden inside the previously unlocked house.
  const AFTERFALL_REGIONS=[
@@ -544,10 +534,10 @@ function drawAfterfallMap(){
  ctx.clearRect(0,0,W,H);ctx.fillStyle="#24352c";ctx.fillRect(0,0,W,H);ctx.strokeStyle="#526657";ctx.lineWidth=1;
  for(let i=0;i<=8;i++){const p=i*W/8;ctx.beginPath();ctx.moveTo(p,0);ctx.lineTo(p,H);ctx.stroke();ctx.beginPath();ctx.moveTo(0,p);ctx.lineTo(W,p);ctx.stroke();}
  ctx.strokeStyle="#b3ad8e";ctx.lineWidth=5;ctx.lineCap="round";
- const routes=[[[0,145],[80,115],[155,35],[220,-100],[300,-175]],[[0,145],[-95,180],[-190,225],[-270,265]],[[0,145],[-90,115],[-175,45],[-245,-95],[-255,-190]],[[0,145],[90,175],[175,220],[235,255],[270,270]],[[0,145],[-90,90],[-175,30],[-250,-10],[-300,-40]],[[0,145],[90,115],[175,90],[245,70],[300,55]],[[300,-175],[345,-205],[390,-250]]];
+ const routes=[[[0,145],[80,115],[155,35],[220,-100],[300,-175]],[[0,145],[-95,180],[-190,225],[-270,265]],[[0,145],[-90,90],[-175,30],[-250,-10],[-300,-40]],[[0,145],[90,115],[175,90],[245,70],[300,55]],[[300,-175],[345,-205],[390,-250]]];
  for(const route of routes){ctx.beginPath();route.forEach((p,i)=>i?ctx.lineTo(px(p[0]),pz(p[1])):ctx.moveTo(px(p[0]),pz(p[1])));ctx.stroke();}
  for(const r of AFTERFALL_REGIONS){ctx.fillStyle=r.color+"35";ctx.strokeStyle=r.color;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(px(r.x),pz(r.z),r.rx/(range*2)*W,r.rz/(range*2)*H,0,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle="#f4f0df";ctx.font="bold 11px system-ui";ctx.textAlign="center";ctx.fillText(r.name,px(r.x),pz(r.z)+4);}
- for(const [x,z,label] of [[-285,-235,"GAS"],[300,270,"LAKE"],[390,-250,"TOWER"]]){ctx.fillStyle="#e8d8a7";ctx.font="9px system-ui";ctx.fillText(label,px(x),pz(z)-7);}
+ for(const [x,z,label] of [[390,-250,"TOWER"]]){ctx.fillStyle="#e8d8a7";ctx.font="9px system-ui";ctx.fillText(label,px(x),pz(z)-7);}
  ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(px(player.pos.x),pz(player.pos.z),6,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#101713";ctx.lineWidth=2;ctx.stroke();
  const region=currentAfterfallRegion(player.pos.x,player.pos.z),legend=document.querySelector("#miniMapLegend");if(legend)legend.textContent=region?"● "+region.name+" · "+region.danger+" DANGER · "+region.spawnMin+"–"+region.spawnMax+" zombies · "+zombies.filter(z=>z.alive&&Math.hypot(z.group.position.x-region.x,z.group.position.z-region.z)<Math.max(region.rx,region.rz)).length+" nearby":"● YOU ARE HERE · WILDERNESS · Tap MAP to hide.";
 }
