@@ -168,7 +168,7 @@ function makeHouse(x,z,accent=0x353c3a,facing=0){
  houseRoot.scale.setScalar(1.15);
  for(let i=wallStart;i<solidWalls.length;i++){const b=solidWalls[i];b.x=x+(b.x-x)*1.15;b.z=z+(b.z-z)*1.15;b.w*=1.15;b.d*=1.15;}
  const doorX=x+Math.sin(facing)*(dep*1.15/2),doorZ=z+Math.cos(facing)*(dep*1.15/2);
- const drawerPos=houseRoot.localToWorld(new THREE.Vector3(3.72,.78,.15));const searchSpots=[{label:"coffee table",pos:houseRoot.localToWorld(new THREE.Vector3(0,.62,-.45)),searched:false},{label:"cabinet",pos:drawerPos.clone(),searched:false},{label:"sofa",pos:houseRoot.localToWorld(new THREE.Vector3(-1,.8,-2.45)),searched:false}];const data={x,z,w,dep,roof,front,doorX,doorZ,facing,houseRoot,doorPivot,doorOpen:false,lockAssembly,lockDropping:false,lockDropTime:0,unlocked:false,keyCollected:false,drawerPos,drawerSearched:false,searchSpots,wallStart,wallEnd:solidWalls.length};houseInteriors.push(data);
+ const drawerPos=houseRoot.localToWorld(new THREE.Vector3(3.72,.78,.15));const searchSpots=[{label:"coffee table",pos:houseRoot.localToWorld(new THREE.Vector3(0,.62,-.45)),searched:false},{label:"cabinet",pos:drawerPos.clone(),searched:false},{label:"couch",pos:houseRoot.localToWorld(new THREE.Vector3(-1,.8,-2.45)),searched:false},{label:"front garden bush",pos:houseRoot.localToWorld(new THREE.Vector3(-6.1,.85,4.35)),searched:false,outside:true},{label:"side garden bush",pos:houseRoot.localToWorld(new THREE.Vector3(6.1,.85,4.35)),searched:false,outside:true}];const data={x,z,w,dep,roof,front,doorX,doorZ,facing,houseRoot,doorPivot,doorOpen:false,lockAssembly,lockDropping:false,lockDropTime:0,unlocked:false,keyCollected:false,drawerPos,drawerSearched:false,searchSpots,wallStart,wallEnd:solidWalls.length};houseInteriors.push(data);
 }
 // Eighteen cottages are arranged in two evenly spaced rows beside one continuous village loop.
 const villageHouseColors=[0x353c3a,0x4a3933,0x3d4937,0x51463a,0x4b5148,0x51483d,0x555047,0x46544a,0x4a514e,0x4c5548,0x5b5043,0x46504b,0x574b40,0x4c5548,0x51483f,0x4d574e,0x53604e,0x655044];
@@ -228,10 +228,25 @@ function createWeaponVisual(item){
  const muzzle=new THREE.PointLight(0xffbd55,0,2);muzzle.position.set(0,.02,long*.5+.23);g.add(muzzle);g.userData.muzzle=muzzle;
  return g;
 }
+function createFloorLootVisual(item,baseRotation=0){
+ const pickup=new THREE.Group();
+ const ring=new THREE.Mesh(new THREE.TorusGeometry(.48,.035,8,28),new THREE.MeshStandardMaterial({color:0xe4c16e,emissive:0x8b5a1c,emissiveIntensity:.65,transparent:true,opacity:.9}));
+ ring.rotation.x=Math.PI/2;ring.position.y=.035;pickup.add(ring);
+ const innerRing=new THREE.Mesh(new THREE.TorusGeometry(.30,.018,6,24),new THREE.MeshStandardMaterial({color:0xb8d7c5,emissive:0x426b57,emissiveIntensity:.55,transparent:true,opacity:.8}));
+ innerRing.rotation.x=Math.PI/2;innerRing.position.y=.045;pickup.add(innerRing);
+ const model=createWeaponVisual(item);model.scale.setScalar(.72);model.rotation.z=Math.PI/2;model.rotation.y=baseRotation;model.position.y=.16;pickup.add(model);
+ const glow=new THREE.PointLight(0xd9bd78,.55,3.2);glow.position.y=.42;pickup.add(glow);
+ for(let i=0;i<5;i++){
+  const spark=new THREE.Mesh(new THREE.SphereGeometry(.035,6,5),new THREE.MeshBasicMaterial({color:i%2?0xe9d79d:0x9ac9ad}));
+  const a=i*Math.PI*2/5;spark.position.set(Math.cos(a)*.38,.12+(i%2)*.08,Math.sin(a)*.38);pickup.add(spark);
+ }
+ pickup.userData.baseY=0;pickup.userData.phase=Math.random()*Math.PI*2;
+ return pickup;
+}
 const floorLoot=[];
 function makeLootPickup(houseIndex,localX,localZ,lootIndex){
- const host=houseInteriors[houseIndex],item=weaponLoot[lootIndex%weaponLoot.length],g=createWeaponVisual(item);
- g.scale.setScalar(.78);g.position.copy(host.houseRoot.localToWorld(new THREE.Vector3(localX,.22,localZ)));g.rotation.y=(lootIndex%4)*.7;scene.add(g);
+ const host=houseInteriors[houseIndex],item=weaponLoot[lootIndex%weaponLoot.length],g=createFloorLootVisual(item,(lootIndex%4)*.7);
+ g.position.copy(host.houseRoot.localToWorld(new THREE.Vector3(localX,.04,localZ)));g.userData.baseY=g.position.y;scene.add(g);
  floorLoot.push({mesh:g,loot:item,collected:false,houseIndex});
 }
 for(let i=0;i<Math.min(10,houseInteriors.length);i++){
@@ -571,8 +586,8 @@ function setModeGear(){
  document.querySelector("#attack").innerHTML=activeMode==="challenge"?"<b>⚔️</b>SWING":"<b>🔫</b>FIRE";
  document.querySelector("#help").innerHTML=activeMode==="challenge"?"COMPUTER: WASD / arrows · mouse drag to look<br>Space: jump · Shift: sprint · E: collect · F: swing":"COMPUTER: WASD / arrows · mouse drag to look<br>Space: jump · Shift: sprint · E: collect · Q: aim · F: fire";
  for(let i=0;i<floorLoot.length;i++){
-  const loot=floorLoot[i],item=weaponLoot[i%weaponLoot.length],position=loot.mesh.position.clone(),rotation=loot.mesh.rotation.y,scale=loot.mesh.scale.x;
-  scene.remove(loot.mesh);loot.loot=item;loot.mesh=createWeaponVisual(item);loot.mesh.scale.setScalar(scale);loot.mesh.position.copy(position);loot.mesh.rotation.y=rotation;scene.add(loot.mesh);
+  const loot=floorLoot[i],item=weaponLoot[i%weaponLoot.length],position=loot.mesh.position.clone(),rotation=loot.mesh.children[2]?.rotation.y||0;
+  scene.remove(loot.mesh);loot.loot=item;loot.mesh=createFloorLootVisual(item,rotation);loot.mesh.position.copy(position);loot.mesh.userData.baseY=position.y;scene.add(loot.mesh);
  }
  equippedLoot=weaponLoot[0].name;syncEquippedWeapon();
 }
@@ -592,10 +607,10 @@ document.querySelector("#consumeAction").addEventListener("click",()=>{const ite
 function collect(){
  for(const key of houseKeys){if(key.collected)continue;const d=Math.hypot(player.pos.x-key.mesh.position.x,player.pos.z-key.mesh.position.z);if(d<2.25){key.collected=true;key.mesh.visible=false;houseInteriors[key.houseIndex].keyCollected=true;updateKeyHint(key.houseIndex);inventory.push({name:key.name,icon:"🗝️",type:"key"});refreshInventory();document.querySelector('#message').textContent=key.name+' found! Follow the glowing gold marker to HOUSE '+(key.houseIndex+1)+'.';return}}
  let nearest=null,dist=2.7;for(const item of supplies){if(!item.visible)continue;const d=Math.hypot(player.pos.x-item.position.x,player.pos.z-item.position.z);if(d<dist){dist=d;nearest=item}}
- if(nearest){nearest.visible=false;if(activeMode==="survival"){const item=carePackageLoot[Math.floor(Math.random()*carePackageLoot.length)];addInventoryItem(item);if(item.type==="gear"){equippedLoot=item.name;syncEquippedWeapon();}document.querySelector("#message").textContent="CARE PACKAGE OPENED! Found "+item.name+" — added to your inventory.";}else{found++;inventory.push({name:"Supply Case "+found,icon:"📦"});refreshInventory();document.querySelector("#count").textContent="SUPPLIES: "+found+" / 5";document.querySelector("#message").textContent=found===5?"All 5 supplies secured. Reach the lit beacon to finish the mission!":"Supply secured! Search inside the houses for the remaining cases.";}return}
+ if(nearest){nearest.visible=false;const item=carePackageLoot[Math.floor(Math.random()*carePackageLoot.length)];if(activeMode==="survival"){addInventoryItem(item);if(item.type==="gear"){equippedLoot=item.name;syncEquippedWeapon();}document.querySelector("#message").textContent="CARE PACKAGE OPENED! Found "+item.name+" — added to your inventory.";}else{found++;addInventoryItem(item);if(item.type==="gear"){equippedLoot=item.name;syncEquippedWeapon();}document.querySelector("#count").textContent="SUPPLIES: "+found+" / 5";document.querySelector("#message").textContent=found===5?"Supply case searched! Found "+item.name+". Reach the lit beacon to finish the mission!":"Supply case searched! Found "+item.name+". Supplies: "+found+" / 5.";}return}
  // Search the nearest unsearched piece of furniture in an open house.
  let searchTarget=null,searchDistance=2.65;
- for(const house of houseInteriors){if(!house.doorOpen)continue;for(const spot of house.searchSpots){if(spot.searched)continue;const d=Math.hypot(player.pos.x-spot.pos.x,player.pos.z-spot.pos.z);if(d<searchDistance){searchDistance=d;searchTarget=spot}}}
+ for(const house of houseInteriors){for(const spot of house.searchSpots){if(spot.searched||(!spot.outside&&!house.doorOpen))continue;const d=Math.hypot(player.pos.x-spot.pos.x,player.pos.z-spot.pos.z);if(d<searchDistance){searchDistance=d;searchTarget=spot}}}
  if(searchTarget){searchTarget.searched=true;const item=carePackageLoot[Math.floor(Math.random()*carePackageLoot.length)];addInventoryItem(item);if(item.type==="gear"){equippedLoot=item.name;syncEquippedWeapon();}document.querySelector("#message").textContent="Searched the "+searchTarget.label+"! Found "+item.name+" — added to your inventory.";return}
  let nearestLoot=null,lootDistance=2.7;
  for(const loot of floorLoot){if(loot.collected)continue;const d=Math.hypot(player.pos.x-loot.mesh.position.x,player.pos.z-loot.mesh.position.z);if(d<lootDistance){lootDistance=d;nearestLoot=loot}}
@@ -621,7 +636,7 @@ for(const house of houseInteriors){
  house.doorPivot.rotation.y=THREE.MathUtils.damp(house.doorPivot.rotation.y,targetAngle,7,dt);
 }
 // First-person camera and weapon are positioned directly in camera space above.
-supplies.forEach((s,i)=>{s.rotation.y+=dt*.45;s.position.y=terrainHeight(s.position.x,s.position.z)+.65+Math.sin(now*.002+i)*.09});if(activeMode==="challenge"&&found===5&&player.pos.distanceTo(new THREE.Vector3(18,0,-35))<5){document.querySelector('#message').textContent='FIELD TEST COMPLETE — returning to lobby…';document.querySelector('#lobbyScreen').style.display='flex';document.querySelector('#skinScreen').style.display='none';document.querySelector('#lobbyNote').textContent='Challenge completed! Your supplies: '+found+'/5. Choose another challenge.';player.pos.set(0,0,12);found=0;document.querySelector('#count').textContent='SUPPLIES: 0 / 5';supplies.forEach(item=>item.visible=true);}
+supplies.forEach((s,i)=>{s.rotation.y+=dt*.45;s.position.y=terrainHeight(s.position.x,s.position.z)+.65+Math.sin(now*.002+i)*.09});floorLoot.forEach((loot,i)=>{if(!loot.collected&&loot.mesh.visible){const phase=loot.mesh.userData.phase||i;loot.mesh.position.y=loot.mesh.userData.baseY+Math.sin(now*.0024+phase)*.055;loot.mesh.rotation.y=Math.sin(now*.0012+phase)*.08;}});if(activeMode==="challenge"&&found===5&&player.pos.distanceTo(new THREE.Vector3(18,0,-35))<5){document.querySelector('#message').textContent='FIELD TEST COMPLETE — returning to lobby…';document.querySelector('#lobbyScreen').style.display='flex';document.querySelector('#skinScreen').style.display='none';document.querySelector('#lobbyNote').textContent='Challenge completed! Your supplies: '+found+'/5. Choose another challenge.';player.pos.set(0,0,12);found=0;document.querySelector('#count').textContent='SUPPLIES: 0 / 5';supplies.forEach(item=>item.visible=true);}
 renderer.render(scene,camera)}
 requestAnimationFrame(animate);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.35))});
 const skinStart=document.querySelector("#skinClose");if(skinStart){const begin=()=>{const skin=document.querySelector("#skinScreen"),lobby=document.querySelector("#lobbyScreen");setModeGear();window.randomizeHouseKeys();for(const house of houseInteriors){house.drawerSearched=false;for(const spot of house.searchSpots)spot.searched=false;}supplies.forEach(item=>item.visible=true);found=0;document.querySelector("#count").textContent="SUPPLIES: 0 / 5";window.AFTERFALL_GAME_STARTED=true;if(skin)skin.style.setProperty("display","none","important");if(lobby)lobby.style.setProperty("display","none","important");player.pos.set(0,0,151);player.yaw=0;cameraYaw=0;const msg=document.querySelector("#message");if(msg)msg.textContent="SURVIVE. Search houses, collect supplies and watch for zombies.";};skinStart.addEventListener("click",begin);}
