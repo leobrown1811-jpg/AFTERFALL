@@ -184,27 +184,13 @@ function makeHouse(x,z,accent=0x353c3a,facing=0){
  const doorX=x+Math.sin(facing)*(dep*1.15/2),doorZ=z+Math.cos(facing)*(dep*1.15/2);
  const drawerPos=houseRoot.localToWorld(new THREE.Vector3(3.72,.78,.15));const data={x,z,w,dep,roof,front,doorX,doorZ,facing,houseRoot,doorPivot,doorOpen:false,lockAssembly,lockDropping:false,lockDropTime:0,unlocked:false,keyCollected:false,drawerPos,drawerSearched:false};houseInteriors.push(data);
 }
-makeHouse(-16,-105,0x353c3a,1.571);
-makeHouse(14,-105,0x4a3933,-1.571);
-makeHouse(4,-88,0x3d4937,1.571);
-// Two extra village homes extend the settlement beyond the original three.
-makeHouse(-52,51,0x51463a,0.661);
-// New homes are distributed along the extended country roads and face their access lanes.
-makeHouse(45,70,0x4b5148,-2.78);
-makeHouse(-63,65,0x51483d,1.571);
-// More scattered homes make the countryside feel like a lived-in settlement.
-makeHouse(75,92,0x555047,2.93);
-makeHouse(29,-75,0x46544a,-1.571);
-
-makeHouse(123,48,0x4a514e,-1.45);
-
-makeHouse(-18,-15,0x4c5548,1.571);
-makeHouse(20,60,0x5b5043,-1.571);
-makeHouse(-24,15,0x46504b,1.571);
-makeHouse(36,22,0x574b40,-1.571);
-makeHouse(-17,48,0x4c5548,1.571);
-makeHouse(34,-88,0x51483f,-1.8);
-makeHouse(5,-68,0x4d574e,1.45);
+// Eighteen cottages are arranged in two evenly spaced rows beside one continuous village loop.
+const villageHouseColors=[0x353c3a,0x4a3933,0x3d4937,0x51463a,0x4b5148,0x51483d,0x555047,0x46544a,0x4a514e,0x4c5548,0x5b5043,0x46504b,0x574b40,0x4c5548,0x51483f,0x4d574e,0x53604e,0x655044];
+const villageHouseZ=[-105,-78,-51,-24,3,30,57,84,111];
+for(let i=0;i<villageHouseZ.length;i++){
+ makeHouse(-45,villageHouseZ[i],villageHouseColors[i],Math.PI/2);
+ makeHouse(45,villageHouseZ[i],villageHouseColors[i+9],-Math.PI/2);
+}
 // Arcade-style loot: collectible fictional gear, found in house drawers or on the floor.
 const weaponLoot=[
  {name:"Compact Sidearm",icon:"🔫",color:0x6b7f83,scope:false,style:"sidearm"},
@@ -243,8 +229,8 @@ for(let i=0;i<Math.min(10,houseInteriors.length);i++){
 // Continuous road ribbons: one joined mesh per route prevents wedge-shaped gaps at bends.
 // Continuous village roads: dark tarmac, smooth curves, consistent width and clear centre markings.
 const roadMaterial=mat(0x555751),roadMarkMaterial=mat(0xe2dfcb);
-function roadPath(points,width=7,markings=false){
- const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(p[0],.035,p[1])),false,"centripetal");
+function roadPath(points,width=7,markings=false,closed=false){
+ const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(p[0],.035,p[1])),closed,"centripetal");
  const count=Math.max(48,(points.length-1)*36),samples=curve.getPoints(count);
  const vertices=[],indices=[],half=width/2;
  for(let i=0;i<samples.length;i++){
@@ -256,8 +242,8 @@ function roadPath(points,width=7,markings=false){
  geometry.setAttribute("position",new THREE.Float32BufferAttribute(vertices,3));
  geometry.setIndex(indices);geometry.computeVertexNormals();
  const asphalt=new THREE.Mesh(geometry,roadMaterial);asphalt.material.side=THREE.DoubleSide;asphalt.receiveShadow=true;scene.add(asphalt);
- // Rounded end caps prevent exposed square ends and tiny gaps where village lanes meet.
- for(const p of [samples[0],samples[samples.length-1]]){
+ // Open roads get rounded ends; the closed village loop joins seamlessly to itself.
+ if(!closed)for(const p of [samples[0],samples[samples.length-1]]){
   const cap=new THREE.Mesh(new THREE.CircleGeometry(half,20),roadMaterial);cap.rotation.x=-Math.PI/2;cap.position.set(p.x,.036,p.z);scene.add(cap);
  }
  if(markings){
@@ -272,25 +258,9 @@ function roadPath(points,width=7,markings=false){
   }
  }
 }
-const mainRoad=[[-2,-118],[-2,-96],[5,-78],[14,-60],[17,-43],[10,-25],[-3,-7],[-12,12],[-9,32],[1,52],[4,72]];
-roadPath(mainRoad,7.2,true);
-const sideRoads=[
- [[16,-45],[28,-44],[35,-42]],
- [[6,-20],[-7,-21],[-14,-22]],
- [[-9,7],[-23,10],[-31,11]],
- [[-5,39],[-22,45],[-35,48]]
-];
-for(const branch of sideRoads)roadPath(branch,5.8,false);
-// A short access lane connects the relocated eastern cottage to the village road network.
-roadPath([[-9,32],[4,36],[16,34],[25,28],[31,22]],5.8,false);
-roadPath([[2,39],[12,49],[26,55],[42,62],[59,68],[78,78],[98,86]],7.6,true);
-roadPath([[-4,17],[-18,33],[-34,47],[-52,61],[-72,72],[-94,82]],7.6,true);
-roadPath([[98,86],[102,68],[107,50],[112,29],[115,10]],7.2,false);
-roadPath([[-94,82],[-103,61],[-109,41],[-114,18],[-115,-4]],7.2,false);
-// Broad, subtle junction joins make intersecting village lanes read as one connected road.
-for(const [x,z,radius] of [[14,-45,3.7],[0,-19,3.2],[-10,8,3.2],[-10,42,3.3],[4,39,3.4],[98,86,3.8],[-94,82,3.8]]){
- const join=new THREE.Mesh(new THREE.CircleGeometry(radius,28),roadMaterial);join.rotation.x=-Math.PI/2;join.position.set(x,.037,z);scene.add(join);
-}
+// One continuous, closed village road: every cottage faces this same connected loop.
+const villageRoad=[[-30,-130],[-30,-65],[-30,0],[-30,65],[-30,115],[-18,130],[18,130],[30,115],[30,65],[30,0],[30,-65],[30,-115],[18,-130],[-18,-130]];
+roadPath(villageRoad,8.2,true,true);
 const beacon=new THREE.PointLight(0xffd17b,22,24);beacon.position.set(18,4,-35);scene.add(beacon);// The finish beacon has no surrounding box or platform; keep the flagpole on open ground.const beaconPole=new THREE.Mesh(new THREE.CylinderGeometry(.12,.17,5.8,12),mat(0x5a4732));beaconPole.position.set(18,3.7,-35);scene.add(beaconPole);const beaconFlag=new THREE.Mesh(new THREE.PlaneGeometry(4.8,2.4),new THREE.MeshStandardMaterial({color:0x263d32,side:THREE.DoubleSide,roughness:.8}));beaconFlag.position.set(20.3,5.2,-35);beaconFlag.rotation.y=.15;scene.add(beaconFlag);const flagCanvas=document.createElement("canvas");flagCanvas.width=768;flagCanvas.height=384;const flagCtx=flagCanvas.getContext("2d");flagCtx.fillStyle="#263d32";flagCtx.fillRect(0,0,768,384);flagCtx.strokeStyle="#e7c77c";flagCtx.lineWidth=14;flagCtx.strokeRect(12,12,744,360);flagCtx.fillStyle="#f2d58f";flagCtx.font="bold 88px system-ui";flagCtx.textAlign="center";flagCtx.textBaseline="middle";flagCtx.fillText("AFTERFALL",384,190);beaconFlag.material.map=new THREE.CanvasTexture(flagCanvas);beaconFlag.material.needsUpdate=true;
 const supplies=[];for(const [x,z] of [[-8,4],[23,-9],[-27,-43],[-20.5,-20.5],[21.5,-38.5]]){const g=new THREE.Group();const crate=new THREE.Mesh(new THREE.BoxGeometry(1.15,.85,.9),mat(0xc18a42));crate.castShadow=true;g.add(crate);const stripe=new THREE.Mesh(new THREE.BoxGeometry(1.18,.13,.94),mat(0xe7d29a));stripe.position.y=.1;g.add(stripe);g.position.set(x,.65,z);scene.add(g);supplies.push(g)}
  // One key for each of the 18 houses. The first key is outdoors; each later key is hidden inside the previously unlocked house.
