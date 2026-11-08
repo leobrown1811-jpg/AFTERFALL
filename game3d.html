@@ -22,6 +22,9 @@ function selectGameMode(mode){activeMode=mode;for(const [id,value] of [["surviva
 document.querySelector("#survivalModeCard").addEventListener("click",()=>selectGameMode("survival"));
 document.querySelector("#challengeModeCard").addEventListener("click",()=>selectGameMode("challenge"));
 selectGameMode("challenge");
+
+// Initialise the house list before lobby callbacks can access it.
+const houseInteriors=[];
 document.querySelector("#groupType3d").addEventListener("change",e=>{document.querySelector("#lobbyNote").textContent=e.target.value+" selected. Customise your group before entering the 3D world. Online invites are not available in this test build."});
 document.querySelector("#addMember3d").addEventListener("click",()=>{if(lobbyMembers.length>=8){document.querySelector("#lobbyNote").textContent="The lobby supports up to 8 roster entries in this test build.";return}lobbyMembers.push({name:"New member",age:18});renderLobbyRoster()});
 function enterWorld(){for(const house of houseInteriors){house.doorPivot.visible=true;house.doorOpen=house.unlocked;house.lockDropping=false;house.doorPivot.rotation.y=house.doorOpen?Math.PI/2:0;}const group=document.querySelector("#groupType3d").value;const mission=activeMode==="survival"?"Free exploration · survive as long as possible":document.querySelector("#mission3d").selectedOptions[0].textContent;document.querySelector("#lobbyScreen").style.setProperty("display","none","important");document.querySelector("#skinScreen").style.setProperty("display","flex","important");document.querySelector("#mission").textContent=(activeMode==="survival"?"SURVIVAL MODE: ":"CHALLENGE MODE: ")+mission+" · GROUP: "+group;document.querySelector("#message").textContent="Choose your survivor, then press START GAME.";}
@@ -58,7 +61,7 @@ for(let i=0;i<46;i++){const x=-220+i*9.5,z=205+Math.sin(i*.57)*24;tree(x,z,1.05+
 // Small village: each house has a real doorway and a walkable interior.
 const solidWalls=[],wallMeshes=[];
 function wall(x,y,z,w,h,d,color=0x777365){const m=box(x,y,z,w,h,d,color);solidWalls.push({x,z,w,d});wallMeshes.push(m)}
-const houseInteriors=[];
+
 function makeHouse(x,z,accent=0x353c3a,facing=0){
  const w=10,dep=8,h=3.1,front=z+dep/2,wallStart=solidWalls.length,childStart=scene.children.length;
  // Solid side/rear walls. The front has a clear central doorway and a real window opening.
