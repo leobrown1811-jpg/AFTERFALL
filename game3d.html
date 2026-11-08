@@ -89,13 +89,13 @@ document.querySelectorAll("#lobbyTabs .lobbyTab").forEach(button=>button.addEven
 
 
 const canvas=document.querySelector('#view');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:"high-performance"});renderer.setPixelRatio(Math.min(devicePixelRatio,0.74));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.14;if(THREE.SRGBColorSpace)renderer.outputColorSpace=THREE.SRGBColorSpace;
+const renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:"high-performance"});renderer.setPixelRatio(Math.min(devicePixelRatio,0.5));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.14;if(THREE.SRGBColorSpace)renderer.outputColorSpace=THREE.SRGBColorSpace;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0xb9cbd0);scene.fog=new THREE.Fog(0xb9cbd0,350,1320);
 const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,1900);
 const player={pos:new THREE.Vector3(0,0,12),yaw:0,vertical:0,onGround:true,speed:6.2};let found=0;const inventory=[];
 scene.add(new THREE.HemisphereLight(0xeaf5ff,0x344b3a,2.15));
 const sun=new THREE.DirectionalLight(0xffe0b0,3.45);sun.position.set(-80,95,55);sun.castShadow=false;scene.add(sun);
-const fillLight=new THREE.DirectionalLight(0x9fc9e8,0.72);fillLight.position.set(90,35,-80);scene.add(fillLight);
+// Removed the extra fill light to reduce mobile GPU work.
 const mat=(color,roughness=1)=>new THREE.MeshStandardMaterial({color,roughness});
 // Broad, gentle terrain creates rolling countryside instead of a ring of blocking mountains.
 // Rolling countryside with flattened cottage pads so buildings sit securely above the grass.
