@@ -147,6 +147,9 @@ function makeHouse(x,z,accent=0x353c3a,facing=0){
  box(x+3.745,.78,z+.15,.045,.27,1.20,0xa7835b);
  box(x+3.705,.43,z+.15,.07,.07,.07,0xd7c39a);
  box(x+3.705,.78,z+.15,.07,.07,.07,0xd7c39a);
+ // Searchable cabinet drawers with visible brass handles.
+ box(x+3.70,.43,z+.15,.07,.07,.07,0xd7c39a);
+ box(x+3.70,.78,z+.15,.07,.07,.07,0xd7c39a);
  // Warm interior light makes the walls and furnishings readable.
  const lamp=new THREE.PointLight(0xffd9a1,1.4,6);lamp.position.set(x,2.45,z);scene.add(lamp);
  // Rotate the whole house as one unit so its roof, walls, windows, door and furniture remain aligned.
@@ -159,7 +162,7 @@ function makeHouse(x,z,accent=0x353c3a,facing=0){
  houseRoot.scale.setScalar(1.15);
  for(let i=wallStart;i<solidWalls.length;i++){const b=solidWalls[i];b.x=x+(b.x-x)*1.15;b.z=z+(b.z-z)*1.15;b.w*=1.15;b.d*=1.15;}
  const doorX=x+Math.sin(facing)*(dep*1.15/2),doorZ=z+Math.cos(facing)*(dep*1.15/2);
- const data={x,z,w,dep,roof,front,doorX,doorZ,facing,houseRoot,doorPivot,doorOpen:false,lockAssembly,lockDropping:false,lockDropTime:0,unlocked:false,keyCollected:false};houseInteriors.push(data);
+ const drawerPos=houseRoot.localToWorld(new THREE.Vector3(3.72,.78,.15));const data={x,z,w,dep,roof,front,doorX,doorZ,facing,houseRoot,doorPivot,doorOpen:false,lockAssembly,lockDropping:false,lockDropTime:0,unlocked:false,keyCollected:false,drawerPos,drawerSearched:false};houseInteriors.push(data);
 }
 makeHouse(-16,-105,0x353c3a,1.571);
 makeHouse(14,-105,0x4a3933,-1.571);
@@ -182,6 +185,25 @@ makeHouse(38,8,0x574b40,-1.571);
 makeHouse(-17,48,0x4c5548,1.571);
 makeHouse(34,-88,0x51483f,-1.8);
 makeHouse(-34,-64,0x4d574e,1.45);
+// Arcade-style loot: collectible fictional gear, found in house drawers or on the floor.
+const weaponLoot=[
+ {name:"Compact Sidearm",icon:"🔫",color:0x6b7f83},
+ {name:"Ranger Rifle",icon:"🎯",color:0x8c7651},
+ {name:"Rapid Blaster",icon:"⚡",color:0x557b68},
+ {name:"Scout Carbine",icon:"🟩",color:0x6c7058}
+];
+const floorLoot=[];
+function makeLootPickup(houseIndex,localX,localZ,lootIndex){
+ const host=houseInteriors[houseIndex],item=weaponLoot[lootIndex%weaponLoot.length],g=new THREE.Group();
+ const base=new THREE.Mesh(new THREE.BoxGeometry(.72,.18,.22),mat(0x303b37));g.add(base);
+ const core=new THREE.Mesh(new THREE.BoxGeometry(.38,.13,.16),mat(item.color));core.position.y=.13;g.add(core);
+ const glow=new THREE.Mesh(new THREE.TorusGeometry(.34,.035,6,18),mat(0xe5d18a));glow.rotation.x=Math.PI/2;glow.position.y=.22;g.add(glow);
+ g.position.copy(host.houseRoot.localToWorld(new THREE.Vector3(localX,.22,localZ)));scene.add(g);
+ floorLoot.push({mesh:g,loot:item,collected:false});
+}
+for(let i=0;i<Math.min(10,houseInteriors.length);i++){
+ if(i%2===0)makeLootPickup(i,-1.8,.65,(i+1)%weaponLoot.length);
+}
 // All 18 houses participate in the matching-key progression; the first key is found outdoors.
 
 // Continuous road ribbons: one joined mesh per route prevents wedge-shaped gaps at bends.
@@ -460,12 +482,19 @@ function makeZombie(x,z){const g=new THREE.Group(),body=new THREE.Mesh(new THREE
 function updateSurvivalHud(){for(const [id,v] of [["health",health],["hunger",hunger],["water",water]]){document.getElementById(id+"Fill").style.width=v+"%";document.getElementById(id+"Value").textContent=Math.ceil(v)+"%"}document.getElementById("scoreValue").textContent=score;document.getElementById("zombieCount").textContent=zombies.filter(z=>z.alive).length}
 let aimMode=false,aimBlend=0;const aimButton=document.querySelector("#aim"),aimReticle=document.querySelector("#aimReticle");function toggleAim(){aimMode=!aimMode;aimButton.classList.toggle("aiming",aimMode);aimButton.innerHTML=aimMode?"<b>⊕</b>AIM ON":"<b>⊕</b>AIM";aimReticle.style.display=aimMode?"block":"none"}aimButton.addEventListener("pointerdown",e=>{e.preventDefault();toggleAim()});function attackZombie(){if(dead||attackCooldown>0)return;attackCooldown=.42;attackTimer=.25;weapon.userData.muzzle.intensity=aimMode?3.5:1.8;setTimeout(()=>{if(weapon.userData.muzzle)weapon.userData.muzzle.intensity=0},65);let target=null,best=aimMode?48:18;const f=new THREE.Vector3(-Math.sin(player.yaw),0,-Math.cos(player.yaw));for(const z of zombies){if(!z.alive)continue;const d=new THREE.Vector3(z.group.position.x-player.pos.x,0,z.group.position.z-player.pos.z),dist=d.length(),alignment=f.dot(d.clone().normalize());if(dist<best&&alignment>(aimMode?.985:.965)){best=dist;target=z}}if(target){target.health--;target.group.rotation.z=.08;if(target.health<=0){target.alive=false;target.group.visible=false;score+=100;document.querySelector("#message").textContent="Zombie eliminated! +100 points."}else document.querySelector("#message").textContent="Hit confirmed! "+target.health+" shots to eliminate.";updateSurvivalHud()}else document.querySelector("#message").textContent=aimMode?"Missed! Adjust your aim.":"No target in range — tap AIM for precision."}
 document.querySelector("#attack").addEventListener("pointerdown",e=>{e.preventDefault();attackZombie()});addEventListener("keydown",e=>{if(e.key.toLowerCase()==="f"&&!e.repeat)attackZombie();if(e.key.toLowerCase()==="q"&&!e.repeat)toggleAim()});
-function refreshInventory(){const target=document.querySelector("#inventoryItems");target.innerHTML=inventory.length?inventory.map(item=>item.icon+" "+item.name).join("<br>")+"<hr>Items: "+inventory.length:"Nothing collected yet.";}
+let equippedLoot="Compact Sidearm";function refreshInventory(){const target=document.querySelector("#inventoryItems");target.innerHTML="<b>Equipped:</b> "+equippedLoot+"<hr>"+(inventory.length?inventory.map(item=>item.icon+" "+item.name).join("<br>")+"<hr>Items: "+inventory.length:"Nothing collected yet.");}
 document.querySelector("#inventoryOpen").addEventListener("click",()=>{const panel=document.querySelector("#inventoryPanel");panel.style.display=panel.style.display==="block"?"none":"block";refreshInventory()});
 function collect(){
  for(const key of houseKeys){if(key.collected)continue;const d=player.pos.distanceTo(key.mesh.position);if(d<2.25){key.collected=true;key.mesh.visible=false;houseInteriors[key.houseIndex].keyCollected=true;inventory.push({name:key.name,icon:"🗝️"});refreshInventory();document.querySelector('#message').textContent=key.houseIndex===0?'Golden key found! It opens the first house.':key.houseIndex===1?'Blue key found! It opens the second house.':key.houseIndex===2?'Violet key found! It opens the third house.':key.name+' found! It opens house '+(key.houseIndex+1)+'.';return}}
  let nearest=null,dist=2.7;for(const item of supplies){if(!item.visible)continue;const d=player.pos.distanceTo(item.position);if(d<dist){dist=d;nearest=item}}
  if(nearest){nearest.visible=false;found++;inventory.push({name:"Supply Case "+found,icon:"📦"});refreshInventory();document.querySelector('#count').textContent='SUPPLIES: '+found+' / 5';document.querySelector('#message').textContent=found===5?'All 5 supplies secured. Reach the lit beacon to finish the mission!':'Supply secured! Search inside the houses for the remaining cases.';return}
+ // Search a house cabinet once. The first search in each unlocked house awards a random arcade-style item.
+ let drawerHouse=null,drawerDistance=2.6;
+ for(const house of houseInteriors){if(!house.doorOpen||house.drawerSearched)continue;const d=player.pos.distanceTo(house.drawerPos);if(d<drawerDistance){drawerDistance=d;drawerHouse=house}}
+ if(drawerHouse){drawerHouse.drawerSearched=true;const item=weaponLoot[(houseInteriors.indexOf(drawerHouse)+1)%weaponLoot.length];inventory.push({name:item.name,icon:item.icon});equippedLoot=item.name;refreshInventory();document.querySelector('#message').textContent='Drawer searched! Found '+item.name+'. Added to inventory.';return}
+ let nearestLoot=null,lootDistance=2.7;
+ for(const loot of floorLoot){if(loot.collected)continue;const d=player.pos.distanceTo(loot.mesh.position);if(d<lootDistance){lootDistance=d;nearestLoot=loot}}
+ if(nearestLoot){nearestLoot.collected=true;nearestLoot.mesh.visible=false;inventory.push({name:nearestLoot.loot.name,icon:nearestLoot.loot.icon});equippedLoot=nearestLoot.loot.name;refreshInventory();document.querySelector('#message').textContent='Gear collected: '+nearestLoot.loot.name+'. Added to inventory.';return}
  let nearestHouse=null,doorDist=3.2;for(const house of houseInteriors){const dx=player.pos.x-house.doorX,dz=player.pos.z-house.doorZ,side=Math.abs(dx*Math.cos(house.facing)-dz*Math.sin(house.facing)),d=Math.hypot(dx,dz);if(d<doorDist&&side<2.2){doorDist=d;nearestHouse=house}}
  if(nearestHouse){const index=houseInteriors.indexOf(nearestHouse);if(!nearestHouse.unlocked){if(!nearestHouse.keyCollected){document.querySelector('#message').textContent=index===0?'This door needs the golden key. Search outside near the village.':index===1?'This door needs the blue key. Find it inside the first house.':index===2?'This door needs the violet key. Find it inside the second house.':'This door needs its matching key. Search the previous unlocked house.';return}nearestHouse.unlocked=true;nearestHouse.lockDropping=true;nearestHouse.lockDropTime=0;document.querySelector('#message').textContent='The matching key turns! The lock falls away and the door unlocks.';return}nearestHouse.doorOpen=!nearestHouse.doorOpen;document.querySelector('#message').textContent=nearestHouse.doorOpen?'Door opening. Go inside!':'Door closed.';return}
  document.querySelector('#message').textContent='Find all 18 house keys. The first is outside; the rest are hidden inside the previous unlocked house.'}
