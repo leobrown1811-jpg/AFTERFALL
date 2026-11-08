@@ -266,7 +266,7 @@ const extraGunFamilies=["Aether","Nova","Rift","Vortex","Solar","Phantom","Tempe
 const extraGunVariants=["Arc","Pulse","Spectre","Comet","Warden","Echo","Drift","Cyclone","Sentinel","Horizon"];
 const extraGunStyles=["sidearm","repeater","carbine","rifle","blaster","marksman"];
 const extraGunColors=[0x42a5b5,0x9b6bc4,0xd08a45,0x5f9b73,0x547eae,0xc15d70,0x9caa58,0x6e7a91,0xb18bca,0x4d9c91];
-const extraGunLoot=Array.from({length:100},(_,i)=>({
+const extraGunLoot=Array.from({length:50},(_,i)=>({
  name:extraGunFamilies[Math.floor(i/10)]+" "+extraGunVariants[i%10],
  icon:"🔫",
  color:extraGunColors[i%extraGunColors.length],
@@ -347,11 +347,11 @@ function makeLootPickup(houseIndex,localX,localZ,lootIndex){
  g.position.copy(host.houseRoot.localToWorld(new THREE.Vector3(localX,.04,localZ)));g.userData.baseY=g.position.y;scene.add(g);
  floorLoot.push({mesh:g,loot:item,collected:false,houseIndex});
 }
-for(let i=0;i<Math.min(10,houseInteriors.length);i++){
+for(let i=0;i<Math.min(8,houseInteriors.length);i++){
  if(i%2===0)makeLootPickup(i,-1.8,.65,(i+1)%weaponLoot.length);
 }
 function makeRegionWeapon(x,z,index){const item=weaponLoot[index%weaponLoot.length],g=createFloorLootVisual(item,index*.43);g.position.set(x,terrainHeight(x,z)+.05,z);g.userData.baseY=g.position.y;scene.add(g);floorLoot.push({mesh:g,loot:item,collected:false,houseIndex:-1});}
-for(const [x,z,i] of [[-300,-62,6],[-338,250,7],[-286,285,8],[-315,325,9],[275,-230,6],[330,-270,7],[300,-205,8],[300,55,9],[320,70,6],[-300,-40,7]])makeRegionWeapon(x,z,i);
+for(const [x,z,i] of [[-300,-40,7],[-315,325,9],[300,-205,8],[300,55,9]])makeRegionWeapon(x,z,i);
 // All 18 houses participate in the matching-key progression; the first key is found outdoors.
 
 // Continuous road ribbons: one joined mesh per route prevents wedge-shaped gaps at bends.
