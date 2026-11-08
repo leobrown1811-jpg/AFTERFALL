@@ -40,7 +40,7 @@ for(const [x,z,sx,sy,sz] of [[-390,-390,260,24,120],[0,-480,340,28,135],[390,-39
  const hill=new THREE.Mesh(new THREE.SphereGeometry(1,16,9),farHillMat);hill.scale.set(sx,sy,sz);hill.position.set(x,sy-14,z);scene.add(hill);
 }
 function box(x,y,z,sx,sy,sz,color){const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mat(color));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m}
-function tree(x,z,scale=1){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22*scale,.34*scale,2.8*scale,7),mat(0x554638));trunk.position.set(x,1.4*scale,z);trunk.castShadow=true;scene.add(trunk);for(let i=0;i<2;i++){const crown=new THREE.Mesh(new THREE.ConeGeometry((2.0-i*.3)*scale,3.0*scale,6),mat(i%2?0x344b3b:0x405b42));crown.position.set(x,(3.0+i*.9)*scale,z);scene.add(crown)}}
+function tree(x,z,scale=1){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22*scale,.34*scale,2.8*scale,7),mat(0x554638));trunk.position.set(x,1.4*scale,z);trunk.castShadow=true;scene.add(trunk);for(let i=0;i<3;i++){const crown=new THREE.Mesh(new THREE.SphereGeometry((1.45-i*.12)*scale,9,7),mat(i%2?0x344b3b:0x405b42));crown.position.set(x,(3.0+i*.72)*scale,z);crown.scale.y=.92;scene.add(crown)}}
 function rock(x,z,s=1){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(s,0),mat(0x77796f));r.position.set(x,s*.55,z);r.rotation.set(.2,.8,.3);r.castShadow=true;r.receiveShadow=true;scene.add(r)}
 // Background mountain group removed to leave an open horizon.
 for(let i=0;i<180;i++){const x=Math.sin(i*91.7)*285,z=-300+(i*23.31)%600;const nearHouse=[[-17,-22],[25,-40],[-34,12],[34,-76],[-38,48]].some(([hx,hz])=>Math.abs(x-hx)<9&&Math.abs(z-hz)<10);if(nearHouse)continue;if(Math.abs(x)<5&&z>-112&&z<62)continue;if(i%3===0)rock(x,z,.7+(i%5)*.22);else tree(x,z,.65+(i%4)*.13)}
@@ -64,31 +64,50 @@ const houseInteriors=[];
 function makeHouse(x,z,accent=0x353c3a,facing=0){
  const w=10,dep=8,h=3.1,front=z+dep/2,wallStart=solidWalls.length,childStart=scene.children.length;
  // Solid side/rear walls. The front has a clear central doorway and a real window opening.
- wall(x-w/2+.12,h/2,z,.24,h,dep,0x898678);
- wall(x+w/2-.12,h/2,z,.24,h,dep,0x898678);
- wall(x,h/2,z-dep/2,w,h,.24,0x898678);
+ wall(x-w/2+.12,h/2,z,.24,h,dep,0xa69b84);
+ wall(x+w/2-.12,h/2,z,.24,h,dep,0xa69b84);
+ wall(x,h/2,z-dep/2,w,h,.24,0xa69b84);
  // Front wall built as adjoining solid sections around two precisely sized window openings.
  // Lower and upper courses run continuously across both window bays.
- wall(x-3.05,.55,front,3.9,1.1,.24,0x898678);
- wall(x-3.05,2.55,front,3.9,1.1,.24,0x898678);
- wall(x+3.05,.55,front,3.9,1.1,.24,0x898678);
- wall(x+3.05,2.55,front,3.9,1.1,.24,0x898678);
+ wall(x-3.05,.55,front,3.9,1.1,.24,0xa69b84);
+ wall(x-3.05,2.55,front,3.9,1.1,.24,0xa69b84);
+ wall(x+3.05,.55,front,3.9,1.1,.24,0xa69b84);
+ wall(x+3.05,2.55,front,3.9,1.1,.24,0xa69b84);
  // Window-side wall piers exactly fill the spaces between each frame and the doorway/outer corner.
  // Match the main wall depth and front face so there are no projecting patches or narrow gaps.
- wall(x-4.495,1.55,front,1.01,1.1,.24,0x898678);
- wall(x-1.615,1.55,front,.99,1.1,.24,0x898678);
- wall(x+1.615,1.55,front,.99,1.1,.24,0x898678);
- wall(x+4.495,1.55,front,1.01,1.1,.24,0x898678);
+ wall(x-4.495,1.55,front,1.01,1.1,.24,0xa69b84);
+ wall(x-1.615,1.55,front,.99,1.1,.24,0xa69b84);
+ wall(x+1.615,1.55,front,.99,1.1,.24,0xa69b84);
+ wall(x+4.495,1.55,front,1.01,1.1,.24,0xa69b84);
  // Fill the open triangular gable spaces at both ends of the roof.
  // These wall panels close the gap between the rectangular walls and the roof peak.
  const gableShape=new THREE.Shape();gableShape.moveTo(-5.08,0);gableShape.lineTo(5.08,0);gableShape.lineTo(0,1.88);gableShape.close();
- const gableGeo=new THREE.ShapeGeometry(gableShape),gableMat=mat(0x898678);
+ const gableGeo=new THREE.ShapeGeometry(gableShape),gableMat=mat(0xa69b84);
  for(const endZ of [z-dep/2-.015,z+dep/2+.015]){const gable=new THREE.Mesh(gableGeo,gableMat);gable.position.set(x,3.1,endZ);gable.material.side=THREE.DoubleSide;gable.castShadow=true;gable.receiveShadow=true;scene.add(gable);}
  const roof=new THREE.Group();scene.add(roof);
  // Compact gable roof: matching slopes meet cleanly at the raised ridge.
- const roofLeft=new THREE.Mesh(new THREE.BoxGeometry(5.5,.22,8.5),mat(0x9b4f2e));roofLeft.position.set(x-2.45,4.05,z);roofLeft.rotation.z=.34;roofLeft.castShadow=true;roofLeft.receiveShadow=true;roof.add(roofLeft);
- const roofRight=new THREE.Mesh(new THREE.BoxGeometry(5.5,.22,8.5),mat(0xb76135));roofRight.position.set(x+2.45,4.05,z);roofRight.rotation.z=-.34;roofRight.castShadow=true;roofRight.receiveShadow=true;roof.add(roofRight);
- const ridge=new THREE.Mesh(new THREE.BoxGeometry(.2,.2,8.7),mat(0x603b2b));ridge.position.set(x,5.02,z);roof.add(ridge);wallMeshes.push(roof);
+ const roofLeft=new THREE.Mesh(new THREE.BoxGeometry(5.5,.22,8.5),mat(0x51463e));roofLeft.position.set(x-2.45,4.05,z);roofLeft.rotation.z=.34;roofLeft.castShadow=true;roofLeft.receiveShadow=true;roof.add(roofLeft);
+ const roofRight=new THREE.Mesh(new THREE.BoxGeometry(5.5,.22,8.5),mat(0x66564a));roofRight.position.set(x+2.45,4.05,z);roofRight.rotation.z=-.34;roofRight.castShadow=true;roofRight.receiveShadow=true;roof.add(roofRight);
+ const ridge=new THREE.Mesh(new THREE.BoxGeometry(.2,.2,8.7),mat(0x3c332e));ridge.position.set(x,5.02,z);roof.add(ridge);wallMeshes.push(roof);
+ // Tall stone chimneys and dark caps give the cottages the old-village silhouette.
+ for(const cx of [x-3.05,x+3.05]){
+   box(cx,4.95,z-2.15,.92,1.65,.92,0x756b5c);
+   box(cx,5.82,z-2.15,1.12,.18,1.12,0x403a34);
+   box(cx,5.98,z-2.15,.78,.16,.78,0x51483f);
+ }
+ // Low garden borders and rounded shrubs soften the stone frontage.
+ for(const side of [-1,1]){
+   box(x+side*6.15,.18,front+.35,2.5,.34,1.05,0x625844);
+   const shrub=new THREE.Mesh(new THREE.SphereGeometry(1,9,7),mat(side<0?0x405b39:0x536d3d));
+   shrub.position.set(x+side*6.1,.72,front+.35);shrub.scale.set(1.15,.72,.72);shrub.castShadow=true;scene.add(shrub);
+   const flower=new THREE.Mesh(new THREE.SphereGeometry(.12,7,6),mat(side<0?0xd6a35c:0xc77b77));
+   flower.position.set(x+side*6.35,1.15,front+.25);scene.add(flower);
+ }
+ // Ivy climbs the cottage corners.
+ for(const side of [-1,1])for(let j=0;j<4;j++){
+   const leaf=new THREE.Mesh(new THREE.SphereGeometry(.19,7,6),mat(0x42633a));
+   leaf.position.set(x+side*4.78,.45+j*.55,front+.18);leaf.scale.set(.8,1.25,.55);scene.add(leaf);
+ }
  box(x,.045,z,10.15,.12,8.15,0x9a8c70);
  // Glass sits within the opening; the full window casing is mounted proud of the exterior wall face.
  const glassZ=front+.015, outerFrameZ=front+.205, innerFrameZ=front-.145;
