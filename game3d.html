@@ -258,10 +258,14 @@ function roadPath(points,width=7,markings=false,closed=false){
   }
  }
 }
-// One long, gently winding village route with rounded bends and an open approach.
- // The road edges still meet the inward-facing cottage entrances along both rows.
-const villageRoad=[[0,230],[-18,215],[-30,195],[-35.3,175],[-35.3,145],[-35.3,110],[-35.3,55],[-35.3,0],[-35.3,-55],[-35.3,-110],[-35.3,-145],[-28,-165],[-15,-176],[0,-180],[15,-176],[28,-165],[35.3,-145],[35.3,-110],[35.3,-55],[35.3,0],[35.3,55],[35.3,110],[35.3,145],[38,175],[48,195],[65,215],[88,230]];
-roadPath(villageRoad,10.2,false,false);
+// A natural village street: one winding central road with short curved lanes to every cottage.
+const villageRoad=[[0,255],[-7,230],[-10,205],[-6,180],[1,155],[8,130],[9,105],[4,80],[-5,55],[-9,30],[-5,5],[3,-20],[9,-45],[7,-70],[0,-95],[-8,-120],[-10,-145],[-4,-170],[5,-195],[12,-220],[8,-245]];
+roadPath(villageRoad,9.2,false,false);
+// Short access lanes branch from the main street to the inward-facing cottage entrances.
+for(const z of [-105,-78,-51,-24,3,30,57,84,111]){
+  roadPath([[-3,z-5],[-12,z-2],[-24,z],[-34,z],[-40.4,z]],7.2,false,false);
+  roadPath([[3,z-5],[12,z-2],[24,z],[34,z],[40.4,z]],7.2,false,false);
+}
 const beacon=new THREE.PointLight(0xffd17b,22,24);beacon.position.set(18,4,-35);scene.add(beacon);// The finish beacon has no surrounding box or platform; keep the flagpole on open ground.const beaconPole=new THREE.Mesh(new THREE.CylinderGeometry(.12,.17,5.8,12),mat(0x5a4732));beaconPole.position.set(18,3.7,-35);scene.add(beaconPole);const beaconFlag=new THREE.Mesh(new THREE.PlaneGeometry(4.8,2.4),new THREE.MeshStandardMaterial({color:0x263d32,side:THREE.DoubleSide,roughness:.8}));beaconFlag.position.set(20.3,5.2,-35);beaconFlag.rotation.y=.15;scene.add(beaconFlag);const flagCanvas=document.createElement("canvas");flagCanvas.width=768;flagCanvas.height=384;const flagCtx=flagCanvas.getContext("2d");flagCtx.fillStyle="#263d32";flagCtx.fillRect(0,0,768,384);flagCtx.strokeStyle="#e7c77c";flagCtx.lineWidth=14;flagCtx.strokeRect(12,12,744,360);flagCtx.fillStyle="#f2d58f";flagCtx.font="bold 88px system-ui";flagCtx.textAlign="center";flagCtx.textBaseline="middle";flagCtx.fillText("AFTERFALL",384,190);beaconFlag.material.map=new THREE.CanvasTexture(flagCanvas);beaconFlag.material.needsUpdate=true;
 const supplies=[];for(const [x,z] of [[-8,4],[23,-9],[-27,-43],[-20.5,-20.5],[21.5,-38.5]]){const g=new THREE.Group();const crate=new THREE.Mesh(new THREE.BoxGeometry(1.15,.85,.9),mat(0xc18a42));crate.castShadow=true;g.add(crate);const stripe=new THREE.Mesh(new THREE.BoxGeometry(1.18,.13,.94),mat(0xe7d29a));stripe.position.y=.1;g.add(stripe);g.position.set(x,.65,z);scene.add(g);supplies.push(g)}
  // One key for each of the 18 houses. The first key is outdoors; each later key is hidden inside the previously unlocked house.
@@ -457,7 +461,7 @@ function applySkin(index){
 const skinGrid=document.querySelector("#skinGrid");
 skinList.forEach((s,i)=>{let b=skinGrid.children[i];if(!b){b=document.createElement("button");b.type="button";b.innerHTML="<span>"+s.icon+"</span>"+s.name;skinGrid.appendChild(b)}b.addEventListener("click",()=>{applySkin(i);document.querySelector("#skinNote").textContent="Selected: "+s.name;document.querySelector("#message").textContent=s.name+" selected. Press START GAME when ready.";});});
 applySkin(0);
-function closeSkinScreen(){document.querySelector("#skinScreen").style.setProperty("display","none","important");document.querySelector("#lobbyScreen").style.setProperty("display","none","important");player.pos.set(-8,0,222);player.yaw=-0.55;document.querySelector("#message").textContent="SURVIVE. Search houses, collect supplies and watch for zombies.";}
+function closeSkinScreen(){document.querySelector("#skinScreen").style.setProperty("display","none","important");document.querySelector("#lobbyScreen").style.setProperty("display","none","important");player.pos.set(0,0,225);player.yaw=0;document.querySelector("#message").textContent="SURVIVE. Search houses, collect supplies and watch for zombies.";}
 document.querySelector("#skinClose").addEventListener("click",closeSkinScreen);document.querySelector("#skinClose").onclick=closeSkinScreen;
 document.querySelector("#skinOpen").addEventListener("click",()=>{document.querySelector("#skinScreen").style.display="flex"});
 
@@ -546,7 +550,7 @@ window.AFTERFALL_READY=true;
 <script>
 // Keep the survivor screen usable even if the 3D engine hits a startup error.
 (()=>{const names=[["🍌","Banana Scout"],["🥷","Shadow Ninja"],["🚀","Cosmic Ranger"],["🌿","Jungle Tracker"],["❄️","Frost Guardian"],["🌋","Volcano Raider"],["👑","Golden Knight"],["🏁","Neon Racer"],["🏜️","Desert Nomad"],["🤖","Moon Bot"],["🐲","Magma Beast"],["🧢","Sky Captain"],["☣️","Toxic Ranger"],["🌩️","Storm Chaser"],["🍭","Candy Hero"],["🦊","Wild Fox"]];const grid=document.querySelector("#skinGrid");if(grid&&!grid.children.length){names.forEach(([icon,name],i)=>{const b=document.createElement("button");b.type="button";b.innerHTML="<span>"+icon+"</span>"+name;b.addEventListener("click",()=>{document.querySelector("#skinNote").textContent="Selected: "+name;grid.querySelectorAll("button").forEach((x,j)=>x.classList.toggle("selected",i===j));});grid.appendChild(b)});}const reportError=message=>{window.AFTERFALL_ERROR=String(message||"Unknown startup error");const text="AFTERFALL could not finish loading: "+window.AFTERFALL_ERROR;const note=document.querySelector("#skinNote");if(note)note.textContent=text;const live=document.querySelector("#message");if(live)live.textContent=text;};window.addEventListener("error",e=>reportError(e.message||"Unknown startup error"));window.addEventListener("unhandledrejection",e=>reportError(e.reason&&e.reason.message?e.reason.message:e.reason));const start=document.querySelector("#skinClose");if(start){
- const begin=()=>{const skin=document.querySelector("#skinScreen"),lobby=document.querySelector("#lobbyScreen");if(skin)skin.style.setProperty("display","none","important");if(lobby)lobby.style.setProperty("display","none","important");window.AFTERFALL_GAME_STARTED=true;const msg=document.querySelector("#message");if(msg)msg.textContent=window.AFTERFALL_READY?"SURVIVE. Search houses, collect supplies and watch for zombies.":(window.AFTERFALL_ERROR?"AFTERFALL loading error: "+window.AFTERFALL_ERROR:"The game screen opened, but the 3D engine has not finished loading yet.");};
+ const begin=()=>{const skin=document.querySelector("#skinScreen"),lobby=document.querySelector("#lobbyScreen");if(skin)skin.style.setProperty("display","none","important");if(lobby)lobby.style.setProperty("display","none","important");player.pos.set(0,0,225);player.yaw=0;cameraYaw=0;window.AFTERFALL_GAME_STARTED=true;const msg=document.querySelector("#message");if(msg)msg.textContent=window.AFTERFALL_READY?"SURVIVE. Search houses, collect supplies and watch for zombies.":(window.AFTERFALL_ERROR?"AFTERFALL loading error: "+window.AFTERFALL_ERROR:"The game screen opened, but the 3D engine has not finished loading yet.");};
  start.addEventListener("click",begin,true);
  start.addEventListener("pointerup",e=>{e.preventDefault();begin();},true);
  start.addEventListener("touchend",e=>{e.preventDefault();begin();},{capture:true,passive:false});
