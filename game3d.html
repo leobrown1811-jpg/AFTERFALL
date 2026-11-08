@@ -451,7 +451,7 @@ for(let i=0;i<13;i++){
  for(const dx of [-.55,.55]){const p={x:rp.x+dx*Math.cos(facing),z:rp.z-dx*Math.sin(facing)},rail=box(p.x,y+h/2,p.z,.12,h,.12,0x9daba4);rail.rotation.y=facing;}
  for(let yy=1.1;yy<h;yy+=1.15){const rung=box(rp.x,y+yy,rp.z,.12,.12,1.2,0xc4b58e);rung.rotation.y=facing;}
  townRoofAccesses.push({x:rp.x,z:rp.z,y,h,index:i});
- box(x+w*.32,y+h+.35,z,3,.7,3,0x3e4544);
+ /* Removed the misaligned rooftop block that protruded through Town buildings. */
 }
 signBoard(-300,190,"TOWN · HIGH DANGER");roadPath([[0,145],[-95,180],[-190,225],[-270,265]],9,true,false);roadPath([[-270,265],[-282,248],[-292,232],[-300,215]],6.5,false,false);
 // Town access tower: visible stair flights and two walkable upper landings.
@@ -553,13 +553,13 @@ document.querySelector("#mapToggle").addEventListener("click",()=>{document.quer
 document.querySelector("#miniMapClose").addEventListener("click",()=>document.querySelector("#miniMapPanel").classList.remove("open"));
 let raisedPlatform=null,raisedPlatformY=0,refineryLevel=0,townLevel=0,suburbLevel=0,quarantineRoof=false,townRoofIndex=-1;
 function useVerticalAccess(){
- const nearTower=Math.hypot(player.pos.x-390,player.pos.z+250)<9,nearRefinery=Math.hypot(player.pos.x-300,player.pos.z-55)<11,nearSuburbRoof=Math.hypot(player.pos.x-suburbAccessX,player.pos.z-suburbAccessZ-7.4)<5,nearQuarantineRoof=Math.hypot(player.pos.x-quarantineAccessX,player.pos.z-quarantineAccessZ)<5,nearTownRoof=townRoofAccesses.findIndex(a=>Math.hypot(player.pos.x-a.x,player.pos.z-a.z)<4.5);
+ const nearTower=Math.hypot(player.pos.x-390,player.pos.z+250)<14,nearRefinery=Math.hypot(player.pos.x-300,player.pos.z-55)<16,nearSuburbRoof=Math.hypot(player.pos.x-suburbAccessX,player.pos.z-suburbAccessZ-7.4)<8,nearQuarantineRoof=Math.hypot(player.pos.x-quarantineAccessX,player.pos.z-quarantineAccessZ)<9,nearTownRoof=townRoofAccesses.findIndex(a=>Math.hypot(player.pos.x-a.x,player.pos.z-a.z)<7.5);
  if(nearTownRoof>=0){const access=townRoofAccesses[nearTownRoof],sameRoof=raisedPlatform==="town-roof"&&townRoofIndex===nearTownRoof;townRoofIndex=sameRoof?-1:nearTownRoof;raisedPlatform=sameRoof?null:"town-roof";raisedPlatformY=sameRoof?0:access.h;player.pos.set(access.x,raisedPlatformY,access.z);player.vertical=0;document.querySelector("#message").textContent=sameRoof?"Back at street level.":"Climbed the ladder to Town building "+(access.index+1)+" rooftop!";return true;}
  if(nearQuarantineRoof){quarantineRoof=!quarantineRoof;raisedPlatform=quarantineRoof?"quarantine":null;raisedPlatformY=quarantineRoof?7.2:0;player.pos.set(quarantineAccessX,raisedPlatformY,quarantineAccessZ);player.vertical=0;document.querySelector("#message").textContent=quarantineRoof?"Climbed the quarantine barracks ladder. Rooftop reached!":"Back at quarantine ground level.";return true;}
  if(nearSuburbRoof){suburbLevel=suburbLevel?0:1;raisedPlatform=suburbLevel?"suburbs":null;raisedPlatformY=suburbLevel?5.6:0;player.pos.set(suburbAccessX,raisedPlatformY,suburbAccessZ+7.4);player.vertical=0;document.querySelector("#message").textContent=suburbLevel?"Climbed the suburbs roof ladder!":"Back on the suburbs street.";return true;}
  if(nearTower){if(raisedPlatform==="tower"){raisedPlatform=null;raisedPlatformY=0;player.pos.y=0;player.vertical=0;document.querySelector("#message").textContent="Back on the ground. Watch your step!";}else{raisedPlatform="tower";raisedPlatformY=10.8;player.pos.set(390,10.8,-250);player.vertical=0;document.querySelector("#message").textContent="Climbed the watchtower ladder. Lookout deck reached!";}return true;}
  if(nearRefinery){if(raisedPlatform==="refinery")refineryLevel=(refineryLevel+1)%3;else{raisedPlatform="refinery";refineryLevel=1;}if(refineryLevel===0){raisedPlatform=null;raisedPlatformY=0;player.pos.y=0;player.vertical=0;document.querySelector("#message").textContent="You took the service lift back to ground level.";}else{raisedPlatformY=refineryLevel*4.6;player.pos.set(300,raisedPlatformY,55);player.vertical=0;document.querySelector("#message").textContent="Refinery service lift: LEVEL "+refineryLevel+" / 2. Explore the catwalks!";}return true;}
- const nearTownStairs=Math.hypot(player.pos.x-townLiftX,player.pos.z-townLiftZ)<8;
+ const nearTownStairs=Math.hypot(player.pos.x-townLiftX,player.pos.z-townLiftZ)<12;
  if(nearTownStairs){townLevel=(townLevel+1)%3;if(townLevel===0){raisedPlatform=null;raisedPlatformY=0;player.pos.set(townLiftX,0,townLiftZ);document.querySelector("#message").textContent="Town stairs: back at street level.";}else{raisedPlatform="town";raisedPlatformY=townLevel*5.5;player.pos.set(townLiftX,raisedPlatformY,townLiftZ);document.querySelector("#message").textContent="Town stairs: LEVEL "+townLevel+" / 2. Explore the upper floors and rooftop!";}player.vertical=0;return true;}
  return false;
 }
