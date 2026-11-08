@@ -123,9 +123,11 @@ mountainRange(-560,-1010,440,270,1.08,7);mountainRange(-95,-1080,560,330,1.12,8)
 function box(x,y,z,sx,sy,sz,color){const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mat(color));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m}
 const treeRoots=[],roadCorridors=[];function tree(x,z,scale=1){const base=terrainHeight(x,z),group=new THREE.Group();group.position.set(x,base,z);const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22*scale,.34*scale,2.8*scale,7),mat(0x554638));trunk.position.y=1.4*scale;trunk.castShadow=true;group.add(trunk);for(let i=0;i<3;i++){const crown=new THREE.Mesh(new THREE.SphereGeometry((1.45-i*.12)*scale,9,7),mat(i%2?0x344b3b:0x405b42));crown.position.y=(3.0+i*.72)*scale;crown.scale.y=.92;group.add(crown)}scene.add(group);treeRoots.push(group)}
 function rock(x,z,s=1){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(s,0),mat(0x77796f));r.position.set(x,terrainHeight(x,z)+s*.55,z);r.rotation.set(.2,.8,.3);r.castShadow=true;r.receiveShadow=true;scene.add(r)}
-for(let i=0;i<55;i++){ // Reduced scattered tree/rock props for smoother rendering.const x=Math.sin(i*91.7)*285,z=-300+(i*31.7)%600;const nearHouse=[[-17,-22],[25,-40],[-34,12],[34,-76],[-38,48]].some(([hx,hz])=>Math.abs(x-hx)<9&&Math.abs(z-hz)<10);if(nearHouse)continue;if(Math.abs(x)<5&&z>-112&&z<62)continue;if(i%3===0)rock(x,z,.7+(i%5)*.22);else tree(x,z,.65+(i%4)*.13)}
+// Reduced scattered tree/rock props for smoother rendering.
+for(let i=0;i<55;i++){const x=Math.sin(i*91.7)*285,z=-300+(i*31.7)%600;const nearHouse=[[-17,-22],[25,-40],[-34,12],[34,-76],[-38,48]].some(([hx,hz])=>Math.abs(x-hx)<9&&Math.abs(z-hz)<10);if(nearHouse)continue;if(Math.abs(x)<5&&z>-112&&z<62)continue;if(i%3===0)rock(x,z,.7+(i%5)*.22);else tree(x,z,.65+(i%4)*.13)}
 // Distant forest edges and meadow colour variation create a layered countryside view.
-for(let i=0;i<16;i++){ // Fewer distant trees.const x=-310+i*14.8,z=-205+Math.sin(i*.74)*28;tree(x,z,1.2+(i%4)*.18);}
+// Fewer distant trees.
+for(let i=0;i<16;i++){const x=-310+i*14.8,z=-205+Math.sin(i*.74)*28;tree(x,z,1.2+(i%4)*.18);}
 for(let i=0;i<12;i++){const x=-220+i*15.8,z=205+Math.sin(i*.94)*24;tree(x,z,1.05+(i%3)*.2);}
 // Removed random coloured meadow circles and scattered flower clumps for a clean, natural grass field.
 // Small village: each house has a real doorway and a walkable interior.
