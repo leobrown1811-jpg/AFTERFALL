@@ -263,8 +263,8 @@ const villageRoad=[[0,255],[-7,230],[-10,205],[-6,180],[1,155],[8,130],[9,105],[
 roadPath(villageRoad,9.2,false,false);
 // Short access lanes branch from the main street to the inward-facing cottage entrances.
 for(const z of [-105,-78,-51,-24,3,30,57,84,111]){
-  roadPath([[-3,z-5],[-12,z-2],[-24,z],[-34,z],[-40.4,z]],7.2,false,false);
-  roadPath([[3,z-5],[12,z-2],[24,z],[34,z],[40.4,z]],7.2,false,false);
+  roadPath([[-3,z-5],[-12,z-2],[-24,z],[-32,z],[-36.8,z]],7.2,false,false);
+  roadPath([[3,z-5],[12,z-2],[24,z],[32,z],[36.8,z]],7.2,false,false);
 }
 const beacon=new THREE.PointLight(0xffd17b,22,24);beacon.position.set(18,4,-35);scene.add(beacon);// The finish beacon has no surrounding box or platform; keep the flagpole on open ground.const beaconPole=new THREE.Mesh(new THREE.CylinderGeometry(.12,.17,5.8,12),mat(0x5a4732));beaconPole.position.set(18,3.7,-35);scene.add(beaconPole);const beaconFlag=new THREE.Mesh(new THREE.PlaneGeometry(4.8,2.4),new THREE.MeshStandardMaterial({color:0x263d32,side:THREE.DoubleSide,roughness:.8}));beaconFlag.position.set(20.3,5.2,-35);beaconFlag.rotation.y=.15;scene.add(beaconFlag);const flagCanvas=document.createElement("canvas");flagCanvas.width=768;flagCanvas.height=384;const flagCtx=flagCanvas.getContext("2d");flagCtx.fillStyle="#263d32";flagCtx.fillRect(0,0,768,384);flagCtx.strokeStyle="#e7c77c";flagCtx.lineWidth=14;flagCtx.strokeRect(12,12,744,360);flagCtx.fillStyle="#f2d58f";flagCtx.font="bold 88px system-ui";flagCtx.textAlign="center";flagCtx.textBaseline="middle";flagCtx.fillText("AFTERFALL",384,190);beaconFlag.material.map=new THREE.CanvasTexture(flagCanvas);beaconFlag.material.needsUpdate=true;
 const supplies=[];for(const [x,z] of [[-8,4],[23,-9],[-27,-43],[-20.5,-20.5],[21.5,-38.5]]){const g=new THREE.Group();const crate=new THREE.Mesh(new THREE.BoxGeometry(1.15,.85,.9),mat(0xc18a42));crate.castShadow=true;g.add(crate);const stripe=new THREE.Mesh(new THREE.BoxGeometry(1.18,.13,.94),mat(0xe7d29a));stripe.position.y=.1;g.add(stripe);g.position.set(x,.65,z);scene.add(g);supplies.push(g)}
