@@ -160,9 +160,9 @@ function makeHouse(x,z,accent=0x353c3a,facing=0){
  // Warm interior light makes the walls and furnishings readable.
  const lamp=new THREE.PointLight(0xffd9a1,1.4,6);lamp.position.set(x,2.45,z);scene.add(lamp);
  // Rotate the whole house as one unit so its roof, walls, windows, door and furniture remain aligned.
- const houseRoot=new THREE.Group();houseRoot.position.set(x,terrainHeight(x,z)+.42,z);scene.add(houseRoot);
+ const houseRoot=new THREE.Group();houseRoot.position.set(x,terrainHeight(x,z),z);scene.add(houseRoot);
  const created=scene.children.slice(childStart,scene.children.length-1);
- for(const child of created)houseRoot.attach(child);
+ for(const child of created){houseRoot.attach(child);child.position.y+=terrainHeight(x,z);}
  houseRoot.rotation.y=facing;
  if(Math.abs(facing)>0.001){for(let i=wallStart;i<solidWalls.length;i++){const b=solidWalls[i],dx=b.x-x,dz=b.z-z;b.x=x+Math.cos(facing)*dx+Math.sin(facing)*dz;b.z=z-Math.sin(facing)*dx+Math.cos(facing)*dz;if(Math.abs(Math.abs(facing)-Math.PI/2)<.01){const t=b.w;b.w=b.d;b.d=t;}}}
  // Slightly enlarge each complete home, including roof, doorway, windows and furnishings.
@@ -489,7 +489,7 @@ let equippedLoot="Compact Sidearm",selectedSlot=0,scopeAimBlend=0;
 function syncEquippedWeapon(){
  const item=weaponLoot.find(v=>v.name===equippedLoot)||weaponLoot[0];
  heldWeapon.clear();const heldModel=createWeaponVisual(item);heldModel.scale.setScalar(.58);heldWeapon.add(heldModel);
- heldWeapon.position.set(.49,.70,.43);heldWeapon.rotation.set(-.10,0,0);
+ heldWeapon.position.set(.49,1.12,.88);heldWeapon.rotation.set(-.10,0,0);
  weapon.clear();const viewModel=createWeaponVisual(item);viewModel.rotation.y=Math.PI;viewModel.scale.setScalar(.72);weapon.add(viewModel);weapon.userData.muzzle=viewModel.userData.muzzle;
 }
 syncEquippedWeapon();
